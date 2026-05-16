@@ -14,10 +14,7 @@
 
 <!-- 📂 FILE LIST -->
 <h3>Select File</h3>
-
-<div id="fileList">
-  Loading...
-</div>
+<div id="fileList">Loading...</div>
 
 <hr>
 
@@ -25,417 +22,197 @@
 <h3>Edit Selected File</h3>
 
 <input type="text" id="name" placeholder="File Name"><br><br>
-
 <input type="text" id="type" placeholder="Type"><br><br>
-
 <input type="text" id="category" placeholder="Category"><br><br>
 
 <input type="text" id="image" placeholder="Image URL"><br><br>
-
-<!-- 🎵 AUDIO LINKS -->
-<h3>Audio Links</h3>
-
-<textarea
-  id="audioLinks"
-  placeholder="te|LINK&#10;ta|LINK&#10;en|LINK"
-  rows="6"
-  cols="60"
-></textarea>
-
-<br><br>
 
 <h3>Download Links</h3>
 
 <div id="links-container"></div>
 
 <br>
-
-<button onclick="addLink()">
-  ➕ Add More
-</button>
+<button onclick="addLink()">➕ Add More</button>
 
 <br><br>
 
-<textarea
-  id="description"
-  placeholder="Description"
-></textarea>
+<textarea id="description" placeholder="Description"></textarea><br><br>
 
-<br><br>
-
-<button onclick="updateFile()">
-  Update File
-</button>
+<button onclick="updateFile()">Update File</button>
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
 <script>
-
 const firebaseConfig = {
-
   apiKey: "AIzaSyA8rEqkC8m8bmDi9UhnJuGuTqaWXY5CuKM",
-
   authDomain: "filehub-counter.firebaseapp.com",
-
   projectId: "filehub-counter"
-
 };
 
 firebase.initializeApp(firebaseConfig);
 
 const db = firebase.firestore();
-
 const auth = firebase.auth();
 
 let currentDocId = null;
 
 // 🔒 PROTECT PAGE
 auth.onAuthStateChanged(user => {
-
   if (!user) {
-
     alert("Login first");
-
     window.location.href = "admin.html";
-
   } else {
-
     loadFiles();
-
   }
-
 });
 
 // 🔹 LOAD FILES
 async function loadFiles() {
-
-  const container =
-    document.getElementById("fileList");
-
+  const container = document.getElementById("fileList");
   container.innerHTML = "Loading...";
 
-  const snapshot =
-    await db.collection("files").get();
+  const snapshot = await db.collection("files").get();
 
   container.innerHTML = "";
 
   snapshot.forEach(doc => {
-
     const data = doc.data();
 
     container.innerHTML += `
-
-      <div
-        style="
-          border:1px solid #ccc;
-          padding:10px;
-          margin:10px;
-        ">
-
+      <div style="border:1px solid #ccc; padding:10px; margin:10px;">
         <strong>${data.name}</strong><br>
-
         ${data.type} • ${data.category}
-
         <br><br>
-
-        <button onclick="selectFile('${doc.id}')">
-          Edit
-        </button>
-
+        <button onclick="selectFile('${doc.id}')">Edit</button>
       </div>
-
     `;
-
   });
-
 }
 
 // ➕ ADD LINK ROW
-function addLink(
-  url = "",
-  size = "",
-  unit = "MB"
-) {
+function addLink(url = "", size = "", unit = "MB") {
+  const container = document.getElementById("links-container");
 
-  const container =
-    document.getElementById("links-container");
-
-  const div =
-    document.createElement("div");
-
+  const div = document.createElement("div");
   div.classList.add("link-row");
 
   div.innerHTML = `
-
-    <input
-      type="text"
-      value="${url}"
-      placeholder="Enter link"
-      class="link-input"
-    >
-
-    <input
-      type="number"
-      value="${size}"
-      placeholder="Size"
-      class="size-input"
-    >
-
+    <input type="text" value="${url}" placeholder="Enter link" class="link-input">
+    <input type="number" value="${size}" placeholder="Size" class="size-input">
     <select class="size-unit">
-
-      <option
-        value="KB"
-        ${unit==="KB"?"selected":""}>
-        KB
-      </option>
-
-      <option
-        value="MB"
-        ${unit==="MB"?"selected":""}>
-        MB
-      </option>
-
-      <option
-        value="GB"
-        ${unit==="GB"?"selected":""}>
-        GB
-      </option>
-
+      <option value="KB" ${unit==="KB"?"selected":""}>KB</option>
+      <option value="MB" ${unit==="MB"?"selected":""}>MB</option>
+      <option value="GB" ${unit==="GB"?"selected":""}>GB</option>
     </select>
-
-    <button onclick="removeRow(this)">
-      ❌
-    </button>
-
+    <button onclick="removeRow(this)">❌</button>
   `;
 
   container.appendChild(div);
-
 }
 
 // ❌ REMOVE ROW
 function removeRow(btn) {
-
   btn.parentElement.remove();
-
 }
 
 // 🔹 SELECT FILE
 async function selectFile(docId) {
-
-  const docRef =
-    db.collection("files").doc(docId);
-
-  const docSnap =
-    await docRef.get();
+  const docRef = db.collection("files").doc(docId);
+  const docSnap = await docRef.get();
 
   if (!docSnap.exists) {
-
     alert("File not found");
-
     return;
-
   }
 
   const data = docSnap.data();
 
   currentDocId = docId;
 
-  // BASIC
-  document.getElementById("name").value =
-    data.name || "";
+  document.getElementById("name").value = data.name || "";
+  document.getElementById("type").value = data.type || "";
+  document.getElementById("category").value = data.category || "";
+  document.getElementById("image").value = data.image || "";
+  document.getElementById("description").value = data.description || "";
 
-  document.getElementById("type").value =
-    data.type || "";
-
-  document.getElementById("category").value =
-    data.category || "";
-
-  document.getElementById("image").value =
-    data.image || "";
-
-  document.getElementById("description").value =
-    data.description || "";
-
-  // 🎵 AUDIO LINKS
-  document.getElementById("audioLinks").value =
-    (data.audios || []).join("\n");
-
-  // 📥 DOWNLOAD LINKS
-  const container =
-    document.getElementById("links-container");
-
+  const container = document.getElementById("links-container");
   container.innerHTML = "";
 
-  // HANDLE OLD + NEW FORMAT
+  // 🔥 HANDLE BOTH OLD + NEW FORMAT
   if (Array.isArray(data.links)) {
-
     data.links.forEach(link => {
-
       if (typeof link === "string") {
-
-        // OLD FORMAT
+        // old format
         addLink(link, "", "MB");
-
       } else {
-
-        // NEW FORMAT
-        addLink(
-          link.url,
-          link.size,
-          link.unit
-        );
-
+        // new format
+        addLink(link.url, link.size, link.unit);
       }
-
     });
-
   }
 
-  if (
-    !data.links ||
-    data.links.length === 0
-  ) {
-
-    addLink();
-
+  if (!data.links || data.links.length === 0) {
+    addLink(); // at least one row
   }
-
 }
 
 // 🔹 UPDATE FILE
 async function updateFile() {
 
   if (!currentDocId) {
-
     alert("Select a file first");
-
     return;
-
   }
 
-  const fileName =
-    document.getElementById("name")
-    .value
-    .trim();
+  const fileName = document.getElementById("name").value.trim();
+  const fileType = document.getElementById("type").value.trim();
+  const fileCategory = document.getElementById("category").value.trim();
+  const fileImage = document.getElementById("image").value.trim();
 
-  const fileType =
-    document.getElementById("type")
-    .value
-    .trim();
-
-  const fileCategory =
-    document.getElementById("category")
-    .value
-    .trim();
-
-  const fileImage =
-    document.getElementById("image")
-    .value
-    .trim();
-
-  // 🎵 AUDIO LINKS
-  const audioLinks =
-    document.getElementById("audioLinks")
-    .value
-    .split("\n")
-    .map(v => v.trim())
-    .filter(Boolean);
-
-  // 📥 DOWNLOAD LINKS
-  const rows =
-    document.querySelectorAll(".link-row");
-
+  const rows = document.querySelectorAll(".link-row");
   let links = [];
 
   rows.forEach(row => {
-
-    const url =
-      row.querySelector(".link-input")
-      .value
-      .trim();
-
-    const size =
-      row.querySelector(".size-input")
-      .value
-      .trim();
-
-    const unit =
-      row.querySelector(".size-unit")
-      .value;
+    const url = row.querySelector(".link-input").value.trim();
+    const size = row.querySelector(".size-input").value.trim();
+    const unit = row.querySelector(".size-unit").value;
 
     if (url) {
-
-      links.push({
-        url,
-        size,
-        unit
-      });
-
+      links.push({ url, size, unit });
     }
-
   });
 
-  const fileDescription =
-    document.getElementById("description")
-    .value
-    .trim();
+  const fileDescription = document.getElementById("description").value.trim();
 
   try {
-
-    await db.collection("files")
-    .doc(currentDocId)
-    .update({
-
+    await db.collection("files").doc(currentDocId).update({
       name: fileName,
-
       type: fileType,
-
       category: fileCategory,
-
       image: fileImage,
-
       links: links,
-
-      description: fileDescription,
-
-      // 🎵 MULTI AUDIO
-      audios: audioLinks
-
+      description: fileDescription
     });
 
     alert("File updated successfully!");
 
     currentDocId = null;
-
     loadFiles();
-
-    document.getElementById(
-      "links-container"
-    ).innerHTML = "";
+    document.getElementById("links-container").innerHTML = "";
 
   } catch (err) {
-
     console.error(err);
-
     alert(err.message);
-
   }
-
 }
 
 // 🔙 BACK
 function goBack() {
-
   window.location.href = "admin.html";
-
 }
-
 </script>
 
 </body>

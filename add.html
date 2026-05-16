@@ -8,364 +8,162 @@
 <h2>Add New File</h2>
 
 <input type="text" id="name" placeholder="File Name"><br><br>
-
 <input type="text" id="type" placeholder="Type (PDF, Video)"><br><br>
-
 <input type="text" id="category" placeholder="Category"><br><br>
 
 <input type="text" id="image" placeholder="Image URL"><br><br>
 
-<!-- 🎵 MULTI AUDIO -->
-<h3>Audio Links</h3>
-
-<textarea
-  id="audioLinks"
-  placeholder="te|LINK&#10;ta|LINK&#10;en|LINK"
-  rows="6"
-  cols="60"
-></textarea>
-
-<br><br>
-
 <h3>Download Links</h3>
 
 <div id="links-container">
-
   <div class="link-row">
-
-    <input
-      type="text"
-      placeholder="Enter link"
-      class="link-input"
-    >
-
-    <input
-      type="number"
-      placeholder="Size"
-      class="size-input"
-    >
-
+    <input type="text" placeholder="Enter link" class="link-input">
+    <input type="number" placeholder="Size" class="size-input">
     <select class="size-unit">
-
       <option value="KB">KB</option>
-
       <option value="MB" selected>MB</option>
-
       <option value="GB">GB</option>
-
     </select>
-
-    <button onclick="removeRow(this)">
-      ❌
-    </button>
-
+    <button onclick="removeRow(this)">❌</button>
   </div>
-
 </div>
 
 <br>
-
-<button onclick="addLink()">
-  ➕ Add More
-</button>
+<button onclick="addLink()">➕ Add More</button>
 
 <br><br>
 
-<textarea
-  id="description"
-  placeholder="Description"
-></textarea>
+<textarea id="description" placeholder="Description"></textarea><br><br>
 
+<button onclick="addFile()">Add File</button>
 <br><br>
-
-<button onclick="addFile()">
-  Add File
-</button>
-
-<br><br>
-
-<button onclick="goBack()">
-  ← Back
-</button>
+<button onclick="goBack()">← Back</button>
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
 <script>
-
 const firebaseConfig = {
-
   apiKey: "AIzaSyA8rEqkC8m8bmDi9UhnJuGuTqaWXY5CuKM",
-
   authDomain: "filehub-counter.firebaseapp.com",
-
   projectId: "filehub-counter"
-
 };
 
 firebase.initializeApp(firebaseConfig);
 
 const db = firebase.firestore();
-
 const auth = firebase.auth();
-
-auth.setPersistence(
-  firebase.auth.Auth.Persistence.LOCAL
-);
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
 // 🔒 PROTECT PAGE
 auth.onAuthStateChanged(user => {
-
   if (!user) {
-
     alert("Login first");
-
     window.location.href = "admin.html";
-
   }
-
 });
 
 // ➕ ADD LINK ROW
 function addLink() {
+  const container = document.getElementById("links-container");
 
-  const container =
-    document.getElementById("links-container");
-
-  const div =
-    document.createElement("div");
-
+  const div = document.createElement("div");
   div.classList.add("link-row");
 
   div.innerHTML = `
-
-    <input
-      type="text"
-      placeholder="Enter link"
-      class="link-input"
-    >
-
-    <input
-      type="number"
-      placeholder="Size"
-      class="size-input"
-    >
-
+    <input type="text" placeholder="Enter link" class="link-input">
+    <input type="number" placeholder="Size" class="size-input">
     <select class="size-unit">
-
       <option value="KB">KB</option>
-
       <option value="MB" selected>MB</option>
-
       <option value="GB">GB</option>
-
     </select>
-
-    <button onclick="removeRow(this)">
-      ❌
-    </button>
-
+    <button onclick="removeRow(this)">❌</button>
   `;
 
   container.appendChild(div);
-
 }
 
 // ❌ REMOVE ROW
 function removeRow(btn) {
-
   btn.parentElement.remove();
-
 }
 
-// 🎬 ADD FILE
+// ADD FILE
 async function addFile() {
 
-  const fileName =
-    document.getElementById("name")
-    .value
-    .trim();
+  const fileName = document.getElementById("name").value.trim();
+  const fileType = document.getElementById("type").value.trim();
+  const fileCategory = document.getElementById("category").value.trim();
+  const fileImage = document.getElementById("image").value.trim();
 
-  const fileType =
-    document.getElementById("type")
-    .value
-    .trim();
-
-  const fileCategory =
-    document.getElementById("category")
-    .value
-    .trim();
-
-  const fileImage =
-    document.getElementById("image")
-    .value
-    .trim();
-
-  // 🎵 AUDIO LINKS
-  const audioLinks =
-    document.getElementById("audioLinks")
-    .value
-    .split("\n")
-    .map(v => v.trim())
-    .filter(Boolean);
-
-  // 📥 DOWNLOAD LINKS
-  const rows =
-    document.querySelectorAll(".link-row");
-
+  const rows = document.querySelectorAll(".link-row");
   let links = [];
 
   rows.forEach(row => {
-
-    const url =
-      row.querySelector(".link-input")
-      .value
-      .trim();
-
-    const size =
-      row.querySelector(".size-input")
-      .value
-      .trim();
-
-    const unit =
-      row.querySelector(".size-unit")
-      .value;
+    const url = row.querySelector(".link-input").value.trim();
+    const size = row.querySelector(".size-input").value.trim();
+    const unit = row.querySelector(".size-unit").value;
 
     if (url) {
-
-      links.push({
-        url,
-        size,
-        unit
-      });
-
+      links.push({ url, size, unit });
     }
-
   });
 
-  const fileDescription =
-    document.getElementById("description")
-    .value
-    .trim();
+  const fileDescription = document.getElementById("description").value.trim();
 
-  // ✅ VALIDATION
-  if (
-    !fileName ||
-    !fileType ||
-    !fileCategory
-  ) {
-
+  if (!fileName || !fileType || !fileCategory) {
     alert("Fill required fields");
-
     return;
-
   }
 
   try {
 
-    // 📂 LOCAL JSON
-    const res =
-      await fetch("files.json");
+    const res = await fetch("files.json");
+    const localFiles = await res.json();
+    const localMax = Math.max(...localFiles.map(f => f.id), 0);
 
-    const localFiles =
-      await res.json();
-
-    const localMax =
-      Math.max(
-        ...localFiles.map(f => f.id),
-        0
-      );
-
-    // ☁ FIREBASE
-    const snapshot =
-      await db.collection("files").get();
-
+    const snapshot = await db.collection("files").get();
     let firebaseMax = 0;
 
     snapshot.forEach(doc => {
-
       const data = doc.data();
-
-      if (data.customId > firebaseMax) {
-
-        firebaseMax = data.customId;
-
-      }
-
+      if (data.customId > firebaseMax) firebaseMax = data.customId;
     });
 
-    // 🆔 NEXT ID
-    const nextId =
-      Math.max(localMax, firebaseMax) + 1;
+    const nextId = Math.max(localMax, firebaseMax) + 1;
 
-    // 💾 SAVE
     await db.collection("files").add({
-
       customId: nextId,
-
       name: fileName,
-
       type: fileType,
-
       category: fileCategory,
-
       image: fileImage,
-
       links: links,
-
-      description: fileDescription,
-
-      // 🎵 MULTI AUDIO
-      audios: audioLinks
-
+      description: fileDescription
     });
 
-    alert(
-      "File added successfully! ID: " +
-      nextId
-    );
+    alert("File added successfully! ID: " + nextId);
 
-    // 🧹 RESET INPUTS
-    [
-      "name",
-      "type",
-      "category",
-      "image",
-      "description",
-      "audioLinks"
-    ].forEach(id => {
-
+    ["name","type","category","image","description"].forEach(id => {
       document.getElementById(id).value = "";
-
     });
 
-    document.getElementById(
-      "links-container"
-    ).innerHTML = "";
-
+    document.getElementById("links-container").innerHTML = "";
     addLink();
 
   } catch (err) {
-
     console.error(err);
-
     alert(err.message);
-
   }
-
 }
 
-// 🔙 BACK
+// BACK
 function goBack() {
-
   window.location.href = "admin.html";
-
 }
-
 </script>
 
 </body>

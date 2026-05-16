@@ -1,60 +1,34 @@
 // ---------------- BACKGROUND ----------------
 window.addEventListener("DOMContentLoaded", function () {
-
   const backgrounds = [
     "https://images3.alphacoders.com/137/thumb-1920-1373768.png",
     "https://images8.alphacoders.com/912/thumb-1920-912051.jpg",
     "https://fanart.fanabyss.com/657/thumb-Naruto-87.jpg"
   ];
 
-  const randomIndex =
-    Math.floor(Math.random() * backgrounds.length);
-
-  document.body.style.backgroundImage =
-    `url('${backgrounds[randomIndex]}')`;
-
+  const randomIndex = Math.floor(Math.random() * backgrounds.length);
+  document.body.style.backgroundImage = `url('${backgrounds[randomIndex]}')`;
 });
-
 
 // ---------------- DATA ----------------
 let allJsonFiles = [];
-
+let pageCache = {};
 let currentFiles = [];
-
 let currentPage = 1;
-
 let totalFilesCount = 0;
-
 const itemsPerPage = 10;
 
-const fileList =
-  document.getElementById("fileList");
-
+const fileList = document.getElementById("fileList");
 
 // ---------------- LOAD JSON ----------------
 async function loadJSON() {
-
-  const res = await fetch(
-
-    "files.json",
-
-    {
-      cache:"no-store"
-    }
-
-  );
-
-  allJsonFiles =
-    await res.json();
-
+  const res = await fetch("files.json");
+  allJsonFiles = await res.json();
 }
-
 
 // ---------------- GET TOTAL COUNT ----------------
 async function getTotalCount() {
-
-  const snap =
-    await db.collection("files")
+  const snap = await db.collection("files")
     .orderBy("customId", "desc")
     .limit(1)
     .get();
@@ -62,519 +36,192 @@ async function getTotalCount() {
   let highestId = 0;
 
   if (!snap.empty) {
-
-    highestId =
-      snap.docs[0]
-      .data()
-      .customId;
-
+    highestId = snap.docs[0].data().customId;
   }
 
-  totalFilesCount =
-    Math.max(
-      highestId,
-      allJsonFiles.length
-    );
-
+  totalFilesCount = Math.max(highestId, allJsonFiles.length);
 }
-
 
 // ---------------- LOAD PAGE ----------------
 async function loadPage(page) {
 
-  const startId =
-    totalFilesCount -
-    (page * itemsPerPage) + 1;
+  if (pageCache[page]) {
+    currentFiles = pageCache[page];
+    displayFiles();
+    return;
+  }
 
-  const endId =
-    totalFilesCount -
-    ((page - 1) * itemsPerPage);
+  const startId = totalFilesCount - (page * itemsPerPage) + 1;
+  const endId = totalFilesCount - ((page - 1) * itemsPerPage);
+  const safeStart = Math.max(1, startId);
 
-  const safeStart =
-    Math.max(1, startId);
+  const localFiles = allJsonFiles.filter(f =>
+    f.id >= safeStart && f.id <= endId
+  );
 
-
-  // ---------------- LOCAL JSON ----------------
-  const localFiles =
-    allJsonFiles.filter(f =>
-
-      f.id >= safeStart &&
-      f.id <= endId
-
-    );
-
-
-  // ---------------- FIREBASE ----------------
-  const snapshot =
-    await db.collection("files")
+  const snapshot = await db.collection("files")
     .where("customId", ">=", safeStart)
     .where("customId", "<=", endId)
     .get();
 
-  const firebaseFiles =
-    snapshot.docs.map(doc => {
-
-      const d = doc.data();
-
-      return {
-
-        // BASIC
-        id: d.customId,
-        name: d.name,
-        type: d.type,
-        category: d.category,
-
-        // DETAILS
-        description:
-        d.description || "",
-
-        image:
-        d.image || "",
-
-        // DOWNLOADS
-        downloads:
-        d.links || [],
-
-        // MULTI AUDIO
-        audios:
-        d.audios || []
-
-      };
-
-    });
-
-
-  // ---------------- MERGE ----------------
-  const pageFiles = [
-
-    ...localFiles,
-    ...firebaseFiles
-
-  ];
-
-
-  // ---------------- REMOVE DUPLICATES ----------------
-  const uniqueFiles =
-    [];
-
-  const ids =
-    new Set();
-
-  pageFiles.forEach(file => {
-
-    if (!ids.has(file.id)) {
-
-      ids.add(file.id);
-
-      uniqueFiles.push(file);
-
-    }
-
+  const firebaseFiles = snapshot.docs.map(doc => {
+    const d = doc.data();
+    return {
+      id: d.customId,
+      name: d.name,
+      type: d.type,
+      category: d.category,
+      description: d.description || "",
+      image: d.image || "",
+      downloads: d.links || []
+    };
   });
 
+  const pageFiles = [...localFiles, ...firebaseFiles];
 
-  // ---------------- SORT ----------------
-  uniqueFiles.sort(
-    (a, b) => b.id - a.id
-  );
+  pageFiles.sort((a, b) => b.id - a.id);
 
-  currentFiles =
-    uniqueFiles;
+  pageCache[page] = pageFiles;
+  currentFiles = pageFiles;
 
-
-  // ---------------- DISPLAY ----------------
   displayFiles();
-
 }
-
 
 // ---------------- DISPLAY ----------------
 function displayFiles() {
-
   fileList.innerHTML = "";
 
   currentFiles.forEach(file => {
-
     fileList.innerHTML += `
-
       <div class="file">
-
         <div>
-
-          <strong>
-            ${file.name}
-          </strong>
-
-          <br>
-
-          <small>
-
-            ${file.type}
-            •
-            ${file.category}
-
-          </small>
-
+          <strong>${file.name}</strong><br>
+          <small>${file.type} • ${file.category}</small>
         </div>
-
-        <button
-          onclick="openFile(${file.id})"
-        >
-          View Details
-        </button>
-
+        <button onclick="openFile(${file.id})">View Details</button>
       </div>
-
     `;
-
   });
 
   createPagination();
-
 }
-
 
 // ---------------- PAGINATION ----------------
 function createPagination() {
 
-  const totalPages =
-    Math.ceil(
-      totalFilesCount /
-      itemsPerPage
-    );
+  const totalPages = Math.ceil(totalFilesCount / itemsPerPage);
 
-  const startItem =
-    (currentPage - 1) *
-    itemsPerPage + 1;
+  const startItem = (currentPage - 1) * itemsPerPage + 1;
+  const endItem = Math.min(currentPage * itemsPerPage, totalFilesCount);
 
-  const endItem =
-    Math.min(
+  let html = '<div class="pagination">';
 
-      currentPage *
-      itemsPerPage,
+  html += `<p class="page-info">Showing ${startItem}–${endItem} of ${totalFilesCount} files</p>`;
 
-      totalFilesCount
+  html += `<button onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>← Prev</button>`;
 
-    );
-
-  let html =
-    '<div class="pagination">';
-
-  html += `
-
-    <p class="page-info">
-
-      Showing ${startItem}–${endItem}
-      of ${totalFilesCount} files
-
-    </p>
-
-  `;
-
-  html += `
-
-    <button
-      onclick="goToPage(${currentPage - 1})"
-      ${currentPage === 1 ? 'disabled' : ''}>
-
-      ← Prev
-
-    </button>
-
-  `;
-
-  for (
-
-    let i = 1;
-    i <= totalPages;
-    i++
-
-  ) {
-
+  for (let i = 1; i <= totalPages; i++) {
     html += `
-
-      <button
-
-        class="${
-          i === currentPage
-          ?
-          'active-page'
-          :
-          ''
-        }"
-
-        onclick="goToPage(${i})">
-
+      <button class="${i === currentPage ? 'active-page' : ''}" onclick="goToPage(${i})">
         ${i}
-
       </button>
-
     `;
-
   }
 
-  html += `
-
-    <button
-      onclick="goToPage(${currentPage + 1})"
-
-      ${
-        currentPage === totalPages
-        ?
-        'disabled'
-        :
-        ''
-      }>
-
-      Next →
-
-    </button>
-
-  `;
+  html += `<button onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Next →</button>`;
 
   html += '</div>';
 
-  fileList.innerHTML +=
-    html;
-
+  fileList.innerHTML += html;
 }
-
 
 // ---------------- PAGE SWITCH ----------------
 function goToPage(page) {
-
-  if (page < 1)
-  return;
-
-  currentPage =
-    page;
-
+  if (page < 1) return;
+  currentPage = page;
   loadPage(page);
-
 }
-
 
 // ---------------- NAVIGATION ----------------
 function openFile(id) {
-
-  window.location.href =
-    "file.html?id=" + id;
-
+  window.location.href = "file.html?id=" + id;
 }
-
 
 function goHome() {
-
-  window.location.href =
-    "index.html";
-
+  window.location.href = "index.html";
 }
-
 
 // ---------------- SEARCH ----------------
-document.getElementById("search")
-.addEventListener(
+document.getElementById("search").addEventListener("input", async function (e) {
 
-  "input",
+  const value = e.target.value.toLowerCase().trim();
 
-  async function (e) {
-
-    const value =
-      e.target.value
-      .toLowerCase()
-      .trim();
-
-    if (!value) {
-
-      loadPage(currentPage);
-
-      return;
-
-    }
-
-    let results = [];
-
-
-    // ---------------- LOCAL SEARCH ----------------
-    const localMatches =
-      allJsonFiles.filter(file =>
-
-        file.name
-        .toLowerCase()
-        .includes(value)
-
-        ||
-
-        file.category
-        .toLowerCase()
-        .includes(value)
-
-        ||
-
-        file.type
-        .toLowerCase()
-        .includes(value)
-
-      );
-
-    results.push(
-      ...localMatches
-    );
-
-
-    // ---------------- FIREBASE SEARCH ----------------
-    const snapshot =
-      await db.collection("files")
-      .where("name", ">=", value)
-      .where("name", "<=", value + "\uf8ff")
-      .get();
-
-    const firebaseMatches =
-      snapshot.docs.map(doc => {
-
-        const d =
-          doc.data();
-
-        return {
-
-          id: d.customId,
-          name: d.name,
-          type: d.type,
-          category: d.category,
-
-          description:
-          d.description || "",
-
-          image:
-          d.image || "",
-
-          downloads:
-          d.links || [],
-
-          audios:
-          d.audios || []
-
-        };
-
-      });
-
-    results.push(
-      ...firebaseMatches
-    );
-
-
-    // ---------------- REMOVE DUPLICATES ----------------
-    const uniqueResults =
-      [];
-
-    const ids =
-      new Set();
-
-    results.forEach(file => {
-
-      if (!ids.has(file.id)) {
-
-        ids.add(file.id);
-
-        uniqueResults.push(file);
-
-      }
-
-    });
-
-
-    // ---------------- SORT ----------------
-    uniqueResults.sort(
-      (a, b) => b.id - a.id
-    );
-
-    currentFiles =
-      uniqueResults;
-
-    displayFiles();
-
+  if (!value) {
+    loadPage(currentPage);
+    return;
   }
 
-);
+  let results = [];
 
-
-// ---------------- DARK MODE ----------------
-const toggleBtn =
-  document.getElementById("themeToggle");
-
-if (toggleBtn) {
-
-  if (
-
-    localStorage.getItem("theme")
-    ===
-    "dark"
-
-  ) {
-
-    document.body
-    .classList
-    .add("dark");
-
-    toggleBtn.textContent =
-      "☀️";
-
-  }
-
-  toggleBtn.addEventListener(
-
-    "click",
-
-    function () {
-
-      document.body
-      .classList
-      .toggle("dark");
-
-      if (
-
-        document.body
-        .classList
-        .contains("dark")
-
-      ) {
-
-        localStorage.setItem(
-          "theme",
-          "dark"
-        );
-
-        toggleBtn.textContent =
-          "☀️";
-
-      }
-
-      else {
-
-        localStorage.setItem(
-          "theme",
-          "light"
-        );
-
-        toggleBtn.textContent =
-          "🌙";
-
-      }
-
-    }
-
+  const localMatches = allJsonFiles.filter(file =>
+    file.name.toLowerCase().includes(value) ||
+    file.category.toLowerCase().includes(value) ||
+    file.type.toLowerCase().includes(value)
   );
 
-}
+  results.push(...localMatches);
 
+  const snapshot = await db.collection("files")
+    .where("name", ">=", value)
+    .where("name", "<=", value + "\uf8ff")
+    .get();
+
+  const firebaseMatches = snapshot.docs.map(doc => {
+    const d = doc.data();
+    return {
+      id: d.customId,
+      name: d.name,
+      type: d.type,
+      category: d.category,
+      description: d.description || "",
+      image: d.image || "",
+      downloads: d.links || []
+    };
+  });
+
+  results.push(...firebaseMatches);
+
+  results.sort((a, b) => b.id - a.id);
+
+  currentFiles = results;
+  displayFiles();
+});
+
+// ---------------- DARK MODE ----------------
+const toggleBtn = document.getElementById("themeToggle");
+
+if (toggleBtn) {
+  if (localStorage.getItem("theme") === "dark") {
+    document.body.classList.add("dark");
+    toggleBtn.textContent = "☀️";
+  }
+
+  toggleBtn.addEventListener("click", function () {
+    document.body.classList.toggle("dark");
+
+    if (document.body.classList.contains("dark")) {
+      localStorage.setItem("theme", "dark");
+      toggleBtn.textContent = "☀️";
+    } else {
+      localStorage.setItem("theme", "light");
+      toggleBtn.textContent = "🌙";
+    }
+  });
+}
 
 // ---------------- INIT ----------------
 (async function init() {
-
   await loadJSON();
-
   await getTotalCount();
-
   loadPage(1);
-
 })();
