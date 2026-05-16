@@ -15,11 +15,14 @@ window.addEventListener("DOMContentLoaded", function () {
 
 });
 
+
 // ---------------- DATA ----------------
 let allJsonFiles = [];
-let pageCache = {};
+
 let currentFiles = [];
+
 let currentPage = 1;
+
 let totalFilesCount = 0;
 
 const itemsPerPage = 10;
@@ -27,19 +30,31 @@ const itemsPerPage = 10;
 const fileList =
   document.getElementById("fileList");
 
+
 // ---------------- LOAD JSON ----------------
 async function loadJSON() {
 
-  const res = await fetch("files.json");
+  const res = await fetch(
 
-  allJsonFiles = await res.json();
+    "files.json",
+
+    {
+      cache:"no-store"
+    }
+
+  );
+
+  allJsonFiles =
+    await res.json();
 
 }
+
 
 // ---------------- GET TOTAL COUNT ----------------
 async function getTotalCount() {
 
-  const snap = await db.collection("files")
+  const snap =
+    await db.collection("files")
     .orderBy("customId", "desc")
     .limit(1)
     .get();
@@ -49,28 +64,23 @@ async function getTotalCount() {
   if (!snap.empty) {
 
     highestId =
-      snap.docs[0].data().customId;
+      snap.docs[0]
+      .data()
+      .customId;
 
   }
 
   totalFilesCount =
-    Math.max(highestId, allJsonFiles.length);
+    Math.max(
+      highestId,
+      allJsonFiles.length
+    );
 
 }
 
+
 // ---------------- LOAD PAGE ----------------
 async function loadPage(page) {
-
-  // ---------------- CACHE ----------------
-  if (pageCache[page]) {
-
-    currentFiles = pageCache[page];
-
-    displayFiles();
-
-    return;
-
-  }
 
   const startId =
     totalFilesCount -
@@ -83,15 +93,20 @@ async function loadPage(page) {
   const safeStart =
     Math.max(1, startId);
 
+
   // ---------------- LOCAL JSON ----------------
   const localFiles =
     allJsonFiles.filter(f =>
+
       f.id >= safeStart &&
       f.id <= endId
+
     );
 
+
   // ---------------- FIREBASE ----------------
-  const snapshot = await db.collection("files")
+  const snapshot =
+    await db.collection("files")
     .where("customId", ">=", safeStart)
     .where("customId", "<=", endId)
     .get();
@@ -110,42 +125,68 @@ async function loadPage(page) {
         category: d.category,
 
         // DETAILS
-        description: d.description || "",
-        image: d.image || "",
+        description:
+        d.description || "",
+
+        image:
+        d.image || "",
 
         // DOWNLOADS
-        downloads: d.links || [],
+        downloads:
+        d.links || [],
 
         // MULTI AUDIO
-        audios: d.audios || []
+        audios:
+        d.audios || []
 
       };
 
     });
 
+
   // ---------------- MERGE ----------------
   const pageFiles = [
+
     ...localFiles,
     ...firebaseFiles
+
   ];
 
+
+  // ---------------- REMOVE DUPLICATES ----------------
+  const uniqueFiles =
+    [];
+
+  const ids =
+    new Set();
+
+  pageFiles.forEach(file => {
+
+    if (!ids.has(file.id)) {
+
+      ids.add(file.id);
+
+      uniqueFiles.push(file);
+
+    }
+
+  });
+
+
   // ---------------- SORT ----------------
-  pageFiles.sort((a, b) => b.id - a.id);
-
-  // ---------------- CACHE PAGE ----------------
-  pageCache[page] = pageFiles;
-
-  currentFiles = pageFiles;
-
-  // ---------------- SAVE CACHE ----------------
-  localStorage.setItem(
-    "pageCache",
-    JSON.stringify(pageCache)
+  uniqueFiles.sort(
+    (a, b) => b.id - a.id
   );
 
+  currentFiles =
+    uniqueFiles;
+
+
+  // ---------------- DISPLAY ----------------
   displayFiles();
 
 }
+
 
 // ---------------- DISPLAY ----------------
 function displayFiles() {
@@ -160,15 +201,25 @@ function displayFiles() {
 
         <div>
 
-          <strong>${file.name}</strong><br>
+          <strong>
+            ${file.name}
+          </strong>
+
+          <br>
 
           <small>
-            ${file.type} • ${file.category}
+
+            ${file.type}
+            •
+            ${file.category}
+
           </small>
 
         </div>
 
-        <button onclick="openFile(${file.id})">
+        <button
+          onclick="openFile(${file.id})"
+        >
           View Details
         </button>
 
@@ -182,178 +233,270 @@ function displayFiles() {
 
 }
 
+
 // ---------------- PAGINATION ----------------
 function createPagination() {
 
   const totalPages =
-    Math.ceil(totalFilesCount / itemsPerPage);
+    Math.ceil(
+      totalFilesCount /
+      itemsPerPage
+    );
 
   const startItem =
-    (currentPage - 1) * itemsPerPage + 1;
+    (currentPage - 1) *
+    itemsPerPage + 1;
 
   const endItem =
     Math.min(
-      currentPage * itemsPerPage,
+
+      currentPage *
+      itemsPerPage,
+
       totalFilesCount
+
     );
 
-  let html = '<div class="pagination">';
+  let html =
+    '<div class="pagination">';
 
   html += `
+
     <p class="page-info">
+
       Showing ${startItem}–${endItem}
       of ${totalFilesCount} files
+
     </p>
+
   `;
 
   html += `
+
     <button
       onclick="goToPage(${currentPage - 1})"
       ${currentPage === 1 ? 'disabled' : ''}>
+
       ← Prev
+
     </button>
+
   `;
 
-  for (let i = 1; i <= totalPages; i++) {
+  for (
+
+    let i = 1;
+    i <= totalPages;
+    i++
+
+  ) {
 
     html += `
+
       <button
-        class="${i === currentPage ? 'active-page' : ''}"
+
+        class="${
+          i === currentPage
+          ?
+          'active-page'
+          :
+          ''
+        }"
+
         onclick="goToPage(${i})">
 
         ${i}
 
       </button>
+
     `;
 
   }
 
   html += `
+
     <button
       onclick="goToPage(${currentPage + 1})"
-      ${currentPage === totalPages ? 'disabled' : ''}>
+
+      ${
+        currentPage === totalPages
+        ?
+        'disabled'
+        :
+        ''
+      }>
+
       Next →
+
     </button>
+
   `;
 
   html += '</div>';
 
-  fileList.innerHTML += html;
+  fileList.innerHTML +=
+    html;
 
 }
+
 
 // ---------------- PAGE SWITCH ----------------
 function goToPage(page) {
 
-  if (page < 1) return;
+  if (page < 1)
+  return;
 
-  currentPage = page;
+  currentPage =
+    page;
 
   loadPage(page);
 
 }
 
+
 // ---------------- NAVIGATION ----------------
 function openFile(id) {
-
-  // SAVE CURRENT FILE CACHE
-  const file =
-    currentFiles.find(f => f.id === id);
-
-  if (file) {
-
-    localStorage.setItem(
-      "selectedFile",
-      JSON.stringify(file)
-    );
-
-  }
 
   window.location.href =
     "file.html?id=" + id;
 
 }
 
+
 function goHome() {
 
-  window.location.href = "index.html";
+  window.location.href =
+    "index.html";
 
 }
 
+
 // ---------------- SEARCH ----------------
 document.getElementById("search")
-.addEventListener("input", async function (e) {
+.addEventListener(
 
-  const value =
-    e.target.value
-    .toLowerCase()
-    .trim();
+  "input",
 
-  if (!value) {
+  async function (e) {
 
-    loadPage(currentPage);
+    const value =
+      e.target.value
+      .toLowerCase()
+      .trim();
 
-    return;
+    if (!value) {
 
-  }
+      loadPage(currentPage);
 
-  let results = [];
+      return;
 
-  // ---------------- LOCAL SEARCH ----------------
-  const localMatches =
-    allJsonFiles.filter(file =>
+    }
 
-      file.name.toLowerCase().includes(value) ||
+    let results = [];
 
-      file.category.toLowerCase().includes(value) ||
 
-      file.type.toLowerCase().includes(value)
+    // ---------------- LOCAL SEARCH ----------------
+    const localMatches =
+      allJsonFiles.filter(file =>
 
+        file.name
+        .toLowerCase()
+        .includes(value)
+
+        ||
+
+        file.category
+        .toLowerCase()
+        .includes(value)
+
+        ||
+
+        file.type
+        .toLowerCase()
+        .includes(value)
+
+      );
+
+    results.push(
+      ...localMatches
     );
 
-  results.push(...localMatches);
 
-  // ---------------- FIREBASE SEARCH ----------------
-  const snapshot =
-    await db.collection("files")
-    .where("name", ">=", value)
-    .where("name", "<=", value + "\uf8ff")
-    .get();
+    // ---------------- FIREBASE SEARCH ----------------
+    const snapshot =
+      await db.collection("files")
+      .where("name", ">=", value)
+      .where("name", "<=", value + "\uf8ff")
+      .get();
 
-  const firebaseMatches =
-    snapshot.docs.map(doc => {
+    const firebaseMatches =
+      snapshot.docs.map(doc => {
 
-      const d = doc.data();
+        const d =
+          doc.data();
 
-      return {
+        return {
 
-        id: d.customId,
-        name: d.name,
-        type: d.type,
-        category: d.category,
+          id: d.customId,
+          name: d.name,
+          type: d.type,
+          category: d.category,
 
-        description: d.description || "",
-        image: d.image || "",
+          description:
+          d.description || "",
 
-        downloads: d.links || [],
+          image:
+          d.image || "",
 
-        // MULTI AUDIO
-        audios: d.audios || []
+          downloads:
+          d.links || [],
 
-      };
+          audios:
+          d.audios || []
+
+        };
+
+      });
+
+    results.push(
+      ...firebaseMatches
+    );
+
+
+    // ---------------- REMOVE DUPLICATES ----------------
+    const uniqueResults =
+      [];
+
+    const ids =
+      new Set();
+
+    results.forEach(file => {
+
+      if (!ids.has(file.id)) {
+
+        ids.add(file.id);
+
+        uniqueResults.push(file);
+
+      }
 
     });
 
-  results.push(...firebaseMatches);
 
-  // ---------------- SORT ----------------
-  results.sort((a, b) => b.id - a.id);
+    // ---------------- SORT ----------------
+    uniqueResults.sort(
+      (a, b) => b.id - a.id
+    );
 
-  currentFiles = results;
+    currentFiles =
+      uniqueResults;
 
-  displayFiles();
+    displayFiles();
 
-});
+  }
+
+);
+
 
 // ---------------- DARK MODE ----------------
 const toggleBtn =
@@ -362,51 +505,71 @@ const toggleBtn =
 if (toggleBtn) {
 
   if (
-    localStorage.getItem("theme") === "dark"
+
+    localStorage.getItem("theme")
+    ===
+    "dark"
+
   ) {
 
-    document.body.classList.add("dark");
+    document.body
+    .classList
+    .add("dark");
 
-    toggleBtn.textContent = "☀️";
+    toggleBtn.textContent =
+      "☀️";
 
   }
 
-  toggleBtn.addEventListener("click", function () {
+  toggleBtn.addEventListener(
 
-    document.body.classList.toggle("dark");
+    "click",
 
-    if (
-      document.body.classList.contains("dark")
-    ) {
+    function () {
 
-      localStorage.setItem("theme", "dark");
+      document.body
+      .classList
+      .toggle("dark");
 
-      toggleBtn.textContent = "☀️";
+      if (
 
-    } else {
+        document.body
+        .classList
+        .contains("dark")
 
-      localStorage.setItem("theme", "light");
+      ) {
 
-      toggleBtn.textContent = "🌙";
+        localStorage.setItem(
+          "theme",
+          "dark"
+        );
+
+        toggleBtn.textContent =
+          "☀️";
+
+      }
+
+      else {
+
+        localStorage.setItem(
+          "theme",
+          "light"
+        );
+
+        toggleBtn.textContent =
+          "🌙";
+
+      }
 
     }
 
-  });
+  );
 
 }
 
+
 // ---------------- INIT ----------------
 (async function init() {
-
-  // LOAD LOCAL CACHE
-  const savedCache =
-    localStorage.getItem("pageCache");
-
-  if (savedCache) {
-
-    pageCache = JSON.parse(savedCache);
-
-  }
 
   await loadJSON();
 
