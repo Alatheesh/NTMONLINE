@@ -2,7 +2,9 @@
 <html>
 <head>
   <title>File Details</title>
+
   <style>
+
     body {
       margin: 0;
       font-family: Arial;
@@ -30,9 +32,11 @@
     }
 
     @media (max-width: 900px) {
+
       .side-ad {
         display: none;
       }
+
     }
 
     .card {
@@ -92,9 +96,11 @@
     }
 
     @media (max-width: 900px) {
+
       .mobile-ad {
         display: block;
       }
+
     }
 
     .bottom-banner {
@@ -113,16 +119,26 @@
       z-index: 1000;
       display: none;
     }
+
   </style>
+
 </head>
+
 <body>
 
-<button id="reportBtn" onclick="reportIssue()">⚠ Report</button>
+<button
+id="reportBtn"
+onclick="reportIssue()"
+>
+⚠ Report
+</button>
 
 <div class="page">
 
   <div class="side-ad">
+
     <script>
+
       atOptions = {
         'key' : '6d18eab8e3174f704484a4e5fb7166a4',
         'format' : 'iframe',
@@ -130,16 +146,25 @@
         'width' : 160,
         'params' : {}
       };
+
     </script>
+
     <script src="https://www.highperformanceformat.com/6d18eab8e3174f704484a4e5fb7166a4/invoke.js"></script>
+
   </div>
 
   <div class="center">
-    <div class="card" id="fileCard">Loading...</div>
+
+    <div class="card" id="fileCard">
+      Loading...
+    </div>
+
   </div>
 
   <div class="side-ad">
+
     <script>
+
       atOptions = {
         'key' : '6d18eab8e3174f704484a4e5fb7166a4',
         'format' : 'iframe',
@@ -147,16 +172,26 @@
         'width' : 160,
         'params' : {}
       };
+
     </script>
+
     <script src="https://www.highperformanceformat.com/6d18eab8e3174f704484a4e5fb7166a4/invoke.js"></script>
+
   </div>
 
 </div>
 
-<button class="back" onclick="history.back()">← Back</button>
+<button
+class="back"
+onclick="history.back()"
+>
+← Back
+</button>
 
 <div class="mobile-ad">
+
   <script>
+
     atOptions = {
       'key' : '6d18eab8e3174f704484a4e5fb7166a4',
       'format' : 'iframe',
@@ -164,12 +199,17 @@
       'width' : 160,
       'params' : {}
     };
+
   </script>
+
   <script src="https://www.highperformanceformat.com/6d18eab8e3174f704484a4e5fb7166a4/invoke.js"></script>
+
 </div>
 
 <div class="bottom-banner">
+
   <script>
+
     atOptions = {
       'key' : '9d4e234e334f6012b5b60f60507d7877',
       'format' : 'iframe',
@@ -177,151 +217,412 @@
       'width' : 728,
       'params' : {}
     };
+
   </script>
+
   <script src="https://www.highperformanceformat.com/9d4e234e334f6012b5b60f60507d7877/invoke.js"></script>
+
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <script>
+
 const firebaseConfig = {
-  apiKey: "AIzaSyA8rEqkC8m8bmDi9UhnJuGuTqaWXY5CuKM",
-  authDomain: "filehub-counter.firebaseapp.com",
-  projectId: "filehub-counter"
+
+  apiKey:
+  "AIzaSyA8rEqkC8m8bmDi9UhnJuGuTqaWXY5CuKM",
+
+  authDomain:
+  "filehub-counter.firebaseapp.com",
+
+  projectId:
+  "filehub-counter"
+
 };
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+firebase.initializeApp(
+  firebaseConfig
+);
 
-let currentFileId = null;
+const db =
+firebase.firestore();
 
-window.addEventListener("DOMContentLoaded", async function () {
-  try {
-    const doc = await db.collection("settings").doc("config").get();
-    let enabled = true;
+let currentFileId =
+null;
 
-    if (doc.exists) {
-      enabled = doc.data().reportEnabled !== false;
+let currentAudios =
+[];
+
+
+// REPORT SETTINGS
+
+window.addEventListener(
+
+  "DOMContentLoaded",
+
+  async function () {
+
+    try {
+
+      const doc =
+      await db.collection("settings")
+      .doc("config")
+      .get();
+
+      let enabled =
+      true;
+
+      if (doc.exists) {
+
+        enabled =
+        doc.data()
+        .reportEnabled !== false;
+
+      }
+
+      const btn =
+      document.getElementById(
+        "reportBtn"
+      );
+
+      btn.style.display =
+      enabled
+      ?
+      "block"
+      :
+      "none";
+
     }
 
-    const btn = document.getElementById("reportBtn");
-    btn.style.display = enabled ? "block" : "none";
+    catch (e) {
 
-  } catch (e) {
-    console.error("Error loading report setting:", e);
+      console.error(
+        "Error loading report setting:",
+        e
+      );
+
+    }
+
   }
-});
+
+);
+
+
+// LOAD FILE
 
 async function loadFile() {
-  const id = Number(new URLSearchParams(location.search).get("id"));
 
-  const res = await fetch("files.json");
-  const localFiles = await res.json();
+  const id =
+  Number(
 
-  const snapshot = await db.collection("files").get();
+    new URLSearchParams(
+      location.search
+    ).get("id")
 
-  const firebaseFiles = [];
+  );
+
+  const res =
+  await fetch("files.json");
+
+  const localFiles =
+  await res.json();
+
+  const snapshot =
+  await db.collection("files")
+  .get();
+
+  const firebaseFiles =
+  [];
+
   snapshot.forEach(doc => {
-    const d = doc.data();
+
+    const d =
+    doc.data();
+
     firebaseFiles.push({
-      id: Number(d.customId),
-      name: d.name,
-      type: d.type,
-      category: d.category,
-      image: d.image,
-      description: d.description,
-      links: d.links,
-      link: d.link
+
+      id:
+      Number(d.customId),
+
+      name:
+      d.name,
+
+      type:
+      d.type,
+
+      category:
+      d.category,
+
+      image:
+      d.image,
+
+      description:
+      d.description,
+
+      links:
+      d.links,
+
+      link:
+      d.link,
+
+      audios:
+      d.audios || []
+
     });
+
   });
 
-  const file = [...localFiles, ...firebaseFiles].find(f => Number(f.id) === id);
+  const file =
+  [...localFiles, ...firebaseFiles]
+  .find(
+    f => Number(f.id) === id
+  );
 
   if (!file) {
-    fileCard.innerHTML = "File not found";
+
+    fileCard.innerHTML =
+    "File not found";
+
     return;
   }
 
-  currentFileId = file.id;
+  currentFileId =
+  file.id;
+
+  currentAudios =
+  file.audios || [];
 
   let links = [];
 
-  if (Array.isArray(file.links) && file.links.length > 0) {
+  if (
+
+    Array.isArray(file.links)
+    &&
+    file.links.length > 0
+
+  ) {
+
     links = file.links;
-  } 
-  else if (Array.isArray(file.downloads) && file.downloads.length > 0) {
-    links = file.downloads;
-  } 
-  else if (file.link && typeof file.link === "string" && file.link.trim() !== "") {
-    links = [file.link];
+
   }
 
-  let downloadHTML = "";
+  else if (
+
+    Array.isArray(file.downloads)
+    &&
+    file.downloads.length > 0
+
+  ) {
+
+    links = file.downloads;
+
+  }
+
+  else if (
+
+    file.link
+    &&
+    typeof file.link === "string"
+    &&
+    file.link.trim() !== ""
+
+  ) {
+
+    links = [file.link];
+
+  }
+
+  let downloadHTML =
+  "";
 
   if (links.length > 0) {
-    downloadHTML = `<div class="download-grid">`;
+
+    downloadHTML =
+    `<div class="download-grid">`;
 
     links.forEach((l,i) => {
-      let url = typeof l === "string" ? l : l.url;
-      let label = typeof l === "string"
-        ? `Watch ${i+1}`
-        : (l.size ? `🎥 Watch ${l.size} ${l.unit} 🍿` : `Watch ${i+1}`);
+
+      let url =
+      typeof l === "string"
+      ? l
+      : l.url;
+
+      let label =
+      typeof l === "string"
+
+      ?
+
+      `Watch ${i+1}`
+
+      :
+
+      (
+
+        l.size
+
+        ?
+
+        `🎥 Watch ${l.size} ${l.unit} 🍿`
+
+        :
+
+        `Watch ${i+1}`
+
+      );
 
       downloadHTML += `
-        <button onclick="openWatch('${url}')">
+
+        <button
+          onclick="openWatch('${url}')"
+        >
           ${label}
         </button>
+
       `;
+
     });
 
-    downloadHTML += `</div>`;
-  } else {
-    downloadHTML = `<p style='opacity:0.7;'>No download link available</p>`;
+    downloadHTML +=
+    `</div>`;
+
+  }
+
+  else {
+
+    downloadHTML =
+
+    `<p style='opacity:0.7;'>
+      No download link available
+    </p>`;
+
   }
 
   fileCard.innerHTML = `
-    <img src="${file.image || 'https://via.placeholder.com/300'}">
-    <h2>${file.name}</h2>
-    <p>${file.type} • ${file.category}</p>
-    <p>${file.description || ''}</p>
+
+    <img src="${
+      file.image ||
+      'https://via.placeholder.com/300'
+    }">
+
+    <h2>
+      ${file.name}
+    </h2>
+
+    <p>
+      ${file.type}
+      •
+      ${file.category}
+    </p>
+
+    <p>
+      ${file.description || ''}
+    </p>
+
     ${downloadHTML}
+
   `;
+
 }
+
+
+// OPEN WATCH
 
 function openWatch(link){
 
-  const encoded = encodeURIComponent(link);
+  const encodedLink =
+  encodeURIComponent(link);
+
+  const encodedAudios =
+  encodeURIComponent(
+
+    JSON.stringify(
+      currentAudios || []
+    )
+
+  );
 
   window.location.href =
+
     "https://ntmonline.vercel.app/watch.html?link="
-    + encoded;
+    +
+    encodedLink
+    +
+    "&audios="
+    +
+    encodedAudios;
+
 }
 
+
+// REPORT
+
 function reportIssue() {
-  const msg = prompt("Describe the issue:");
-  if (!msg || msg.trim() === "") return;
+
+  const msg =
+  prompt(
+    "Describe the issue:"
+  );
+
+  if (
+    !msg
+    ||
+    msg.trim() === ""
+  ) return;
 
   if (!currentFileId) {
-    alert("Error: File not loaded yet.");
+
+    alert(
+      "Error: File not loaded yet."
+    );
+
     return;
   }
 
-  db.collection("reports").add({
-    fileId: currentFileId,
-    message: msg.trim(),
-    time: new Date()
+  db.collection("reports")
+  .add({
+
+    fileId:
+    currentFileId,
+
+    message:
+    msg.trim(),
+
+    time:
+    new Date()
+
   })
+
   .then(() => {
-    alert("Report submitted successfully 👍");
+
+    alert(
+      "Report submitted successfully 👍"
+    );
+
   })
+
   .catch((error) => {
-    console.error("Error adding report:", error);
-    alert("Failed to submit report ❌");
+
+    console.error(
+      "Error adding report:",
+      error
+    );
+
+    alert(
+      "Failed to submit report ❌"
+    );
+
   });
+
 }
 
+
+// START
+
 loadFile();
+
 </script>
 
 </body>
