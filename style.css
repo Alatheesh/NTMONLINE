@@ -3,42 +3,53 @@ html, body {
   height: 100%;
 }
 
-/* BODY - PREMIUM ANIMATED GRADIENT */
+/* BODY - MIDNIGHT AURORA BASE */
 body {
   font-family: Arial, sans-serif;
   margin: 0;
   min-height: 100dvh; 
   display: flex;
   flex-direction: column;
-
-  /* 🔥 PREMIUM ANIMATED GRADIENT */
-  background: linear-gradient(-45deg, #020202, #0a1128, #100b21, #020202);
-  background-size: 400% 400%;
-  animation: cinematicGradient 18s ease infinite;
-  
-  color: #ffffff; /* Default text to white for the dark background */
-  transition: color 0.3s;
+  background-color: #02040a; /* Deepest blue/black */
+  color: #ffffff;
+  overflow-x: hidden;
 }
 
-/* 🌫️ PREMIUM DOT OVERLAY */
+/* 🌫️ AURORA GLOW 1 (CYAN) */
 body::before {
   content: "";
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-  background-size: 30px 30px;
-  z-index: -1;
+  top: -50%;
+  left: -50%;
+  width: 200vw;
+  height: 200vh;
+  background: radial-gradient(circle at 50% 50%, rgba(0, 191, 255, 0.08), transparent 60%);
+  filter: blur(80px);
+  z-index: -2;
   pointer-events: none;
+  animation: auroraSpin 25s linear infinite;
 }
 
-/* 🔥 ANIMATION FOR THE BACKGROUND */
-@keyframes cinematicGradient {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+/* 🌫️ AURORA GLOW 2 (PURPLE) */
+body::after {
+  content: "";
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: 200vw;
+  height: 200vh;
+  background: radial-gradient(circle at 50% 50%, rgba(141, 124, 255, 0.06), transparent 50%);
+  filter: blur(80px);
+  z-index: -3;
+  pointer-events: none;
+  animation: auroraSpin 35s linear infinite reverse;
+}
+
+/* 🔥 ANIMATION FOR AURORA */
+@keyframes auroraSpin {
+  0% { transform: rotate(0deg) translate(5vw, 5vh) scale(1); }
+  50% { transform: rotate(180deg) translate(-5vw, -5vh) scale(1.1); }
+  100% { transform: rotate(360deg) translate(5vw, 5vh) scale(1); }
 }
 
 /* CONTAINER */
