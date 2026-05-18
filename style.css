@@ -3,53 +3,67 @@ html, body {
   height: 100%;
 }
 
-/* BODY - MIDNIGHT AURORA BASE */
+/* BODY - DEEP DARK BACKGROUND */
 body {
   font-family: Arial, sans-serif;
   margin: 0;
   min-height: 100dvh; 
   display: flex;
   flex-direction: column;
-  background-color: #02040a; /* Deepest blue/black */
+  background: linear-gradient(180deg, #020202, #0a1128, #020202);
   color: #ffffff;
   overflow-x: hidden;
 }
 
-/* 🌫️ AURORA GLOW 1 (CYAN) */
+/* 🌫️ GLOWING FALLING PARTICLES - LAYER 1 (Fast & Bright) */
 body::before {
   content: "";
   position: fixed;
-  top: -50%;
-  left: -50%;
-  width: 200vw;
-  height: 200vh;
-  background: radial-gradient(circle at 50% 50%, rgba(0, 191, 255, 0.08), transparent 60%);
-  filter: blur(80px);
+  top: -100vh;
+  left: 0;
+  width: 100vw;
+  height: 300vh;
+  background-image:
+    radial-gradient(circle at 15vw 25vh, rgba(0,191,255,1) 0%, transparent 4px),
+    radial-gradient(circle at 75vw 15vh, rgba(141,124,255,1) 0%, transparent 5px),
+    radial-gradient(circle at 45vw 65vh, rgba(255,255,255,1) 0%, transparent 3px),
+    radial-gradient(circle at 85vw 85vh, rgba(0,191,255,1) 0%, transparent 6px),
+    radial-gradient(circle at 25vw 95vh, rgba(141,124,255,1) 0%, transparent 4px),
+    radial-gradient(circle at 55vw 5vh, rgba(255,255,255,1) 0%, transparent 3px),
+    radial-gradient(circle at 95vw 45vh, rgba(0,191,255,1) 0%, transparent 5px),
+    radial-gradient(circle at 5vw 75vh, rgba(141,124,255,1) 0%, transparent 4px);
+  background-size: 100vw 100vh;
   z-index: -2;
+  filter: drop-shadow(0 0 10px #00bfff) blur(0.5px);
+  animation: fallDown 12s linear infinite;
   pointer-events: none;
-  animation: auroraSpin 25s linear infinite;
 }
 
-/* 🌫️ AURORA GLOW 2 (PURPLE) */
+/* 🌫️ GLOWING FALLING PARTICLES - LAYER 2 (Slow & Soft Parallax) */
 body::after {
   content: "";
   position: fixed;
-  top: -50%;
-  left: -50%;
-  width: 200vw;
-  height: 200vh;
-  background: radial-gradient(circle at 50% 50%, rgba(141, 124, 255, 0.06), transparent 50%);
-  filter: blur(80px);
+  top: -100vh;
+  left: 0;
+  width: 100vw;
+  height: 300vh;
+  background-image:
+    radial-gradient(circle at 10vw 10vh, rgba(0, 191, 255, 0.6) 0%, transparent 8px),
+    radial-gradient(circle at 80vw 40vh, rgba(141, 124, 255, 0.6) 0%, transparent 10px),
+    radial-gradient(circle at 40vw 80vh, rgba(255, 255, 255, 0.4) 0%, transparent 6px),
+    radial-gradient(circle at 90vw 20vh, rgba(0, 191, 255, 0.5) 0%, transparent 9px),
+    radial-gradient(circle at 30vw 60vh, rgba(141, 124, 255, 0.5) 0%, transparent 8px);
+  background-size: 100vw 100vh;
   z-index: -3;
+  filter: drop-shadow(0 0 15px #8d7cff) blur(2px);
+  animation: fallDown 20s linear infinite;
   pointer-events: none;
-  animation: auroraSpin 35s linear infinite reverse;
 }
 
-/* 🔥 ANIMATION FOR AURORA */
-@keyframes auroraSpin {
-  0% { transform: rotate(0deg) translate(5vw, 5vh) scale(1); }
-  50% { transform: rotate(180deg) translate(-5vw, -5vh) scale(1.1); }
-  100% { transform: rotate(360deg) translate(5vw, 5vh) scale(1); }
+/* 🔥 ANIMATION FOR ENDLESS FALLING */
+@keyframes fallDown {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(100vh); }
 }
 
 /* CONTAINER */
