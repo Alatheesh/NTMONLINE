@@ -63,21 +63,15 @@
 
 <div class="card" id="fileCard">Loading...</div>
 
-<!-- 🔥 Report button appears here -->
 <div id="reportContainer"></div>
 
 <button class="back" onclick="history.back()">← Back</button>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
 
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyA8rEqkC8m8bmDi9UhnJuGuTqaWXY5CuKM",
-  authDomain: "filehub-counter.firebaseapp.com",
-  projectId: "filehub-counter"
-};
-
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
