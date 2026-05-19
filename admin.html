@@ -7,14 +7,12 @@
 
 <h2>Admin Panel</h2>
 
-<!-- 🔐 LOGIN -->
 <div id="loginBox">
   <input type="email" id="username" placeholder="Email"><br><br>
   <input type="password" id="password" placeholder="Password"><br><br>
   <button onclick="login()">Login</button>
 </div>
 
-<!-- 📋 MENU -->
 <div id="menuBox" style="display:none; text-align:center;">
 
   <h3>Select Action</h3>
@@ -24,24 +22,17 @@
   <button onclick="goTo('delete.html')">Delete File</button><br><br>
   <button onclick="goTo('export.html')">Export Data</button><br><br>
 
-  <!-- ✅ REPORTS PAGE BUTTON -->
   <button onclick="goTo('reports.html')">Reports</button><br><br>
 
   <button onclick="logout()">Logout</button>
 
 </div>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="firebase-config.js"></script>
 
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyA8rEqkC8m8bmDi9UhnJuGuTqaWXY5CuKM",
-  authDomain: "filehub-counter.firebaseapp.com",
-  projectId: "filehub-counter"
-};
-
 firebase.initializeApp(firebaseConfig);
 
 const auth = firebase.auth();
