@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>File Hub</title>
+  <title>File Hub • NTM Stream</title>
   <link rel="stylesheet" href="style.css">
 
   <style>
@@ -14,12 +14,10 @@
 </head>
 <body>
 
-  <!-- 🔙 BACK BUTTON -->
   <button onclick="goHome()" class="back-btn">← Home</button>
 
   <div class="container">
 
-    <!-- 🔥 TOP AD (FIRST) -->
     <div class="ad">
       <script>
         atOptions = {
@@ -33,25 +31,23 @@
       <script src="https://www.highperformanceformat.com/9d4e234e334f6012b5b60f60507d7877/invoke.js"></script>
     </div>
 
-    <!-- HEADER -->
     <div class="top-bar">
       <h1>🎬 NTM Watch Hub 🍿</h1>
       <button id="themeToggle">🌙</button>
     </div>
 
-    <!-- SEARCH -->
-    <input type="text" id="search" placeholder="Search files...">
+    <div class="search-container">
+      <input type="text" id="search" placeholder="Search files...">
+      <button id="searchBtn" class="search-btn">🔍</button>
+    </div>
 
-    <!-- FILE LIST -->
     <div id="fileList"></div>
 
   </div>
 
-  <!-- 🔥 Firebase Scripts -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-  <!-- 🔥 Firebase Config -->
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyA8rEqkC8m8bmDi9UhnJuGuTqaWXY5CuKM",
@@ -63,7 +59,6 @@
     const db = firebase.firestore();
   </script>
 
-  <!-- 🔥 Your main script -->
   <script src="script.js"></script>
 
 </body>
