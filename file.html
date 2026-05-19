@@ -103,9 +103,9 @@
     .card img {
       width: 100%;
       max-width: 100%;
-      height: auto; /* Scales context height automatically with aspect ratio */
-      max-height: 400px; /* Caps ultra-tall posters from over-stretching the screen */
-      object-fit: contain; /* Prevents center-cropping or face cutting */
+      height: auto;
+      max-height: 400px;
+      object-fit: contain;
       border-radius: 14px;
       margin-bottom: 20px;
       box-shadow: 0 8px 20px rgba(0,0,0,0.5);
@@ -282,14 +282,9 @@
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
 
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyA8rEqkC8m8bmDi9UhnJuGuTqaWXY5CuKM",
-  authDomain: "filehub-counter.firebaseapp.com",
-  projectId: "filehub-counter"
-};
-
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
