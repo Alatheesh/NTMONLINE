@@ -1,117 +1,214 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>File Details</title>
+  <title>File Details • NTM Stream</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body {
+    /* FULL HEIGHT FIX & BASE FONT */
+    html, body {
       margin: 0;
-      font-family: Arial;
-      background: #111;
-      color: white;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      min-height: 100dvh;
+      background: linear-gradient(180deg, #020202, #0a1128, #020202);
+      color: #ffffff;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
+    /* 🌫️ GLOWING FALLING PARTICLES (Matches Search Page) */
+    body::before {
+      content: "";
+      position: fixed;
+      top: -100vh; left: 0; width: 100vw; height: 300vh;
+      background-image:
+        radial-gradient(circle at 15vw 25vh, rgba(0,191,255,0.8) 0%, transparent 4px),
+        radial-gradient(circle at 75vw 15vh, rgba(141,124,255,0.8) 0%, transparent 5px),
+        radial-gradient(circle at 45vw 65vh, rgba(255,255,255,0.8) 0%, transparent 3px),
+        radial-gradient(circle at 85vw 85vh, rgba(0,191,255,0.8) 0%, transparent 6px),
+        radial-gradient(circle at 25vw 95vh, rgba(141,124,255,0.8) 0%, transparent 4px);
+      background-size: 100vw 100vh;
+      z-index: -2;
+      filter: drop-shadow(0 0 10px #00bfff) blur(0.5px);
+      animation: fallDown 12s linear infinite;
+      pointer-events: none;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      top: -100vh; left: 0; width: 100vw; height: 300vh;
+      background-image:
+        radial-gradient(circle at 10vw 10vh, rgba(0, 191, 255, 0.4) 0%, transparent 8px),
+        radial-gradient(circle at 80vw 40vh, rgba(141, 124, 255, 0.4) 0%, transparent 10px),
+        radial-gradient(circle at 40vw 80vh, rgba(255, 255, 255, 0.2) 0%, transparent 6px);
+      background-size: 100vw 100vh;
+      z-index: -3;
+      filter: drop-shadow(0 0 15px #8d7cff) blur(2px);
+      animation: fallDown 20s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes fallDown {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(100vh); }
+    }
+
+    /* LAYOUT */
     .page {
       display: flex;
       justify-content: center;
       align-items: flex-start;
       width: 100%;
       margin-top: 60px;
+      flex: 1;
     }
 
     .side-ad {
       width: 160px;
       margin: 20px;
       text-align: center;
+      z-index: 5;
     }
 
     .center {
-      max-width: 400px;
-      width: 100%;
+      max-width: 450px;
+      width: 90%;
+      margin: 0 15px;
+      z-index: 5;
     }
 
     @media (max-width: 900px) {
-      .side-ad {
-        display: none;
-      }
+      .side-ad { display: none; }
     }
 
+    /* 💎 PREMIUM GLASSMORPHISM CARD - AUTOMATIC SIZING */
     .card {
-      background: rgba(255,255,255,0.05);
+      background: rgba(255, 255, 255, 0.04);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
       padding: 30px;
-      border-radius: 12px;
+      border-radius: 20px;
       text-align: center;
-      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(255,255,255,0.02);
       overflow-wrap: break-word;
       word-wrap: break-word;
       word-break: break-word;
+      transition: all 0.3s ease-in-out;
     }
 
+    /* 🎬 RESPONSIVE IMAGE PROPERTIES (PREVENTS CROPPING) */
     .card img {
       width: 100%;
-      height: 180px;
-      object-fit: cover;
-      border-radius: 10px;
-      margin-bottom: 15px;
+      max-width: 100%;
+      height: auto; /* Scales context height automatically with aspect ratio */
+      max-height: 400px; /* Caps ultra-tall posters from over-stretching the screen */
+      object-fit: contain; /* Prevents center-cropping or face cutting */
+      border-radius: 14px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+      background: rgba(0, 0, 0, 0.2);
     }
 
+    .card h2 {
+      margin: 10px 0 5px;
+      font-size: 24px;
+      background: linear-gradient(90deg, #fff, #b3e5fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .card p {
+      color: #ccc;
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    /* 🔘 BUTTONS */
     button {
-      margin: 6px;
-      padding: 10px;
+      margin: 8px 6px;
+      padding: 12px 18px;
       border: none;
-      border-radius: 6px;
+      border-radius: 10px;
       cursor: pointer;
-      background: #007bff;
       color: white;
+      font-weight: bold;
+      transition: all 0.3s ease;
     }
 
-    .back {
-      background: #555;
-      margin: 20px auto;
-      display: block;
-    }
-
+    /* Watch Buttons Grid */
     .download-grid {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 15px;
+      gap: 12px;
+      margin-top: 25px;
     }
 
     .download-grid button {
       flex: 1;
       min-width: 130px;
       margin: 0;
-      box-sizing: border-box;
-      padding: 10px 5px;
+      background: linear-gradient(135deg, #007bff, #00bfff);
+      box-shadow: 0 4px 15px rgba(0, 191, 255, 0.3);
     }
 
+    .download-grid button:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 6px 20px rgba(0, 191, 255, 0.5);
+    }
+
+    /* Back Button Link */
+    .back {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      margin: 30px auto;
+      display: block;
+      padding: 12px 25px;
+    }
+
+    .back:hover {
+      background: rgba(255, 255, 255, 0.15);
+      transform: scale(1.05);
+    }
+
+    /* Report Fault Handler */
+    #reportBtn {
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      background: linear-gradient(135deg, #ff4d4d, #cc0000);
+      padding: 10px 16px;
+      border-radius: 10px;
+      z-index: 1000;
+      display: none;
+      box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3);
+    }
+
+    #reportBtn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 20px rgba(255, 0, 0, 0.5);
+    }
+
+    /* SPONSOR LAYOUTS */
     .mobile-ad {
       display: none;
       text-align: center;
       margin: 20px;
+      z-index: 5;
     }
 
     @media (max-width: 900px) {
-      .mobile-ad {
-        display: block;
-      }
+      .mobile-ad { display: block; }
     }
 
     .bottom-banner {
       width: 100%;
       text-align: center;
       margin: 20px 0;
-    }
-
-    #reportBtn {
-      position: fixed;
-      top: 15px;
-      right: 15px;
-      background: #ff4444;
-      padding: 10px;
-      border-radius: 8px;
-      z-index: 1000;
-      display: none;
+      z-index: 5;
     }
   </style>
 </head>
@@ -135,7 +232,9 @@
   </div>
 
   <div class="center">
-    <div class="card" id="fileCard">Loading...</div>
+    <div class="card" id="fileCard">
+      <p style="opacity:0.7;">Loading Premium Details...</p>
+    </div>
   </div>
 
   <div class="side-ad">
@@ -277,13 +376,13 @@ async function loadFile() {
 
     downloadHTML += `</div>`;
   } else {
-    downloadHTML = `<p style='opacity:0.7;'>No download link available</p>`;
+    downloadHTML = `<p style='opacity:0.7;'>No stream link available</p>`;
   }
 
   fileCard.innerHTML = `
-    <img src="${file.image || 'https://via.placeholder.com/300'}">
+    <img src="${file.image || 'https://via.placeholder.com/400x220?text=No+Image'}">
     <h2>${file.name}</h2>
-    <p>${file.type} • ${file.category}</p>
+    <p><strong>${file.type}</strong> • ${file.category}</p>
     <p>${file.description || ''}</p>
     ${downloadHTML}
   `;
