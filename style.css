@@ -158,29 +158,36 @@ h1 {
   color: rgba(255, 255, 255, 0.4);
 }
 
-/* BLENDED MAGNIFIER ICON BUTTON */
+/* 🎯 FIXED & BLENDED MAGNIFIER ICON BUTTON */
 .search-btn {
-  background: transparent !important;
+  background: rgba(255, 255, 255, 0.05) !important; /* Premium subtle highlight background pill box */
   border: none;
   outline: none;
-  padding: 0 20px;
-  height: 100%;
-  align-self: stretch;
-  cursor: pointer;
-  font-size: 18px;
-  color: rgba(255, 255, 255, 0.6);
-  transition: all 0.2s ease;
-  border-radius: 0 12px 12px 0;
+  
+  /* Perfect centering and layout alignment values */
+  padding: 0 22px;
+  height: 44px; /* Hard boundaries to perfectly contain inside center height */
+  margin-right: 4px; /* Small clean boundary gap from outer right framework edge */
+  align-self: center; /* Forces total vertical symmetry execution */
+  
   display: flex;
   align-items: center;
   justify-content: center;
+  
+  cursor: pointer;
+  font-size: 22px; /* Amplifies visual footprint safely */
+  color: rgba(255, 255, 255, 0.75);
+  border-radius: 10px; /* Aligns curve values cleanly inside container geometry */
+  border-left: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-/* High-end hover color swap */
+/* High-end hover color swap and neon aura flare */
 .search-btn:hover {
+  background: rgba(0, 191, 255, 0.15) !important; /* Subtle cyan neon capsule pop */
   color: #00bfff;
-  text-shadow: 0 0 10px rgba(0, 191, 255, 0.6);
-  transform: scale(1.08);
+  text-shadow: 0 0 12px rgba(0, 191, 255, 0.8);
+  transform: scale(1.05);
 }
 
 /* 📁 FILE CARD - PREMIUM GLASSMORPHISM */
