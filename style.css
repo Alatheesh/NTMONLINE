@@ -115,33 +115,72 @@ h1 {
   background: rgba(255, 255, 255, 0.1);
 }
 
-/* 🔍 SEARCH BAR - PREMIUM GLASSMORPHISM */
-#search {
+/* 🔍 INTEGRATED SEARCH CONTAINER - SLICK INNER BLEND */
+.search-container {
+  display: flex;
+  align-items: center;
   width: 100%;
-  padding: 14px 20px;
-  margin: 20px 0;
+  max-width: 600px;
+  margin: 20px auto;
   border-radius: 12px;
+  position: relative;
+  
+  /* Semi-transparent overlay to reveal background textures */
+  background: rgba(255, 255, 255, 0.03) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  
+  /* Premium theme glowing border tint */
+  border: 1px solid rgba(0, 191, 255, 0.25);
+  box-shadow: 0 0 15px rgba(0, 191, 255, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+}
+
+/* Inner field visual glow expansion when focused */
+.search-container:focus-within {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(0, 191, 255, 0.6);
+  box-shadow: 0 0 25px rgba(0, 191, 255, 0.3);
+}
+
+/* TRANSPARENT SEARCH BAR INPUT */
+#search {
+  flex: 1;
+  padding: 14px 18px;
+  border: none;
   outline: none;
+  background: transparent !important; /* Removes default block texture */
   font-size: 16px;
   color: white;
-  transition: 0.3s;
-
-  /* Premium Glass */
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
 #search::placeholder {
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.4);
 }
 
-#search:focus {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(0, 191, 255, 0.4);
-  box-shadow: 0 0 20px rgba(0, 191, 255, 0.2), 0 8px 32px rgba(0, 0, 0, 0.3);
+/* BLENDED MAGNIFIER ICON BUTTON */
+.search-btn {
+  background: transparent !important;
+  border: none;
+  outline: none;
+  padding: 0 20px;
+  height: 100%;
+  align-self: stretch;
+  cursor: pointer;
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.6);
+  transition: all 0.2s ease;
+  border-radius: 0 12px 12px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* High-end hover color swap */
+.search-btn:hover {
+  color: #00bfff;
+  text-shadow: 0 0 10px rgba(0, 191, 255, 0.6);
+  transform: scale(1.08);
 }
 
 /* 📁 FILE CARD - PREMIUM GLASSMORPHISM */
