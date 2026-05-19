@@ -7,18 +7,15 @@
 
 <h2>Edit File</h2>
 
-<!-- 🔙 BACK -->
 <button onclick="goBack()">← Back</button>
 
 <hr>
 
-<!-- 📂 FILE LIST -->
 <h3>Select File</h3>
 <div id="fileList">Loading...</div>
 
 <hr>
 
-<!-- ✏️ EDIT FORM -->
 <h3>Edit Selected File</h3>
 
 <input type="text" id="name" placeholder="File Name"><br><br>
@@ -40,18 +37,12 @@
 
 <button onclick="updateFile()">Update File</button>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="firebase-config.js"></script>
 
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyA8rEqkC8m8bmDi9UhnJuGuTqaWXY5CuKM",
-  authDomain: "filehub-counter.firebaseapp.com",
-  projectId: "filehub-counter"
-};
-
 firebase.initializeApp(firebaseConfig);
 
 const db = firebase.firestore();
