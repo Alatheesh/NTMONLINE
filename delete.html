@@ -7,7 +7,6 @@
 
 <h2>Delete File</h2>
 
-<!-- 🔙 BACK -->
 <button onclick="goBack()">← Back</button>
 
 <hr>
@@ -15,18 +14,12 @@
 <h3>All Files</h3>
 <div id="fileList">Loading...</div>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="firebase-config.js"></script>
 
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyA8rEqkC8m8bmDi9UhnJuGuTqaWXY5CuKM",
-  authDomain: "filehub-counter.firebaseapp.com",
-  projectId: "filehub-counter"
-};
-
 firebase.initializeApp(firebaseConfig);
 
 const db = firebase.firestore();
