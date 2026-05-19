@@ -6,23 +6,18 @@
 </head>
 <body>
 
-<!-- 🔥 VISITOR BOX -->
 <div id="visitorBox">
   <span id="visitorCount">Visitors: 0</span>
 </div>
 
-<!-- PROFILE IMAGE -->
 <a href="https://t.me/llathu63035" target="_blank" class="profile-link">
   <img src="https://raw.githubusercontent.com/Alatheesh/PERSONAL_WEBSITE/main/images/telegram_image.jpg" alt="Profile">
 </a>
 
-<!-- 🔥 HERO -->
 <div class="hero glass-card">
 
-  <!-- 🔥 UPDATED TITLE -->
   <h1>🎬 NTM Watch Hub 🍿</h1>
 
-  <!-- 🔥 UPDATED TAGLINE -->
   <p class="subtitle">Your binge starts here 🎥</p>
 
   <button onclick="goToApp()" class="premium-btn">
@@ -31,7 +26,6 @@
 
 </div>
 
-<!-- FOOTER -->
 <div class="footer">
   © 2026 Developed by Latheesh Reddy | For educational purposes only
 </div>
@@ -42,21 +36,15 @@ function goToApp() {
 }
 </script>
 
-<!-- 🔥 FIREBASE (DAILY UNIQUE VISITOR) -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
 
 <script>
 window.addEventListener("DOMContentLoaded", function () {
 
   try {
     const today = new Date().toLocaleDateString();
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyA8rEqkC8m8bmDi9UhnJuGuTqaWXY5CuKM",
-      authDomain: "filehub-counter.firebaseapp.com",
-      projectId: "filehub-counter"
-    };
 
     if (!firebase.apps.length) {
       firebase.initializeApp(firebaseConfig);
