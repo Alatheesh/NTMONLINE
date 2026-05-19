@@ -140,50 +140,119 @@ function goHome() {
 }
 
 // ---------------- SEARCH ----------------
-document.getElementById("search").addEventListener("input", async function (e) {
+const searchInput = document.getElementById("search");
+const searchBtn = document.getElementById("searchBtn");
 
-  const value = e.target.value.toLowerCase().trim();
+async function performSearch() {
+  const value = searchInput.value.toLowerCase().trim();
 
+  // If search is empty, reload page 1
   if (!value) {
-    loadPage(currentPage);
+    currentPage = 1;
+    loadPage(1);
     return;
   }
 
+  // Show loading indicator
+  fileList.innerHTML = "<p style='text-align: center; color: white;'>Searching...</p>";
+
   let results = [];
 
-  const localMatches = allJsonFiles.filter(file =>
-    file.name.toLowerCase().includes(value) ||
-    file.category.toLowerCase().includes(value) ||
-    file.type.toLowerCase().includes(value)
-  );
+  // 1. Search Local JSON
+  const localMatches = allJsonFiles.filter(file => {
+    const nameStr = (file.name || "").toLowerCase();
+    const catStr = (file.category || "").toLowerCase();
+    const typeStr = (file.type || "").toLowerCase();
 
+    return nameStr.includes(value) || catStr.includes(value) || typeStr.includes(value);
+  });
+  
   results.push(...localMatches);
 
-  const snapshot = await db.collection("files")
-    .where("name", ">=", value)
-    .where("name", "<=", value + "\uf8ff")
-    .get();
+  // 2. Search Firebase
+  try {
+    const snapshot = await db.collection("files").get();
+    
+    const firebaseMatches = [];
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      const nameStr = (d.name || "").toLowerCase();
+      const catStr = (d.category || "").toLowerCase();
+      const typeStr = (d.type || "").toLowerCase();
 
-  const firebaseMatches = snapshot.docs.map(doc => {
-    const d = doc.data();
-    return {
-      id: d.customId,
-      name: d.name,
-      type: d.type,
-      category: d.category,
-      description: d.description || "",
-      image: d.image || "",
-      downloads: d.links || []
-    };
-  });
+      // Fixes the exact match bug by checking if the text is included anywhere
+      if (nameStr.includes(value) || catStr.includes(value) || typeStr.includes(value)) {
+        firebaseMatches.push({
+          id: d.customId,
+          name: d.name,
+          type: d.type,
+          category: d.category,
+          description: d.description || "",
+          image: d.image || "",
+          downloads: d.links || []
+        });
+      }
+    });
 
-  results.push(...firebaseMatches);
+    // Combine and remove duplicates
+    const combined = [...results, ...firebaseMatches];
+    const uniqueResultsMap = new Map();
+    combined.forEach(item => uniqueResultsMap.set(item.id, item));
+    results = Array.from(uniqueResultsMap.values());
 
+  } catch (error) {
+    console.error("Error searching Firebase:", error);
+  }
+
+  // Sort descending
   results.sort((a, b) => b.id - a.id);
 
+  // Update display
   currentFiles = results;
-  displayFiles();
-});
+  
+  fileList.innerHTML = "";
+  
+  if (currentFiles.length === 0) {
+    fileList.innerHTML = `<p style="text-align:center; color: white;">No results found for "${searchInput.value}"</p>`;
+    return;
+  }
+
+  fileList.innerHTML = `<p class="page-info">Found ${currentFiles.length} result(s)</p>`;
+
+  currentFiles.forEach(file => {
+    fileList.innerHTML += `
+      <div class="file">
+        <div>
+          <strong>${file.name}</strong><br>
+          <small>${file.type} • ${file.category}</small>
+        </div>
+        <button onclick="openFile(${file.id})">View Details</button>
+      </div>
+    `;
+  });
+}
+
+// Add event listeners for the new Search Button & Enter Key
+if (searchBtn) {
+  searchBtn.addEventListener("click", performSearch);
+}
+
+if (searchInput) {
+  searchInput.addEventListener("keypress", function (e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      performSearch();
+    }
+  });
+
+  // Reload the default list immediately if the user clears the search box
+  searchInput.addEventListener("input", function(e) {
+    if(e.target.value.trim() === "") {
+        currentPage = 1;
+        loadPage(1);
+    }
+  });
+}
 
 // ---------------- DARK MODE ----------------
 const toggleBtn = document.getElementById("themeToggle");
