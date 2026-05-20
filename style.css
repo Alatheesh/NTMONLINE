@@ -418,3 +418,53 @@ h1 {
     right: 10px;
   }
 }
+
+/* =========================================
+   ☀️ LIGHT MODE THEME OVERRIDES 
+   ========================================= */
+body.light-mode {
+  background: linear-gradient(180deg, #f0f2f5, #e0e5ec, #f0f2f5);
+  color: #1a1a1a;
+}
+
+/* Hide the glowing neon particles in light mode for a cleaner look */
+body.light-mode::before,
+body.light-mode::after {
+  display: none; 
+}
+
+/* Invert the Glassmorphism cards to dark borders/shadows */
+body.light-mode .file,
+body.light-mode .search-container,
+body.light-mode .back-btn,
+body.light-mode .pagination button,
+body.light-mode #themeToggle {
+  background: rgba(0, 0, 0, 0.04) !important;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #1a1a1a;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+/* Fix text colors inside the search and files */
+body.light-mode #search {
+  color: #1a1a1a;
+}
+
+body.light-mode #search::placeholder {
+  color: rgba(0, 0, 0, 0.5);
+}
+    
+body.light-mode .search-btn {
+  color: #1a1a1a;
+  border-left: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+body.light-mode .file small,
+body.light-mode .page-info {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+/* Keep the primary accent buttons blue/orange */
+body.light-mode .file button {
+  color: #ffffff;
+}
