@@ -423,8 +423,7 @@ h1 {
    ☀️ LIGHT MODE THEME OVERRIDES (WITH EFFECTS)
    ========================================= */
 body.light-mode {
-  /* Premium icy silver gradient background */
-  background: linear-gradient(135deg, #e0eafc, #cfdef3);
+  background: #f8fafc; /* A very soft, clean slate-gray/white */
   color: #1e293b; 
 }
 
