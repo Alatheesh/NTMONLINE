@@ -420,51 +420,73 @@ h1 {
 }
 
 /* =========================================
-   ☀️ LIGHT MODE THEME OVERRIDES 
+   ☀️ LIGHT MODE THEME OVERRIDES (UPGRADED)
    ========================================= */
 body.light-mode {
-  background: linear-gradient(180deg, #f0f2f5, #e0e5ec, #f0f2f5);
-  color: #1a1a1a;
+  /* Replaces the boring whiteboard with a premium icy silver gradient */
+  background: linear-gradient(135deg, #e0eafc, #cfdef3);
+  color: #1e293b; 
 }
 
-/* Hide the glowing neon particles in light mode for a cleaner look */
+/* Hide the glowing neon particles in light mode */
 body.light-mode::before,
 body.light-mode::after {
   display: none; 
 }
 
-/* Invert the Glassmorphism cards to dark borders/shadows */
+/* Bright, clean frosted glass for all cards and inputs */
 body.light-mode .file,
 body.light-mode .search-container,
 body.light-mode .back-btn,
 body.light-mode .pagination button,
 body.light-mode #themeToggle {
-  background: rgba(0, 0, 0, 0.04) !important;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  color: #1a1a1a;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  background: rgba(255, 255, 255, 0.65) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  color: #0f172a;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
 }
 
-/* Fix text colors inside the search and files */
+/* 🔥 FIX: Force Movie Titles and Headings to be dark and visible! */
+body.light-mode h1, 
+body.light-mode h2, 
+body.light-mode .file strong {
+  color: #0f172a !important; 
+  background: none;
+  -webkit-text-fill-color: #0f172a; /* Overrides the gradient text from dark mode */
+}
+
+/* Fix Search Bar Text */
 body.light-mode #search {
-  color: #1a1a1a;
+  color: #0f172a !important;
 }
 
 body.light-mode #search::placeholder {
-  color: rgba(0, 0, 0, 0.5);
+  color: rgba(15, 23, 42, 0.5) !important;
 }
     
+/* Fix Search Button */
 body.light-mode .search-btn {
-  color: #1a1a1a;
+  color: #0284c7 !important;
   border-left: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.5) !important;
 }
 
+body.light-mode .search-btn:hover {
+  background: rgba(2, 132, 199, 0.1) !important;
+}
+
+/* Fix Secondary Text (Categories, file sizes, page info) */
 body.light-mode .file small,
-body.light-mode .page-info {
-  color: rgba(0, 0, 0, 0.6);
+body.light-mode .page-info,
+body.light-mode .info,
+body.light-mode p {
+  color: #475569 !important;
 }
 
-/* Keep the primary accent buttons blue/orange */
-body.light-mode .file button {
-  color: #ffffff;
+/* Keep the primary action buttons (Watch/Download) colorful */
+body.light-mode .file button,
+body.light-mode .download-btn {
+  color: #ffffff !important;
 }
