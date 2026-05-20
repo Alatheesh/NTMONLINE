@@ -254,24 +254,27 @@ if (searchInput) {
   });
 }
 
-// ---------------- DARK MODE ----------------
+// ---------------- LIGHT / DARK MODE ----------------
 const toggleBtn = document.getElementById("themeToggle");
 
 if (toggleBtn) {
-  if (localStorage.getItem("theme") === "dark") {
-    document.body.classList.add("dark");
-    toggleBtn.textContent = "☀️";
+  // Your default CSS is Dark, so we check if the user wants Light Mode
+  if (localStorage.getItem("theme") === "light") {
+    document.body.classList.add("light-mode");
+    toggleBtn.textContent = "🌙"; // Show moon to switch back to dark
+  } else {
+    toggleBtn.textContent = "☀️"; // Show sun to switch to light
   }
 
   toggleBtn.addEventListener("click", function () {
-    document.body.classList.toggle("dark");
+    document.body.classList.toggle("light-mode");
 
-    if (document.body.classList.contains("dark")) {
-      localStorage.setItem("theme", "dark");
-      toggleBtn.textContent = "☀️";
-    } else {
+    if (document.body.classList.contains("light-mode")) {
       localStorage.setItem("theme", "light");
       toggleBtn.textContent = "🌙";
+    } else {
+      localStorage.setItem("theme", "dark");
+      toggleBtn.textContent = "☀️";
     }
   });
 }
