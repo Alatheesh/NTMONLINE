@@ -423,7 +423,7 @@ h1 {
    ☀️ LIGHT MODE THEME OVERRIDES (WITH EFFECTS)
    ========================================= */
 body.light-mode {
-  background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+  background: linear-gradient(to right, #fcfcfc, #f5f5f5);
   color: #1e293b; 
 }
 
