@@ -5,94 +5,39 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Disclaimer | NTM Online</title>
   <link rel="stylesheet" href="style.css">
-  
   <style>
-    /* ✨ CINEMATIC AURORA ANIMATION (Matches About Page) */
-    body::before, body::after {
-      animation: none !important;
-      background-image: none !important;
-    }
-    body::before {
-      display: block !important;
-      content: ""; position: fixed; top: -50%; left: -50%; width: 200%; height: 200%;
-      background: radial-gradient(circle at 30% 40%, rgba(0, 191, 255, 0.15) 0%, transparent 40%),
-                  radial-gradient(circle at 70% 60%, rgba(141, 124, 255, 0.15) 0%, transparent 40%);
-      filter: blur(60px); z-index: -2;
-      animation: auroraDrift 15s infinite alternate ease-in-out !important;
-      pointer-events: none;
-    }
-    body::after {
-      display: block !important;
-      content: ""; position: fixed; top: -50%; left: -50%; width: 200%; height: 200%;
-      background: radial-gradient(circle at 60% 30%, rgba(0, 123, 255, 0.1) 0%, transparent 50%),
-                  radial-gradient(circle at 40% 70%, rgba(0, 191, 255, 0.1) 0%, transparent 50%);
-      filter: blur(70px); z-index: -3;
-      animation: auroraDrift 20s infinite alternate-reverse ease-in-out !important;
-      pointer-events: none;
-    }
-    @keyframes auroraDrift {
-      0% { transform: scale(1) translate(0px, 0px); opacity: 0.5; }
-      50% { transform: scale(1.1) translate(2vw, 3vh); opacity: 1; }
-      100% { transform: scale(0.9) translate(-2vw, 4vh); opacity: 0.6; }
-    }
-
-    /* 📄 DISCLAIMER CONTENT STYLING */
-    .legal-content {
-      text-align: left;
-      line-height: 1.8;
-      color: rgba(255, 255, 255, 0.85);
-      font-size: 15px;
-      margin-top: 10px;
-    }
+    /* ✨ CINEMATIC AURORA ANIMATION */
+    body::before, body::after { animation: none !important; background-image: none !important; }
+    body::before { display: block !important; content: ""; position: fixed; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at 30% 40%, rgba(0, 191, 255, 0.15) 0%, transparent 40%), radial-gradient(circle at 70% 60%, rgba(141, 124, 255, 0.15) 0%, transparent 40%); filter: blur(60px); z-index: -2; animation: auroraDrift 15s infinite alternate ease-in-out !important; pointer-events: none; }
+    body::after { display: block !important; content: ""; position: fixed; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at 60% 30%, rgba(0, 123, 255, 0.1) 0%, transparent 50%), radial-gradient(circle at 40% 70%, rgba(0, 191, 255, 0.1) 0%, transparent 50%); filter: blur(70px); z-index: -3; animation: auroraDrift 20s infinite alternate-reverse ease-in-out !important; pointer-events: none; }
+    @keyframes auroraDrift { 0% { transform: scale(1) translate(0px, 0px); opacity: 0.5; } 50% { transform: scale(1.1) translate(2vw, 3vh); opacity: 1; } 100% { transform: scale(0.9) translate(-2vw, 4vh); opacity: 0.6; } }
+    /* 📄 CONTENT STYLING */
+    .legal-content { text-align: left; line-height: 1.8; color: rgba(255, 255, 255, 0.85); font-size: 15px; margin-top: 10px; }
     body.light-mode .legal-content { color: #333333; }
-    
-    .legal-content h2 {
-      color: #ff5500; /* Distinct orange for legal headers */
-      margin-top: 25px;
-      margin-bottom: 10px;
-      font-size: 20px;
-      border-bottom: 1px solid rgba(255, 85, 0, 0.3);
-      padding-bottom: 5px;
-    }
+    .legal-content h2 { color: #ff5500; margin-top: 25px; margin-bottom: 10px; font-size: 20px; border-bottom: 1px solid rgba(255, 85, 0, 0.3); padding-bottom: 5px; }
     .legal-content p { margin-bottom: 15px; }
     .legal-header { text-align: center; margin-bottom: 20px; }
     .legal-header h1 { color: white; margin-bottom: 5px; }
+    body.light-mode .legal-header h1 { color: #0f172a; }
   </style>
 </head>
 <body>
-
   <div class="container">
     <button class="back-btn" onclick="window.history.back()">← Back</button>
-
     <div class="file" style="flex-direction: column; padding: 30px; align-items: stretch;">
-      
       <div class="legal-header">
         <h1>Legal Disclaimer</h1>
-        <small style="color: rgba(255,255,255,0.5);">LAST UPDATED: MAY 2026</small>
       </div>
-
       <div class="legal-content">
         <h2>1. No Hosting or Uploading</h2>
         <p><strong>NTM Online does not host, upload, or store any media files, videos, or copyrighted material on its servers.</strong> This website functions strictly as an indexing service and search engine. All content is hosted by non-affiliated third-party platforms and servers over which NTM Online exercises no control.</p>
-        
         <h2>2. Educational and Indexing Purposes</h2>
         <p>This project was developed exclusively for educational purposes to demonstrate modern web architecture, UI/UX design principles, and database indexing. It acts merely as a directory linking to content that is already publicly accessible on the internet.</p>
-
-        <h2>3. DMCA and Copyright Infringement</h2>
-        <p>NTM Online operates in compliance with the Digital Millennium Copyright Act (DMCA). Because we do not host any files, we cannot delete files from third-party servers. If you are a copyright owner and wish to have links to your content removed from our index, please contact us via our official Telegram channel with the exact URLs, and we will remove the indexing links promptly.</p>
-        
-        <h2>4. Third-Party Links</h2>
+        <h2>3. Third-Party Links</h2>
         <p>We do not guarantee the safety, accuracy, or legality of any content hosted on third-party sites. Users who click on external links or media streams do so entirely at their own risk. NTM Online assumes no liability for any issues arising from interactions with third-party servers.</p>
       </div>
-      
     </div>
   </div>
-
-  <script>
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'light') {
-      document.body.classList.add('light-mode');
-    }
-  </script>
+  <script>if(localStorage.getItem('theme')==='light') document.body.classList.add('light-mode');</script>
 </body>
 </html>
