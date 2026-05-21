@@ -1,8 +1,35 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Welcome</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NTM Online - Welcome</title>
   <link rel="stylesheet" href="home.css">
+  
+  <style>
+    .top-corner-logo {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%; /* Makes the image a perfect circle */
+      object-fit: cover;
+      box-shadow: 0 0 12px rgba(0, 191, 255, 0.5); /* Premium cyan glow */
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .logo-link {
+      position: absolute;
+      top: 20px;
+      left: 20px; /* Anchors the logo to the top left corner */
+      text-decoration: none;
+      display: inline-block;
+      z-index: 100;
+    }
+
+    .logo-link:hover .top-corner-logo {
+      transform: scale(1.1); /* Zooms slightly when hovered */
+      box-shadow: 0 0 22px rgba(0, 191, 255, 0.9);
+    }
+  </style>
 </head>
 <body>
 
@@ -10,13 +37,13 @@
   <span id="visitorCount">Visitors: 0</span>
 </div>
 
-<a href="https://t.me/llathu63035" target="_blank" class="profile-link">
-  <img src="https://raw.githubusercontent.com/Alatheesh/PERSONAL_WEBSITE/main/images/telegram_image.jpg" alt="Profile">
+<a href="about.html" class="logo-link">
+  <img src="logo.png" alt="NTM Online Logo" class="top-corner-logo">
 </a>
 
 <div class="hero glass-card">
 
-  <h1>🎬 NTM Watch Hub 🍿</h1>
+  <h1>NTM Online</h1>
 
   <p class="subtitle">Your binge starts here 🎥</p>
 
