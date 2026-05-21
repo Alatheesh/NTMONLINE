@@ -118,14 +118,13 @@ body::before {
   text-decoration: none;
 }
 
+/* 🔘 NEW PREMIUM CORNER LOGO */
 .top-corner-logo {
-  width: 55px;
-  height: 55px;
+  width: 80px;      /* Increased from 55px */
+  height: 80px;     /* Increased from 55px */
   border-radius: 50%;
   object-fit: cover;
-  
-  /* Adds the premium glowing cyan effect */
-  box-shadow: 0 0 12px rgba(0, 191, 255, 0.5);
+  box-shadow: 0 0 15px rgba(0, 191, 255, 0.6); /* Slightly stronger glow for the larger size */
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   display: block;
 }
