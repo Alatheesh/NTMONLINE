@@ -91,6 +91,28 @@ h1 {
   letter-spacing: 1px;
 }
 
+/* =========================================
+   🔘 TOP CORNER LOGO
+   ========================================= */
+.top-corner-logo {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 0 10px rgba(0, 191, 255, 0.4);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.logo-link {
+  text-decoration: none;
+  display: inline-block;
+}
+
+.logo-link:hover .top-corner-logo {
+  transform: scale(1.1);
+  box-shadow: 0 0 20px rgba(0, 191, 255, 0.8);
+}
+
 /* 🔙 BACK BUTTON - GLASSMORPHISM */
 .back-btn {
   position: fixed;
@@ -429,7 +451,7 @@ body.light-mode {
 
 /* ❄️ Light Mode Particles - Soft floating snow/bubbles */
 body.light-mode::before {
-  display: block !important; /* Brings the animation back */
+  display: block !important; 
   background-image:
     radial-gradient(circle at 15vw 25vh, rgba(255,255,255,0.9) 0%, transparent 5px),
     radial-gradient(circle at 75vw 15vh, rgba(100,149,237,0.4) 0%, transparent 7px),
@@ -440,7 +462,7 @@ body.light-mode::before {
 }
 
 body.light-mode::after {
-  display: block !important; /* Brings the animation back */
+  display: block !important; 
   background-image:
     radial-gradient(circle at 10vw 10vh, rgba(255,255,255,0.6) 0%, transparent 10px),
     radial-gradient(circle at 80vw 40vh, rgba(176,196,222,0.5) 0%, transparent 12px),
@@ -469,7 +491,7 @@ body.light-mode h2,
 body.light-mode .file strong {
   color: #0f172a !important; 
   background: none;
-  -webkit-text-fill-color: #0f172a; /* Overrides the gradient text from dark mode */
+  -webkit-text-fill-color: #0f172a; 
 }
 
 /* Fix Search Bar Text */
