@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy | NTM Online</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* ✨ CINEMATIC AURORA ANIMATION */
+    body::before, body::after { animation: none !important; background-image: none !important; }
+    body::before { display: block !important; content: ""; position: fixed; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at 30% 40%, rgba(0, 191, 255, 0.15) 0%, transparent 40%), radial-gradient(circle at 70% 60%, rgba(141, 124, 255, 0.15) 0%, transparent 40%); filter: blur(60px); z-index: -2; animation: auroraDrift 15s infinite alternate ease-in-out !important; pointer-events: none; }
+    body::after { display: block !important; content: ""; position: fixed; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at 60% 30%, rgba(0, 123, 255, 0.1) 0%, transparent 50%), radial-gradient(circle at 40% 70%, rgba(0, 191, 255, 0.1) 0%, transparent 50%); filter: blur(70px); z-index: -3; animation: auroraDrift 20s infinite alternate-reverse ease-in-out !important; pointer-events: none; }
+    @keyframes auroraDrift { 0% { transform: scale(1) translate(0px, 0px); opacity: 0.5; } 50% { transform: scale(1.1) translate(2vw, 3vh); opacity: 1; } 100% { transform: scale(0.9) translate(-2vw, 4vh); opacity: 0.6; } }
+    /* 📄 CONTENT STYLING */
+    .legal-content { text-align: left; line-height: 1.8; color: rgba(255, 255, 255, 0.85); font-size: 15px; margin-top: 10px; }
+    body.light-mode .legal-content { color: #333333; }
+    .legal-content h2 { color: #00bfff; margin-top: 25px; margin-bottom: 10px; font-size: 20px; border-bottom: 1px solid rgba(0, 191, 255, 0.3); padding-bottom: 5px; }
+    .legal-content p { margin-bottom: 15px; }
+    .legal-header { text-align: center; margin-bottom: 20px; }
+    .legal-header h1 { color: white; margin-bottom: 5px; }
+    body.light-mode .legal-header h1 { color: #0f172a; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <button class="back-btn" onclick="window.history.back()">← Back</button>
+    <div class="file" style="flex-direction: column; padding: 30px; align-items: stretch;">
+      <div class="legal-header">
+        <h1>Privacy Policy</h1>
+      </div>
+      <div class="legal-content">
+        <h2>1. Information Collection</h2>
+        <p>NTM Online respects your privacy. We do not require account creation, and we do not collect personal identifying information (PII) such as names, emails, IP addresses, or physical locations.</p>
+        <h2>2. Local Storage</h2>
+        <p>We use your browser's Local Storage strictly to save your UI preferences (such as your choice between Light Mode and Dark Mode). This data never leaves your personal device.</p>
+        <h2>3. Analytics</h2>
+        <p>We utilize basic, anonymized Firebase analytics solely to maintain a public counter of total site visitors. This data cannot be traced back to individual users, contains no tracking cookies, and is never sold to third parties.</p>
+      </div>
+    </div>
+  </div>
+  <script>if(localStorage.getItem('theme')==='light') document.body.classList.add('light-mode');</script>
+</body>
+</html>
