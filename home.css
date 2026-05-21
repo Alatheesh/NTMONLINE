@@ -120,8 +120,8 @@ body::before {
 
 /* 🔘 NEW PREMIUM CORNER LOGO */
 .top-corner-logo {
-  width: 80px;      /* Increased from 55px */
-  height: 80px;     /* Increased from 55px */
+  width: 100px;      /* Increased from 55px */
+  height: 100px;     /* Increased from 55px */
   border-radius: 50%;
   object-fit: cover;
   box-shadow: 0 0 15px rgba(0, 191, 255, 0.6); /* Slightly stronger glow for the larger size */
