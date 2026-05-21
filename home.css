@@ -3,6 +3,7 @@ body {
   margin: 0;
   font-family: Arial;
 
+  /* Your high-res Naruto background */
   background: url("https://raw.githubusercontent.com/Alatheesh/PERSONAL_WEBSITE/main/images/naruto-uzumaki-5120x2880-18685.jpg") no-repeat center center/cover;
 
   height: 100vh;
@@ -41,6 +42,7 @@ body::before {
 
   background: rgba(255, 255, 255, 0.04);
   backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 
   border: 1px solid rgba(255,255,255,0.1);
 
@@ -91,6 +93,7 @@ body::before {
 .premium-btn:hover {
   transform: scale(1.05);
   background: rgba(0, 123, 255, 1);
+  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
 }
 
 /* FOOTER */
@@ -106,29 +109,30 @@ body::before {
   z-index: 2;
 }
 
-/* PROFILE IMAGE */
-.profile-link {
+/* 🔘 NEW PREMIUM CORNER LOGO */
+.logo-link {
   position: fixed;
   top: 20px;
   left: 20px;
-  z-index: 10;
+  z-index: 100;
+  text-decoration: none;
 }
 
-.profile-link img {
-  width: 60px;
-  height: 60px;
+.top-corner-logo {
+  width: 55px;
+  height: 55px;
   border-radius: 50%;
   object-fit: cover;
-
-  border: 2px solid white;
-
+  
+  /* Adds the premium glowing cyan effect */
+  box-shadow: 0 0 12px rgba(0, 191, 255, 0.5);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   display: block;
-  transition: 0.3s;
 }
 
-.profile-link img:hover {
+.logo-link:hover .top-corner-logo {
   transform: scale(1.1);
-  box-shadow: 0 0 12px rgba(255,255,255,0.7);
+  box-shadow: 0 0 22px rgba(0, 191, 255, 0.9);
 }
 
 /* 🔥 VISITOR BOX */
@@ -147,6 +151,7 @@ body::before {
   font-weight: 500;
 
   backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
 
   z-index: 10;
   transition: 0.3s;
