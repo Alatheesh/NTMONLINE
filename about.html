@@ -7,6 +7,66 @@
   <link rel="stylesheet" href="style.css">
   
   <style>
+    /* =========================================
+       ✨ ABOUT PAGE - CINEMATIC AURORA ANIMATION
+       ========================================= */
+    /* 1. Turn off the fast falling particles from style.css */
+    body::before, body::after {
+      animation: none !important;
+      background-image: none !important;
+    }
+
+    /* 2. Create the deep, slow-moving glowing orbs */
+    body::before {
+      display: block !important;
+      content: "";
+      position: fixed;
+      top: -50%; left: -50%; width: 200%; height: 200%;
+      background: 
+        radial-gradient(circle at 30% 40%, rgba(0, 191, 255, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 70% 60%, rgba(141, 124, 255, 0.15) 0%, transparent 40%);
+      filter: blur(60px);
+      z-index: -2;
+      animation: auroraDrift 15s infinite alternate ease-in-out !important;
+      pointer-events: none;
+    }
+
+    body::after {
+      display: block !important;
+      content: "";
+      position: fixed;
+      top: -50%; left: -50%; width: 200%; height: 200%;
+      background: 
+        radial-gradient(circle at 60% 30%, rgba(0, 123, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 70%, rgba(0, 191, 255, 0.1) 0%, transparent 50%);
+      filter: blur(70px);
+      z-index: -3;
+      animation: auroraDrift 20s infinite alternate-reverse ease-in-out !important;
+      pointer-events: none;
+    }
+
+    /* 3. The slow, breathing cinematic movement */
+    @keyframes auroraDrift {
+      0% { transform: scale(1) translate(0px, 0px); opacity: 0.5; }
+      50% { transform: scale(1.1) translate(2vw, 3vh); opacity: 1; }
+      100% { transform: scale(0.9) translate(-2vw, 4vh); opacity: 0.6; }
+    }
+
+    /* 4. Keep it looking beautiful in Light Mode */
+    body.light-mode::before {
+      background: 
+        radial-gradient(circle at 30% 40%, rgba(0, 191, 255, 0.3) 0%, transparent 40%),
+        radial-gradient(circle at 70% 60%, rgba(141, 124, 255, 0.2) 0%, transparent 40%);
+    }
+    body.light-mode::after {
+      background: 
+        radial-gradient(circle at 60% 30%, rgba(0, 123, 255, 0.2) 0%, transparent 50%),
+        radial-gradient(circle at 40% 70%, rgba(0, 191, 255, 0.2) 0%, transparent 50%);
+    }
+
+    /* =========================================
+       📄 ABOUT CONTENT STYLING
+       ========================================= */
     .about-content {
       text-align: left;
       line-height: 1.8;
@@ -14,24 +74,52 @@
       font-size: 16px;
       margin-top: 20px;
     }
+    
+    /* Light mode text fix */
+    body.light-mode .about-content {
+      color: #333333;
+    }
+
     .about-content h2 {
       color: #00bfff;
       margin-top: 30px;
       margin-bottom: 10px;
       font-size: 22px;
     }
+
     .about-content p {
       margin-bottom: 15px;
     }
+
     .about-header {
       text-align: center;
       margin-bottom: 30px;
     }
+
     .about-header img {
       width: 120px;
       border-radius: 50%;
       box-shadow: 0 10px 30px rgba(0, 191, 255, 0.3);
       margin-bottom: 15px;
+    }
+    
+    /* Button style for telegram link */
+    .telegram-btn {
+      padding: 12px 24px;
+      font-size: 16px;
+      background: linear-gradient(135deg, #007bff, #00bfff);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0, 191, 255, 0.3);
+      transition: 0.3s;
+    }
+    
+    .telegram-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 20px rgba(0, 191, 255, 0.5);
     }
   </style>
 </head>
@@ -43,8 +131,8 @@
     <div class="file" style="flex-direction: column; padding: 30px; align-items: stretch;">
       
       <div class="about-header">
-        <img src="logo.png" alt="NTM Online">
-        <h1 style="color: white;">NTM Online</h1>
+        <img src="https://raw.githubusercontent.com/Alatheesh/PERSONAL_WEBSITE/main/images/logo.png" alt="NTM Online">
+        <h1 style="color: inherit;">NTM Online</h1>
         <small style="color: #00bfff; font-weight: bold; letter-spacing: 2px;">PREMIUM CINEMATIC STREAMING</small>
       </div>
 
@@ -59,7 +147,7 @@
         <p>Whether you are on a desktop or a mobile device, our platform adapts to you. Featuring a state-of-the-art Glassmorphism UI, seamless dark/light modes, and advanced gesture-supported video players, your binge-watching session starts the moment you click play.</p>
         
         <div style="text-align: center; margin-top: 40px;">
-          <button onclick="window.location.href='https://t.me/NTMONLINE'" style="padding: 12px 24px; font-size: 16px;">
+          <button class="telegram-btn" onclick="window.location.href='https://t.me/NTMONLINE'">
             Join Our Telegram Community
           </button>
         </div>
