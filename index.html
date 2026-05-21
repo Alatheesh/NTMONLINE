@@ -7,27 +7,71 @@
   <link rel="stylesheet" href="home.css">
   
   <style>
+    /* =========================================
+       🔘 TOP CORNER LOGO
+       ========================================= */
     .top-corner-logo {
-      width: 45px;
-      height: 45px;
-      border-radius: 50%; /* Makes the image a perfect circle */
+      width: 80px;      /* Increased size so it stands out! */
+      height: 80px;
+      border-radius: 50%; 
       object-fit: cover;
-      box-shadow: 0 0 12px rgba(0, 191, 255, 0.5); /* Premium cyan glow */
+      box-shadow: 0 0 15px rgba(0, 191, 255, 0.6); 
       transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
     .logo-link {
       position: absolute;
       top: 20px;
-      left: 20px; /* Anchors the logo to the top left corner */
+      left: 20px; 
       text-decoration: none;
       display: inline-block;
       z-index: 100;
     }
 
     .logo-link:hover .top-corner-logo {
-      transform: scale(1.1); /* Zooms slightly when hovered */
+      transform: scale(1.1); 
       box-shadow: 0 0 22px rgba(0, 191, 255, 0.9);
+    }
+
+    /* =========================================
+       📝 PREMIUM FOOTER & LEGAL LINKS
+       ========================================= */
+    .footer-container {
+      position: absolute;
+      bottom: 20px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      z-index: 10;
+    }
+
+    .footer-glass {
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      padding: 10px 24px;
+      border-radius: 30px; /* Creates a sleek pill shape */
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 13px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      text-align: center;
+    }
+
+    .legal-links a {
+      color: rgba(255, 255, 255, 0.5);
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: bold;
+      transition: 0.3s ease;
+      margin: 0 8px;
+    }
+
+    .legal-links a:hover {
+      color: #00bfff; /* Glows cyan on hover */
+      text-shadow: 0 0 8px rgba(0, 191, 255, 0.6);
     }
   </style>
 </head>
@@ -43,7 +87,7 @@
 
 <div class="hero glass-card">
 
-  <h1>NTM Online</h1>
+  <h1>🎬 NTM Online 🍿</h1>
 
   <p class="subtitle">Your binge starts here 🎥</p>
 
@@ -53,8 +97,19 @@
 
 </div>
 
-<div class="footer">
-  © 2026 Developed by Latheesh Reddy | For educational purposes only
+<div class="footer-container">
+  
+  <div class="footer-glass">
+    <span style="color: #00bfff; font-weight: bold;">© 2026</span> Developed by <strong>Latheesh Reddy</strong> ✨<br>
+    <small style="opacity: 0.7;">For educational purposes only</small>
+  </div>
+
+  <div class="legal-links">
+    <a href="legal.html">Terms of Service</a> | 
+    <a href="legal.html">Privacy Policy</a> | 
+    <a href="legal.html">DMCA Notice</a>
+  </div>
+
 </div>
 
 <script>
