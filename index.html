@@ -11,7 +11,7 @@
        🔘 TOP CORNER LOGO
        ========================================= */
     .top-corner-logo {
-      width: 80px;      /* Increased size so it stands out! */
+      width: 80px;      
       height: 80px;
       border-radius: 50%; 
       object-fit: cover;
@@ -34,44 +34,41 @@
     }
 
     /* =========================================
-       📝 PREMIUM FOOTER & LEGAL LINKS
+       📝 PREMIUM MINIMALIST FOOTER
        ========================================= */
-    .footer-container {
+    .premium-footer {
       position: absolute;
       bottom: 20px;
       width: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 12px;
+      gap: 8px;
       z-index: 10;
     }
 
-    .footer-glass {
-      background: rgba(0, 0, 0, 0.4);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      padding: 10px 24px;
-      border-radius: 30px; /* Creates a sleek pill shape */
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: rgba(255, 255, 255, 0.9);
-      font-size: 13px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-      text-align: center;
+    .footer-links {
+      display: flex;
+      gap: 20px;
     }
 
-    .legal-links a {
+    .footer-links a {
       color: rgba(255, 255, 255, 0.5);
       text-decoration: none;
       font-size: 12px;
-      font-weight: bold;
-      transition: 0.3s ease;
-      margin: 0 8px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      transition: color 0.3s ease;
     }
 
-    .legal-links a:hover {
-      color: #00bfff; /* Glows cyan on hover */
-      text-shadow: 0 0 8px rgba(0, 191, 255, 0.6);
+    .footer-links a:hover {
+      color: #00bfff;
+    }
+
+    .footer-credits {
+      color: rgba(255, 255, 255, 0.3);
+      font-size: 11px;
+      letter-spacing: 0.5px;
     }
   </style>
 </head>
@@ -97,17 +94,17 @@
 
 </div>
 
-<div class="footer-container">
+<div class="premium-footer">
   
-  <div class="footer-glass">
-    <span style="color: #00bfff; font-weight: bold;">© 2026</span> Developed by <strong>Latheesh Reddy</strong> ✨<br>
-    <small style="opacity: 0.7;">For educational purposes only</small>
+  <div class="footer-links">
+    <a href="terms.html">Terms of Service</a>
+    <a href="privacy.html">Privacy Policy</a>
+    <a href="dmca.html">DMCA</a>
+    <a href="disclaimer.html">Disclaimer</a>
   </div>
 
-  <div class="legal-links">
-    <a href="legal.html">Terms of Service</a> | 
-    <a href="legal.html">Privacy Policy</a> | 
-    <a href="legal.html">DMCA Notice</a>
+  <div class="footer-credits">
+    © 2026 NTM Online. All rights reserved.
   </div>
 
 </div>
@@ -124,44 +121,33 @@ function goToApp() {
 
 <script>
 window.addEventListener("DOMContentLoaded", function () {
-
   try {
     const today = new Date().toLocaleDateString();
-
     if (!firebase.apps.length) {
       firebase.initializeApp(firebaseConfig);
     }
-
     const db = firebase.firestore();
     const ref = db.collection("stats").doc("visitors");
-
     const lastVisit = localStorage.getItem("lastVisitDate");
 
     if (lastVisit !== today) {
-      ref.set({
-        count: firebase.firestore.FieldValue.increment(1)
-      }, { merge: true })
+      ref.set({ count: firebase.firestore.FieldValue.increment(1) }, { merge: true })
       .then(() => {
         localStorage.setItem("lastVisitDate", today);
         return ref.get();
       })
       .then(doc => {
-        document.getElementById("visitorCount").innerText =
-          "Visitors: " + doc.data().count;
+        document.getElementById("visitorCount").innerText = "Visitors: " + doc.data().count;
       });
     } else {
       ref.get().then(doc => {
-        document.getElementById("visitorCount").innerText =
-          "Visitors: " + doc.data().count;
+        document.getElementById("visitorCount").innerText = "Visitors: " + doc.data().count;
       });
     }
-
   } catch (e) {
     console.error(e);
-    document.getElementById("visitorCount").innerText =
-      "Visitors unavailable";
+    document.getElementById("visitorCount").innerText = "Visitors unavailable";
   }
-
 });
 </script>
 
