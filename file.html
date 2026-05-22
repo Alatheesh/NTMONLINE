@@ -467,6 +467,15 @@ function reportIssue() {
   });
 }
 
+// 🚀 FIXED: Prevent the modal from getting stuck when using the Back button!
+window.addEventListener('pageshow', function (event) {
+  const modal = document.getElementById('warningModal');
+  if (modal) {
+    modal.classList.remove('active');
+    modal.style.display = 'none';
+  }
+});
+
 loadFile();
 </script>
 
