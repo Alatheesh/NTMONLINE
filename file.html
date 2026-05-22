@@ -55,6 +55,35 @@
       100% { transform: translateY(100vh); }
     }
 
+    /* 🛑 WARNING MODAL STYLING */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(10px);
+      display: none; justify-content: center; align-items: center; z-index: 9999;
+      opacity: 0; transition: opacity 0.3s ease;
+    }
+    .modal-overlay.active { display: flex; opacity: 1; }
+    
+    .modal-box {
+      background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 30px; border-radius: 20px; text-align: center; max-width: 400px; width: 90%;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,191,255,0.1);
+      transform: scale(0.8); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .modal-overlay.active .modal-box { transform: scale(1); }
+    
+    .modal-box h3 { color: #00bfff; font-size: 24px; margin: 0 0 15px 0; }
+    .modal-box p { color: #ccc; font-size: 16px; line-height: 1.5; margin-bottom: 15px; }
+    .warning-text { color: #00bfff; font-weight: bold; font-size: 18px; text-shadow: 0 0 10px rgba(0, 191, 255, 0.4); }
+    
+    .modal-spinner {
+      width: 30px; height: 30px; border: 3px solid rgba(255,255,255,0.1);
+      border-top: 3px solid #00bfff; border-radius: 50%; animation: spin 1s linear infinite;
+      margin: 20px auto 0 auto;
+    }
+    
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
     /* LAYOUT */
     .page {
       display: flex;
@@ -83,7 +112,7 @@
       .side-ad { display: none; }
     }
 
-    /* 💎 PREMIUM GLASSMORPHISM CARD - AUTOMATIC SIZING */
+    /* 💎 PREMIUM GLASSMORPHISM CARD */
     .card {
       background: rgba(255, 255, 255, 0.04);
       backdrop-filter: blur(16px);
@@ -99,7 +128,6 @@
       transition: all 0.3s ease-in-out;
     }
 
-    /* 🎬 RESPONSIVE IMAGE PROPERTIES (PREVENTS CROPPING) */
     .card img {
       width: 100%;
       max-width: 100%;
@@ -213,6 +241,19 @@
   </style>
 </head>
 <body>
+
+<div id="warningModal" class="modal-overlay">
+  <div class="modal-box">
+    <h3>🚀 Getting Your Movie Ready!</h3>
+    <p>We are moving you to the video player right now.</p>
+    
+    <p class="warning-text" style="color: #00bfff; text-shadow: 0 0 10px rgba(0, 191, 255, 0.4);">
+      The next screen is completely automatic. Please leave the page open and wait for the timer to reach zero.
+    </p>
+    
+    <div class="modal-spinner"></div>
+  </div>
+</div>
 
 <button id="reportBtn" onclick="reportIssue()">⚠ Report</button>
 
@@ -383,19 +424,24 @@ async function loadFile() {
   `;
 }
 
-// 🚀 FIXED REDIRECT LOGIC (Points directly to Netlify)
+// 🚀 UPDATED MODAL REDIRECT LOGIC
 function openWatch(link) {
-  // 1. Encode the actual video link to make it safe for URLs
+  // 1. Show the warning modal beautifully
+  const modal = document.getElementById('warningModal');
+  modal.style.display = 'flex';
+  
+  // Use a tiny timeout to trigger the smooth CSS animation
+  setTimeout(() => { modal.classList.add('active'); }, 10);
+
+  // 2. Prepare the links behind the scenes
   const encodedVideoLink = encodeURIComponent(link);
-  
-  // 2. Build the final destination URL EXPLICITLY for your Netlify host!
   const finalDestination = "https://ntmonline.netlify.app/watch.html?link=" + encodedVideoLink;
-  
-  // 3. Encode that entire destination string
   const encodedDest = encodeURIComponent(finalDestination);
-  
-  // 4. Send the user to the redirect page, carrying the Netlify destination on its back!
-  window.location.href = "redirect.html?dest=" + encodedDest;
+
+  // 3. Wait exactly 3.5 seconds so they read the warning, then auto-redirect!
+  setTimeout(() => {
+    window.location.href = "redirect.html?dest=" + encodedDest;
+  }, 3500);
 }
 
 function reportIssue() {
