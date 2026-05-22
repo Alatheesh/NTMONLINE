@@ -44,30 +44,30 @@
       letter-spacing: 2px;
       text-shadow: 0 0 15px rgba(0, 191, 255, 0.6);
       margin: 25px 0;
-      line-height: 1em;
       display: flex;
       align-items: center;
       justify-content: center;
     }
     body.light-mode .massive-timer { color: #0284c7; text-shadow: none; }
 
-    /* 🔧 FIXED: The box that hides the numbers scrolling outside of it */
+    /* 🔧 FIXED: Invisible horizontal spacing removes the dark square illusion */
     .odometer-box {
       display: inline-block;
       overflow: hidden;
-      height: 1em;
-      padding: 15px 5px; /* Adds invisible space inside so the glow doesn't hit a wall */
-      margin: -15px 0;   /* Pulls the outside text back in so the layout stays tight */
+      height: 1.2em;
+      line-height: 1.2em;
+      padding: 0 25px; /* Huge invisible space left and right so glow doesn't hit the wall */
+      margin: 0 -25px; /* Pulls the "..." back in so the layout stays tight */
       min-width: 1.2ch; 
       text-align: center;
       vertical-align: middle;
     }
 
-    /* 🎨 NEW COLOR: The actual number that rolls up */
+    /* 🎨 NEW COLOR: Blends perfectly with the rest of the text */
     .odo-digit {
       display: block;
-      color: #ffffff; /* Crisp white number */
-      text-shadow: 0 0 20px rgba(255, 255, 255, 0.8); /* Pure white glow */
+      color: #00bfff; /* Exact cyan color */
+      text-shadow: 0 0 15px rgba(0, 191, 255, 0.6); /* Exact cyan glow */
       animation: rollUp 0.35s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
     }
 
