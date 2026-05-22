@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preparing Stream | NTM Online</title>
+  <link rel="stylesheet" href="style.css">
+  
+  <style>
+    /* ✨ CINEMATIC AURORA ANIMATION */
+    body::before, body::after { animation: none !important; background-image: none !important; }
+    body::before { display: block !important; content: ""; position: fixed; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at 30% 40%, rgba(0, 191, 255, 0.15) 0%, transparent 40%), radial-gradient(circle at 70% 60%, rgba(141, 124, 255, 0.15) 0%, transparent 40%); filter: blur(60px); z-index: -2; animation: auroraDrift 15s infinite alternate ease-in-out !important; pointer-events: none; }
+    body::after { display: block !important; content: ""; position: fixed; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at 60% 30%, rgba(0, 123, 255, 0.1) 0%, transparent 50%), radial-gradient(circle at 40% 70%, rgba(0, 191, 255, 0.1) 0%, transparent 50%); filter: blur(70px); z-index: -3; animation: auroraDrift 20s infinite alternate-reverse ease-in-out !important; pointer-events: none; }
+    @keyframes auroraDrift { 0% { transform: scale(1) translate(0px, 0px); opacity: 0.5; } 50% { transform: scale(1.1) translate(2vw, 3vh); opacity: 1; } 100% { transform: scale(0.9) translate(-2vw, 4vh); opacity: 0.6; } }
+
+    /* ⏳ REDIRECT UI STYLING */
+    .redirect-box {
+      text-align: center;
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 60vh;
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .redirect-box h2 {
+      color: white;
+      margin-bottom: 5px;
+      font-size: 22px;
+      letter-spacing: 1px;
+    }
+    body.light-mode .redirect-box h2 { color: #0f172a; }
+
+    .redirect-box p {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 15px;
+      margin-bottom: 20px;
+    }
+    body.light-mode .redirect-box p { color: #475569; }
+
+    /* 🚨 MASSIVE COUNTDOWN TEXT */
+    .massive-timer {
+      font-size: 38px;
+      font-weight: 900;
+      color: #00bfff;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-shadow: 0 0 15px rgba(0, 191, 255, 0.6);
+      margin: 25px 0;
+      line-height: 1.2;
+    }
+    body.light-mode .massive-timer { color: #0284c7; text-shadow: none; }
+
+    /* 🌀 PREMIUM LOADING SPINNER */
+    .spinner {
+      width: 45px;
+      height: 45px;
+      border: 4px solid rgba(255, 255, 255, 0.1);
+      border-top: 4px solid #00bfff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 15px;
+      box-shadow: 0 0 15px rgba(0, 191, 255, 0.4);
+    }
+    body.light-mode .spinner { border: 4px solid rgba(0, 0, 0, 0.1); border-top: 4px solid #0284c7; }
+
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* 💰 ADSTERRA CONTAINERS */
+    .ad-slot {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 15px auto;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="file redirect-box">
+      
+      <div class="ad-slot" style="min-height: 60px;">
+        <script async="async" data-cfasync="false" src="https://pl29306825.effectivecpmnetwork.com/29298f7fb07bda835a6b524bbf123616/invoke.js"></script>
+        <div id="container-29298f7fb07bda835a6b524bbf123616"></div>
+      </div>
+
+      <div class="spinner"></div>
+      
+      <h2>Establishing Connection</h2>
+      <p>Fetching the highest quality stream...</p>
+      
+      <div class="massive-timer" id="timerDisplay">PLEASE WAIT 5 SECONDS...</div>
+
+      <div class="ad-slot" style="min-height: 250px;">
+        <script>
+          atOptions = {
+            'key' : 'c371556f2f761e68ac3fdb0215382818',
+            'format' : 'iframe',
+            'height' : 250,
+            'width' : 300,
+            'params' : {}
+          };
+        </script>
+        <script src="https://www.highperformanceformat.com/c371556f2f761e68ac3fdb0215382818/invoke.js"></script>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // Keep theme consistent
+    if (localStorage.getItem('theme') === 'light') {
+      document.body.classList.add('light-mode');
+    }
+
+    // --- AUTOMATIC REDIRECT LOGIC ---
+    window.addEventListener("DOMContentLoaded", () => {
+      let secondsLeft = 5; 
+      const timerDisplay = document.getElementById('timerDisplay');
+      const urlParams = new URLSearchParams(window.location.search);
+      const destination = urlParams.get('dest');
+
+      const countdownInterval = setInterval(() => {
+        secondsLeft--;
+        // Updates the massive text dynamically
+        timerDisplay.innerText = `PLEASE WAIT ${secondsLeft} SECONDS...`;
+
+        if (secondsLeft <= 0) {
+          clearInterval(countdownInterval);
+          if (destination) {
+            window.location.href = decodeURIComponent(destination);
+          } else {
+            window.location.href = "index.html";
+          }
+        }
+      }, 1000);
+    });
+  </script>
+
+  <script src="https://pl29522493.effectivecpmnetwork.com/50/d8/4a/50d84a0304bceb23881f457cb480bf07.js"></script>
+</body>
+</html>
