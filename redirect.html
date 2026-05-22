@@ -121,7 +121,7 @@
       </p>
       
       <div class="massive-timer">
-        REDIRECT IN <span class="odometer-box" id="timerNumber"></span>...
+        REDIRECT IN&nbsp;&nbsp;<span class="odometer-box" id="timerNumber"></span>...
       </div>
 
       <div class="ad-slot" style="min-height: 250px;">
@@ -168,9 +168,11 @@
         if (secondsLeft <= 0) {
           clearInterval(countdownInterval);
           if (destination) {
-            window.location.href = decodeURIComponent(destination);
+            // 🚀 FIXED: Using replace() so the browser forgets this ad page in history
+            window.location.replace(decodeURIComponent(destination));
           } else {
-            window.location.href = "index.html";
+            // 🚀 FIXED: Using replace() here too
+            window.location.replace("index.html");
           }
         }
       }, 1000);
