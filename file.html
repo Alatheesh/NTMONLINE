@@ -383,18 +383,18 @@ async function loadFile() {
   `;
 }
 
-// 🚀 UPDATED REDIRECT LOGIC
+// 🚀 FIXED REDIRECT LOGIC (Points directly to Netlify)
 function openWatch(link) {
   // 1. Encode the actual video link to make it safe for URLs
   const encodedVideoLink = encodeURIComponent(link);
   
-  // 2. Build the final destination URL (where they go after the 5 seconds)
-  const finalDestination = "watch.html?link=" + encodedVideoLink;
+  // 2. Build the final destination URL EXPLICITLY for your Netlify host!
+  const finalDestination = "https://ntmonline.netlify.app/watch.html?link=" + encodedVideoLink;
   
   // 3. Encode that entire destination string
   const encodedDest = encodeURIComponent(finalDestination);
   
-  // 4. Send the user to the redirect page, carrying the destination on its back!
+  // 4. Send the user to the redirect page, carrying the Netlify destination on its back!
   window.location.href = "redirect.html?dest=" + encodedDest;
 }
 
