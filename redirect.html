@@ -51,20 +51,23 @@
     }
     body.light-mode .massive-timer { color: #0284c7; text-shadow: none; }
 
-    /* The box that hides the numbers scrolling outside of it */
+    /* 🔧 FIXED: The box that hides the numbers scrolling outside of it */
     .odometer-box {
       display: inline-block;
       overflow: hidden;
       height: 1em;
-      min-width: 1.2ch; /* Prevents text from jumping when going from 10 to 9 */
+      padding: 15px 5px; /* Adds invisible space inside so the glow doesn't hit a wall */
+      margin: -15px 0;   /* Pulls the outside text back in so the layout stays tight */
+      min-width: 1.2ch; 
       text-align: center;
-      margin: 0 5px;
-      vertical-align: top;
+      vertical-align: middle;
     }
 
-    /* The actual number that rolls up */
+    /* 🎨 NEW COLOR: The actual number that rolls up */
     .odo-digit {
       display: block;
+      color: #ffffff; /* Crisp white number */
+      text-shadow: 0 0 20px rgba(255, 255, 255, 0.8); /* Pure white glow */
       animation: rollUp 0.35s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
     }
 
@@ -138,7 +141,6 @@
   </div>
 
   <script>
-    // Keep theme consistent
     if (localStorage.getItem('theme') === 'light') {
       document.body.classList.add('light-mode');
     }
@@ -160,7 +162,7 @@
       const countdownInterval = setInterval(() => {
         secondsLeft--;
         
-        // This injects a brand new span every second, which triggers the CSS "rollUp" animation perfectly!
+        // Injects a brand new span every second, triggering the CSS roll animation
         timerNumber.innerHTML = `<span class="odo-digit">${secondsLeft}</span>`;
 
         if (secondsLeft <= 0) {
