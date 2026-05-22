@@ -35,7 +35,7 @@
     }
     body.light-mode .redirect-box h2 { color: #0f172a; }
 
-    /* 🚨 MASSIVE COUNTDOWN TEXT */
+    /* 🚨 MASSIVE COUNTDOWN TEXT & ODOMETER */
     .massive-timer {
       font-size: 38px;
       font-weight: 900;
@@ -44,9 +44,35 @@
       letter-spacing: 2px;
       text-shadow: 0 0 15px rgba(0, 191, 255, 0.6);
       margin: 25px 0;
-      line-height: 1.2;
+      line-height: 1em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     body.light-mode .massive-timer { color: #0284c7; text-shadow: none; }
+
+    /* The box that hides the numbers scrolling outside of it */
+    .odometer-box {
+      display: inline-block;
+      overflow: hidden;
+      height: 1em;
+      min-width: 1.2ch; /* Prevents text from jumping when going from 10 to 9 */
+      text-align: center;
+      margin: 0 5px;
+      vertical-align: top;
+    }
+
+    /* The actual number that rolls up */
+    .odo-digit {
+      display: block;
+      animation: rollUp 0.35s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+    }
+
+    /* Mechanical rolling animation */
+    @keyframes rollUp {
+      0% { transform: translateY(100%); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
 
     /* 🌀 PREMIUM LOADING SPINNER */
     .spinner {
@@ -88,10 +114,12 @@
       
       <h2>Establishing Connection...</h2>
       <p style="color: #00bfff; font-weight: bold; font-size: 16px; margin-bottom: 20px;">
-        Sit back and relax! No need to click anything.
+        Sit back and relax! Your stream will load automatically.
       </p>
       
-      <div class="massive-timer" id="timerDisplay">AUTOMATIC REDIRECT IN 8...</div>
+      <div class="massive-timer">
+        REDIRECT IN <span class="odometer-box" id="timerNumber"></span>...
+      </div>
 
       <div class="ad-slot" style="min-height: 250px;">
         <script>
@@ -115,17 +143,25 @@
       document.body.classList.add('light-mode');
     }
 
-    // --- AUTOMATIC REDIRECT LOGIC ---
+    // --- AUTOMATIC RANDOMIZED ODOMETER REDIRECT ---
     window.addEventListener("DOMContentLoaded", () => {
-      let secondsLeft = 8; 
-      const timerDisplay = document.getElementById('timerDisplay');
+      
+      // 🎲 Randomly picks a number between 5 and 10 seconds!
+      const possibleTimes = [5, 6, 7, 8, 9, 10];
+      let secondsLeft = possibleTimes[Math.floor(Math.random() * possibleTimes.length)];
+      
+      const timerNumber = document.getElementById('timerNumber');
       const urlParams = new URLSearchParams(window.location.search);
       const destination = urlParams.get('dest');
 
+      // Inject the very first number immediately
+      timerNumber.innerHTML = `<span class="odo-digit">${secondsLeft}</span>`;
+
       const countdownInterval = setInterval(() => {
         secondsLeft--;
-        // Updates the massive text dynamically
-        timerDisplay.innerText = `AUTOMATIC REDIRECT IN ${secondsLeft}...`;
+        
+        // This injects a brand new span every second, which triggers the CSS "rollUp" animation perfectly!
+        timerNumber.innerHTML = `<span class="odo-digit">${secondsLeft}</span>`;
 
         if (secondsLeft <= 0) {
           clearInterval(countdownInterval);
