@@ -509,7 +509,7 @@ function openWatch(clickedIndex) {
   }
 
   // Send the payload to Netlify via URL parameter
-  const netlifyUrl = "https://ntmonline.netlify.app/watch.html?data=" + encodeURIComponent(scrambledPayload);
+  const netlifyUrl = "https://ntmonline.vercel.app/watch.html?data=" + encodeURIComponent(scrambledPayload);
 
   // If redirect.html is on your GitHub pages, we use it to redirect to Netlify
   const finalDestination = "redirect.html?dest=" + encodeURIComponent(netlifyUrl);
