@@ -508,11 +508,12 @@ function openWatch(clickedIndex) {
     scrambledPayload = JSON.stringify(bingeData);
   }
 
-  const vercelUrl = "https://ntmonline.vercel.app/watch.html?data=" + encodeURIComponent(scrambledPayload);
+  // 🚀 UPDATE THIS LINE TO NETLIFY
+  const netlifyUrl = "https://ntmonline.netlify.app/watch.html?data=" + encodeURIComponent(scrambledPayload);
 
-  // And make sure the destination uses the new variable!
-  const finalDestination = "redirect.html?dest=" + encodeURIComponent(vercelUrl);
-
+  // Send the payload to Netlify via the redirect page
+  const finalDestination = "redirect.html?dest=" + encodeURIComponent(netlifyUrl);
+  
   setTimeout(() => {
     window.location.href = finalDestination;
   }, 3500);
