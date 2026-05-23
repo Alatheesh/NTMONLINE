@@ -139,117 +139,132 @@ function goHome() {
   window.location.href = "index.html";
 }
 
-// ---------------- SEARCH ----------------
+// ---------------- SMART SEARCH & TOGGLE CLEAR ----------------
 const searchInput = document.getElementById("search");
 const searchBtn = document.getElementById("searchBtn");
+let isSearchActive = false; // Tracks if button is 🔍 or ✖
 
-async function performSearch() {
-  const value = searchInput.value.toLowerCase().trim();
-
-  // If search is empty, reload page 1
-  if (!value) {
+async function toggleSearch() {
+  if (isSearchActive) {
+    // 🛑 IT IS CURRENTLY AN 'X' -> CLEAR THE SEARCH
+    searchInput.value = "";              
+    searchBtn.innerHTML = "🔍";          
+    isSearchActive = false;              
+    
+    // Reload normal page 1
     currentPage = 1;
     loadPage(1);
-    return;
-  }
-
-  // Show loading indicator
-  fileList.innerHTML = "<p style='text-align: center; color: white;'>Searching...</p>";
-
-  let results = [];
-
-  // 1. Search Local JSON
-  const localMatches = allJsonFiles.filter(file => {
-    const nameStr = (file.name || "").toLowerCase();
-    const catStr = (file.category || "").toLowerCase();
-    const typeStr = (file.type || "").toLowerCase();
-
-    return nameStr.includes(value) || catStr.includes(value) || typeStr.includes(value);
-  });
-  
-  results.push(...localMatches);
-
-  // 2. Search Firebase
-  try {
-    const snapshot = await db.collection("files").get();
     
-    const firebaseMatches = [];
-    snapshot.forEach(doc => {
-      const d = doc.data();
-      const nameStr = (d.name || "").toLowerCase();
-      const catStr = (d.category || "").toLowerCase();
-      const typeStr = (d.type || "").toLowerCase();
+  } else {
+    // 🟢 IT IS CURRENTLY A '🔍' -> PERFORM THE SMART SEARCH
+    const value = searchInput.value.toLowerCase().trim();
 
-      // Fixes the exact match bug by checking if the text is included anywhere
-      if (nameStr.includes(value) || catStr.includes(value) || typeStr.includes(value)) {
-        firebaseMatches.push({
-          id: d.customId,
-          name: d.name,
-          type: d.type,
-          category: d.category,
-          description: d.description || "",
-          image: d.image || "",
-          downloads: d.links || []
-        });
-      }
+    // If empty, do nothing
+    if (!value) return; 
+    
+    // Change button to X and set active state
+    searchBtn.innerHTML = "✖";
+    isSearchActive = true;
+
+    // Show loading indicator
+    fileList.innerHTML = "<p style='text-align: center; color: white;'>Searching...</p>";
+
+    let results = [];
+    
+    // Break search into individual words
+    const searchWords = value.split(" ").filter(word => word.trim() !== "");
+
+    // 1. Search Local JSON (Smart Filter)
+    const localMatches = allJsonFiles.filter(file => {
+      const fileData = `${file.name || ""} ${file.type || ""} ${file.category || ""} ${file.description || ""} ${file.year || ""}`.toLowerCase();
+      return searchWords.every(word => fileData.includes(word));
     });
+    
+    results.push(...localMatches);
 
-    // Combine and remove duplicates
-    const combined = [...results, ...firebaseMatches];
-    const uniqueResultsMap = new Map();
-    combined.forEach(item => uniqueResultsMap.set(item.id, item));
-    results = Array.from(uniqueResultsMap.values());
+    // 2. Search Firebase (Smart Filter)
+    try {
+      const snapshot = await db.collection("files").get();
+      
+      const firebaseMatches = [];
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        const fileData = `${d.name || ""} ${d.type || ""} ${d.category || ""} ${d.description || ""} ${d.year || ""}`.toLowerCase();
 
-  } catch (error) {
-    console.error("Error searching Firebase:", error);
-  }
+        // Check if EVERY word exists in this specific Firebase entry
+        if (searchWords.every(word => fileData.includes(word))) {
+          firebaseMatches.push({
+            id: d.customId,
+            name: d.name,
+            type: d.type,
+            category: d.category,
+            description: d.description || "",
+            image: d.image || "",
+            downloads: d.links || []
+          });
+        }
+      });
 
-  // Sort descending
-  results.sort((a, b) => b.id - a.id);
+      // Combine and remove duplicates
+      const combined = [...results, ...firebaseMatches];
+      const uniqueResultsMap = new Map();
+      combined.forEach(item => uniqueResultsMap.set(item.id, item));
+      results = Array.from(uniqueResultsMap.values());
 
-  // Update display
-  currentFiles = results;
-  
-  fileList.innerHTML = "";
-  
-  if (currentFiles.length === 0) {
-    fileList.innerHTML = `<p style="text-align:center; color: white;">No results found for "${searchInput.value}"</p>`;
-    return;
-  }
+    } catch (error) {
+      console.error("Error searching Firebase:", error);
+    }
 
-  fileList.innerHTML = `<p class="page-info">Found ${currentFiles.length} result(s)</p>`;
+    // Sort descending
+    results.sort((a, b) => b.id - a.id);
 
-  currentFiles.forEach(file => {
-    fileList.innerHTML += `
-      <div class="file">
-        <div>
-          <strong>${file.name}</strong><br>
-          <small>${file.type} • ${file.category}</small>
+    // Update display
+    currentFiles = results;
+    
+    fileList.innerHTML = "";
+    
+    if (currentFiles.length === 0) {
+      fileList.innerHTML = `<p style="text-align:center; color: white;">No results found for "${searchInput.value}"</p>`;
+      return;
+    }
+
+    fileList.innerHTML = `<p class="page-info">Found ${currentFiles.length} result(s)</p>`;
+
+    currentFiles.forEach(file => {
+      fileList.innerHTML += `
+        <div class="file">
+          <div>
+            <strong>${file.name}</strong><br>
+            <small>${file.type} • ${file.category}</small>
+          </div>
+          <button onclick="openFile(${file.id})">View Details</button>
         </div>
-        <button onclick="openFile(${file.id})">View Details</button>
-      </div>
-    `;
-  });
+      `;
+    });
+  }
 }
 
 // Add event listeners for the new Search Button & Enter Key
 if (searchBtn) {
-  searchBtn.addEventListener("click", performSearch);
+  // Bind the button directly to the toggle function
+  searchBtn.onclick = toggleSearch;
 }
 
 if (searchInput) {
   searchInput.addEventListener("keypress", function (e) {
     if (e.key === "Enter") {
       e.preventDefault();
-      performSearch();
+      // Only search if it is not already showing the 'X'
+      if (!isSearchActive) {
+        toggleSearch();
+      }
     }
   });
 
-  // Reload the default list immediately if the user clears the search box
+  // If the user manually backspaces to clear the text box while the X is showing, reset it
   searchInput.addEventListener("input", function(e) {
-    if(e.target.value.trim() === "") {
-        currentPage = 1;
-        loadPage(1);
+    if(e.target.value.trim() === "" && isSearchActive) {
+        toggleSearch(); 
     }
   });
 }
