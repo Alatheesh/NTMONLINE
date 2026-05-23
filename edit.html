@@ -2,6 +2,10 @@
 <html>
 <head>
   <title>Edit Files</title>
+  <style>
+    .ep-input { display: none; width: 80px; }
+    .is-series .ep-input { display: inline-block; }
+  </style>
 </head>
 <body>
 
@@ -17,6 +21,13 @@
 <hr>
 
 <h3>Edit Selected File</h3>
+
+<div style="margin-bottom: 15px; padding: 10px; background: #eee; border-radius: 5px; display: inline-block;">
+  <strong>Format:</strong>
+  <label><input type="radio" name="format" value="movie" checked onchange="toggleFormat()"> Movie</label>
+  <label><input type="radio" name="format" value="series" onchange="toggleFormat()"> Series</label>
+</div>
+<br>
 
 <input type="text" id="name" placeholder="File Name"><br><br>
 <input type="text" id="type" placeholder="Type"><br><br>
@@ -60,18 +71,25 @@ auth.onAuthStateChanged(user => {
   }
 });
 
+// 🔄 TOGGLE MOVIE/SERIES
+function toggleFormat() {
+  const isSeries = document.querySelector('input[name="format"]:checked').value === "series";
+  const container = document.getElementById("links-container");
+  if (isSeries) {
+    container.classList.add("is-series");
+  } else {
+    container.classList.remove("is-series");
+  }
+}
+
 // 🔹 LOAD FILES
 async function loadFiles() {
   const container = document.getElementById("fileList");
   container.innerHTML = "Loading...";
-
   const snapshot = await db.collection("files").get();
-
   container.innerHTML = "";
-
   snapshot.forEach(doc => {
     const data = doc.data();
-
     container.innerHTML += `
       <div style="border:1px solid #ccc; padding:10px; margin:10px;">
         <strong>${data.name}</strong><br>
@@ -84,15 +102,14 @@ async function loadFiles() {
 }
 
 // ➕ ADD LINK ROW
-function addLink(url = "", size = "", unit = "MB") {
+function addLink(url = "", episode = "", size = "", unit = "MB") {
   const container = document.getElementById("links-container");
-
   const div = document.createElement("div");
   div.classList.add("link-row");
 
   div.innerHTML = `
     <input type="text" value="${url}" placeholder="Enter link" class="link-input">
-    <input type="number" value="${size}" placeholder="Size" class="size-input">
+    <input type="text" value="${episode}" placeholder="Ep 1" class="ep-input"> <input type="number" value="${size}" placeholder="Size" class="size-input" style="width:70px;">
     <select class="size-unit">
       <option value="KB" ${unit==="KB"?"selected":""}>KB</option>
       <option value="MB" ${unit==="MB"?"selected":""}>MB</option>
@@ -100,7 +117,6 @@ function addLink(url = "", size = "", unit = "MB") {
     </select>
     <button onclick="removeRow(this)">❌</button>
   `;
-
   container.appendChild(div);
 }
 
@@ -113,14 +129,9 @@ function removeRow(btn) {
 async function selectFile(docId) {
   const docRef = db.collection("files").doc(docId);
   const docSnap = await docRef.get();
-
-  if (!docSnap.exists) {
-    alert("File not found");
-    return;
-  }
+  if (!docSnap.exists) { alert("File not found"); return; }
 
   const data = docSnap.data();
-
   currentDocId = docId;
 
   document.getElementById("name").value = data.name || "";
@@ -132,47 +143,55 @@ async function selectFile(docId) {
   const container = document.getElementById("links-container");
   container.innerHTML = "";
 
-  // 🔥 HANDLE BOTH OLD + NEW FORMAT
+  let isSeriesFormat = false;
+
   if (Array.isArray(data.links)) {
     data.links.forEach(link => {
       if (typeof link === "string") {
-        // old format
-        addLink(link, "", "MB");
+        addLink(link, "", "", "MB");
       } else {
-        // new format
-        addLink(link.url, link.size, link.unit);
+        if (link.episode) isSeriesFormat = true;
+        addLink(link.url, link.episode || "", link.size, link.unit);
       }
     });
   }
 
-  if (!data.links || data.links.length === 0) {
-    addLink(); // at least one row
+  // Set the toggle properly
+  if (isSeriesFormat) {
+    document.querySelector('input[name="format"][value="series"]').checked = true;
+  } else {
+    document.querySelector('input[name="format"][value="movie"]').checked = true;
   }
+  toggleFormat();
+
+  if (!data.links || data.links.length === 0) { addLink(); }
 }
 
 // 🔹 UPDATE FILE
 async function updateFile() {
-
-  if (!currentDocId) {
-    alert("Select a file first");
-    return;
-  }
+  if (!currentDocId) { alert("Select a file first"); return; }
 
   const fileName = document.getElementById("name").value.trim();
   const fileType = document.getElementById("type").value.trim();
   const fileCategory = document.getElementById("category").value.trim();
   const fileImage = document.getElementById("image").value.trim();
+  const isSeries = document.querySelector('input[name="format"]:checked').value === "series";
 
   const rows = document.querySelectorAll(".link-row");
   let links = [];
 
   rows.forEach(row => {
     const url = row.querySelector(".link-input").value.trim();
+    const episode = row.querySelector(".ep-input").value.trim();
     const size = row.querySelector(".size-input").value.trim();
     const unit = row.querySelector(".size-unit").value;
 
     if (url) {
-      links.push({ url, size, unit });
+      if (isSeries && episode) {
+        links.push({ url, episode, size, unit });
+      } else {
+        links.push({ url, size, unit });
+      }
     }
   });
 
@@ -187,13 +206,10 @@ async function updateFile() {
       links: links,
       description: fileDescription
     });
-
     alert("File updated successfully!");
-
     currentDocId = null;
     loadFiles();
     document.getElementById("links-container").innerHTML = "";
-
   } catch (err) {
     console.error(err);
     alert(err.message);
