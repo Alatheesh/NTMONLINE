@@ -261,10 +261,18 @@ if (searchInput) {
     }
   });
 
-  // If the user manually backspaces to clear the text box while the X is showing, reset it
+  // ⌨️ TYPING LISTENER: Handle button state while user is typing
   searchInput.addEventListener("input", function(e) {
-    if(e.target.value.trim() === "" && isSearchActive) {
-        toggleSearch(); 
+    // 1. If the X is showing, but they start typing/editing, turn it back to a magnifying glass!
+    if (isSearchActive) {
+        searchBtn.innerHTML = "🔍";
+        isSearchActive = false;
+    }
+
+    // 2. If they completely clear the box manually, instantly reload the default home page
+    if (e.target.value.trim() === "") {
+        currentPage = 1;
+        loadPage(1);
     }
   });
 }
