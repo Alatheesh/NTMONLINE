@@ -330,6 +330,7 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 let currentFileId = null;
+let allFileLinks = []; // 🚀 STORE EVERYTHING GLOBALLY TO PREVENT EXTRA FIREBASE READS
 
 window.addEventListener("DOMContentLoaded", async function () {
   try {
@@ -374,46 +375,99 @@ async function loadFile() {
   const file = [...localFiles, ...firebaseFiles].find(f => Number(f.id) === id);
 
   if (!file) {
-    fileCard.innerHTML = "File not found";
+    document.getElementById("fileCard").innerHTML = "File not found";
     return;
   }
 
   currentFileId = file.id;
 
-  let links = [];
-
+  // Save links into memory for fast filtering
   if (Array.isArray(file.links) && file.links.length > 0) {
-    links = file.links;
+    allFileLinks = file.links;
   } 
   else if (Array.isArray(file.downloads) && file.downloads.length > 0) {
-    links = file.downloads;
+    allFileLinks = file.downloads;
   } 
   else if (file.link && typeof file.link === "string" && file.link.trim() !== "") {
-    links = [file.link];
+    allFileLinks = [file.link];
+  }
+
+  // 🚀 QUALITY ANALYSIS ENGINE
+  let isSeries = false;
+  let availableQualities = new Set();
+
+  allFileLinks.forEach(l => {
+    if (typeof l === "object" && l.episode) {
+      isSeries = true;
+      if (l.quality) availableQualities.add(l.quality);
+    }
+  });
+
+  let qualityDropdownHTML = "";
+  
+  if (isSeries && availableQualities.size > 0) {
+    // Sort logic (Auto, 480p, 720p, 1080p, 4K)
+    const order = {"Auto": 1, "480p": 2, "720p": 3, "1080p": 4, "4K": 5};
+    const sortedQualities = Array.from(availableQualities).sort((a, b) => (order[a] || 99) - (order[b] || 99));
+    
+    // Check if 480p exists, if so set as default. Otherwise, default to first available.
+    let defaultQ = sortedQualities.includes("480p") ? "480p" : sortedQualities[0];
+
+    qualityDropdownHTML = `
+      <div style="margin: 20px 0; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; border: 1px solid rgba(0, 191, 255, 0.3);">
+        <label for="qualitySelect" style="color: #00bfff; font-weight: bold; margin-right: 10px;">⚙️ Select Quality:</label>
+        <select id="qualitySelect" onchange="renderButtons()" style="padding: 6px 12px; border-radius: 5px; background: #0a1128; color: #fff; border: 1px solid #00bfff; font-weight: bold; outline: none; cursor: pointer;">
+          ${sortedQualities.map(q => `<option value="${q}" ${q === defaultQ ? "selected" : ""}>${q}</option>`).join("")}
+        </select>
+      </div>
+    `;
+  }
+
+  document.getElementById("fileCard").innerHTML = `
+    <img src="${file.image || 'https://via.placeholder.com/400x220?text=No+Image'}">
+    <h2>${file.name}</h2>
+    <p><strong>${file.type}</strong> • ${file.category}</p>
+    <p>${file.description || ''}</p>
+    ${qualityDropdownHTML}
+    <div id="dynamic-button-container"></div>
+  `;
+
+  renderButtons();
+}
+
+// 🚀 RENDER FILTERED BUTTONS
+function renderButtons() {
+  const container = document.getElementById("dynamic-button-container");
+  const qualitySelect = document.getElementById("qualitySelect");
+  
+  let linksToRender = allFileLinks;
+
+  if (qualitySelect) {
+    const selectedQuality = qualitySelect.value;
+    linksToRender = allFileLinks.filter(l => typeof l === "object" && l.quality === selectedQuality);
   }
 
   let downloadHTML = "";
 
-  if (links.length > 0) {
+  if (linksToRender.length > 0) {
     downloadHTML = `<div class="download-grid">`;
 
-    links.forEach((l,i) => {
-      let url = typeof l === "string" ? l : l.url;
-      let label = `Watch ${i+1}`; // Default
+    linksToRender.forEach((l, i) => {
+      let label = `Watch ${i+1}`; 
       
-      // 🚀 NEW LOGIC: Check for both Series (Episode) and Movies (Size only)
       if (typeof l === "object" && l !== null) {
         if (l.episode && l.size) {
-          label = `🎥 Watch ${l.episode} - ${l.size} ${l.unit} 🍿`;
+          label = `▶ ${l.episode} - ${l.size} ${l.unit}`;
         } else if (l.episode) {
-          label = `🎥 Watch ${l.episode} 🍿`;
+          label = `▶ ${l.episode}`;
         } else if (l.size) {
           label = `🎥 Watch ${l.size} ${l.unit} 🍿`;
         }
       }
 
+      // We pass the index 'i' so the Binge player knows which episode to start on!
       downloadHTML += `
-        <button onclick="openWatch('${url}')">
+        <button onclick="openWatch(${i})">
           ${label}
         </button>
       `;
@@ -421,33 +475,41 @@ async function loadFile() {
 
     downloadHTML += `</div>`;
   } else {
-    downloadHTML = `<p style='opacity:0.7;'>No stream link available</p>`;
+    downloadHTML = `<p style='opacity:0.7;'>No episodes available for this quality.</p>`;
   }
 
-  fileCard.innerHTML = `
-    <img src="${file.image || 'https://via.placeholder.com/400x220?text=No+Image'}">
-    <h2>${file.name}</h2>
-    <p><strong>${file.type}</strong> • ${file.category}</p>
-    <p>${file.description || ''}</p>
-    ${downloadHTML}
-  `;
+  container.innerHTML = downloadHTML;
 }
 
-// 🚀 UPDATED MODAL REDIRECT LOGIC
-function openWatch(link) {
-  // 1. Show the warning modal beautifully
+// 🚀 ADVANCED BINGE-WATCH PACKAGE LOGIC
+function openWatch(clickedIndex) {
   const modal = document.getElementById('warningModal');
   modal.style.display = 'flex';
-  
-  // Use a tiny timeout to trigger the smooth CSS animation
   setTimeout(() => { modal.classList.add('active'); }, 10);
 
-  // 2. Prepare the links behind the scenes
-  const encodedVideoLink = encodeURIComponent(link);
-  const finalDestination = "https://ntmonline.netlify.app/watch.html?link=" + encodedVideoLink;
+  // Figure out the current active playlist
+  let currentPlaylist = allFileLinks;
+  const qualitySelect = document.getElementById("qualitySelect");
+  if (qualitySelect) {
+    currentPlaylist = allFileLinks.filter(l => typeof l === "object" && l.quality === qualitySelect.value);
+  }
+
+  // Package the entire season data so the watch page doesn't need to load Firebase
+  const bingeData = {
+    currentIndex: clickedIndex,
+    playlist: currentPlaylist
+  };
+
+  // Scramble the whole JSON package and save it into the browser memory
+  try {
+    sessionStorage.setItem("secureStreamData", btoa(JSON.stringify(bingeData)));
+  } catch(e) {
+    sessionStorage.setItem("secureStreamData", JSON.stringify(bingeData));
+  }
+
+  const finalDestination = "watch.html";
   const encodedDest = encodeURIComponent(finalDestination);
 
-  // 3. Wait exactly 3.5 seconds so they read the warning, then auto-redirect!
   setTimeout(() => {
     window.location.href = "redirect.html?dest=" + encodedDest;
   }, 3500);
@@ -476,7 +538,6 @@ function reportIssue() {
   });
 }
 
-// 🚀 FIXED: Prevent the modal from getting stuck when using the Back button!
 window.addEventListener('pageshow', function (event) {
   const modal = document.getElementById('warningModal');
   if (modal) {
