@@ -399,9 +399,18 @@ async function loadFile() {
 
     links.forEach((l,i) => {
       let url = typeof l === "string" ? l : l.url;
-      let label = typeof l === "string"
-        ? `Watch ${i+1}`
-        : (l.size ? `🎥 Watch ${l.size} ${l.unit} 🍿` : `Watch ${i+1}`);
+      let label = `Watch ${i+1}`; // Default
+      
+      // 🚀 NEW LOGIC: Check for both Series (Episode) and Movies (Size only)
+      if (typeof l === "object" && l !== null) {
+        if (l.episode && l.size) {
+          label = `🎥 Watch ${l.episode} - ${l.size} ${l.unit} 🍿`;
+        } else if (l.episode) {
+          label = `🎥 Watch ${l.episode} 🍿`;
+        } else if (l.size) {
+          label = `🎥 Watch ${l.size} ${l.unit} 🍿`;
+        }
+      }
 
       downloadHTML += `
         <button onclick="openWatch('${url}')">
