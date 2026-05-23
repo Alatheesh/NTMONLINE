@@ -481,7 +481,7 @@ function renderButtons() {
   container.innerHTML = downloadHTML;
 }
 
-// 🚀 ADVANCED BINGE-WATCH PACKAGE LOGIC
+// 🚀 CROSS-DOMAIN BINGE-WATCH PACKAGE LOGIC
 function openWatch(clickedIndex) {
   const modal = document.getElementById('warningModal');
   modal.style.display = 'flex';
@@ -500,18 +500,22 @@ function openWatch(clickedIndex) {
     playlist: currentPlaylist
   };
 
-  // Scramble the whole JSON package and save it into the browser memory
+  // Scramble the whole JSON package
+  let scrambledPayload = "";
   try {
-    sessionStorage.setItem("secureStreamData", btoa(JSON.stringify(bingeData)));
+    scrambledPayload = btoa(JSON.stringify(bingeData));
   } catch(e) {
-    sessionStorage.setItem("secureStreamData", JSON.stringify(bingeData));
+    scrambledPayload = JSON.stringify(bingeData);
   }
 
-  const finalDestination = "watch.html";
-  const encodedDest = encodeURIComponent(finalDestination);
+  // Send the payload to Netlify via URL parameter
+  const netlifyUrl = "https://ntmonline.netlify.app/watch.html?data=" + encodeURIComponent(scrambledPayload);
+
+  // If redirect.html is on your GitHub pages, we use it to redirect to Netlify
+  const finalDestination = "redirect.html?dest=" + encodeURIComponent(netlifyUrl);
 
   setTimeout(() => {
-    window.location.href = "redirect.html?dest=" + encodedDest;
+    window.location.href = finalDestination;
   }, 3500);
 }
 
