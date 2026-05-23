@@ -73,7 +73,7 @@ function toggleFormat() {
   }
 }
 
-// ➕ ADD LINK ROW
+// ➕ ADD LINK ROW (Updated with Quality Dropdown)
 function addLink() {
   const container = document.getElementById("links-container");
 
@@ -82,7 +82,15 @@ function addLink() {
 
   div.innerHTML = `
     <input type="text" placeholder="Enter link" class="link-input">
-    <input type="text" placeholder="Ep 1" class="ep-input"> <input type="number" placeholder="Size" class="size-input" style="width:70px;">
+    <input type="text" placeholder="Ep 1" class="ep-input">
+    <select class="quality-input" style="width:80px;">
+      <option value="Auto">Auto</option>
+      <option value="480p">480p</option>
+      <option value="720p" selected>720p</option>
+      <option value="1080p">1080p</option>
+      <option value="4K">4K</option>
+    </select>
+    <input type="number" placeholder="Size" class="size-input" style="width:70px;">
     <select class="size-unit">
       <option value="KB">KB</option>
       <option value="MB" selected>MB</option>
@@ -114,14 +122,18 @@ async function addFile() {
   rows.forEach(row => {
     const url = row.querySelector(".link-input").value.trim();
     const episode = row.querySelector(".ep-input").value.trim();
+    const quality = row.querySelector(".quality-input").value; // 🚀 NEW QUALITY GRAB
     const size = row.querySelector(".size-input").value.trim();
     const unit = row.querySelector(".size-unit").value;
 
     if (url) {
+      // Scramble URL for security
+      const scrambledUrl = btoa(url);
+
       if (isSeries && episode) {
-        links.push({ url, episode, size, unit });
+        links.push({ url: scrambledUrl, episode, quality, size, unit }); // Added quality
       } else {
-        links.push({ url, size, unit });
+        links.push({ url: scrambledUrl, quality, size, unit }); // Added quality
       }
     }
   });
