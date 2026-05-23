@@ -101,15 +101,23 @@ async function loadFiles() {
   });
 }
 
-// ➕ ADD LINK ROW
-function addLink(url = "", episode = "", size = "", unit = "MB") {
+// ➕ ADD LINK ROW (Updated with Quality)
+function addLink(url = "", episode = "", quality = "720p", size = "", unit = "MB") {
   const container = document.getElementById("links-container");
   const div = document.createElement("div");
   div.classList.add("link-row");
 
   div.innerHTML = `
     <input type="text" value="${url}" placeholder="Enter link" class="link-input">
-    <input type="text" value="${episode}" placeholder="Ep 1" class="ep-input"> <input type="number" value="${size}" placeholder="Size" class="size-input" style="width:70px;">
+    <input type="text" value="${episode}" placeholder="Ep 1" class="ep-input">
+    <select class="quality-input" style="width:80px;">
+      <option value="Auto" ${quality==="Auto"?"selected":""}>Auto</option>
+      <option value="480p" ${quality==="480p"?"selected":""}>480p</option>
+      <option value="720p" ${quality==="720p"?"selected":""}>720p</option>
+      <option value="1080p" ${quality==="1080p"?"selected":""}>1080p</option>
+      <option value="4K" ${quality==="4K"?"selected":""}>4K</option>
+    </select>
+    <input type="number" value="${size}" placeholder="Size" class="size-input" style="width:70px;">
     <select class="size-unit">
       <option value="KB" ${unit==="KB"?"selected":""}>KB</option>
       <option value="MB" ${unit==="MB"?"selected":""}>MB</option>
@@ -148,10 +156,18 @@ async function selectFile(docId) {
   if (Array.isArray(data.links)) {
     data.links.forEach(link => {
       if (typeof link === "string") {
-        addLink(link, "", "", "MB");
+        // Unscramble legacy string links
+        let decodedUrl = link;
+        try { decodedUrl = atob(link); } catch(e) {}
+        addLink(decodedUrl, "", "Auto", "", "MB");
       } else {
         if (link.episode) isSeriesFormat = true;
-        addLink(link.url, link.episode || "", link.size, link.unit);
+        // 🚀 UNSCRAMBLE THE URL SO ADMIN CAN READ IT
+        let decodedUrl = link.url;
+        try { decodedUrl = atob(link.url); } catch(e) {}
+        
+        // Pass the quality parameter (or default to 720p if missing)
+        addLink(decodedUrl, link.episode || "", link.quality || "720p", link.size, link.unit);
       }
     });
   }
@@ -183,14 +199,18 @@ async function updateFile() {
   rows.forEach(row => {
     const url = row.querySelector(".link-input").value.trim();
     const episode = row.querySelector(".ep-input").value.trim();
+    const quality = row.querySelector(".quality-input").value; // 🚀 GET QUALITY
     const size = row.querySelector(".size-input").value.trim();
     const unit = row.querySelector(".size-unit").value;
 
     if (url) {
+      // 🚀 RE-SCRAMBLE URL BEFORE SAVING
+      const scrambledUrl = btoa(url);
+
       if (isSeries && episode) {
-        links.push({ url, episode, size, unit });
+        links.push({ url: scrambledUrl, episode, quality, size, unit });
       } else {
-        links.push({ url, size, unit });
+        links.push({ url: scrambledUrl, quality, size, unit });
       }
     }
   });
