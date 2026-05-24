@@ -32,7 +32,7 @@
     </div>
 
     <div class="top-bar">
-      <h1>🎬 NTM Watch Hub 🍿</h1>
+      <h1 id="secret-title" style="user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; cursor: default;">🎬 NTM Watch Hub 🍿</h1>
       <button id="themeToggle">🌙</button>
     </div>
 
@@ -55,6 +55,84 @@
   </script>
 
   <script src="script.js"></script>
+
+  <script>
+    // 1. THE CLOSURE VAULT (Hidden from F12 Console)
+    let secretCache = null;
+
+    // 2. SILENT PRELOADER (Costs exactly 1 read per page load)
+    async function armTheTrap() {
+      try {
+        const docSnap = await db.collection("system_config").doc("security_keys").get();
+        if (docSnap.exists) {
+          secretCache = docSnap.data(); 
+          console.log("Search modules loaded successfully."); // Fake boring message to trick snoops
+        }
+      } catch (error) {
+        console.log("Error 404: Resource unavailable"); 
+      }
+    }
+    
+    // Fire the silent download immediately
+    armTheTrap();
+
+    // 3. THE 5-SECOND TRIGGER
+    let holdTimer;
+    const secretTrigger = document.getElementById('secret-title'); 
+
+    if (secretTrigger) {
+      
+      const startTimer = (e) => {
+        // Ignore right-clicks on a mouse
+        if (e.type === 'mousedown' && e.button !== 0) return; 
+        
+        holdTimer = setTimeout(() => {
+          
+          if (!secretCache) {
+            alert("Network error. Please try again later.");
+            return;
+          }
+
+          // 🎁 THE TRAP IS SPRUNG
+          let attempt = prompt("Wow, you found the mystery box! 🎁\n\nTry your lucky word to find out what happens next:");
+          
+          if (attempt !== null && attempt.trim() !== "") {
+            
+            // A. Check for Master Key (@Lathu63035) locally
+            if (attempt === secretCache.bossHash) {
+              alert("Welcome back, Boss! 👑");
+              // Decode the cipher and teleport to the admin page
+              window.location.href = atob(secretCache.bossRoute); 
+              return;
+            }
+
+            // B. Check the Comedy Dictionary locally
+            let response = secretCache.trapDictionary[attempt.toLowerCase()];
+            if (response) {
+              alert(response);
+            } else {
+              alert("ACCESS DENIED. Your guess has been logged.");
+            }
+          }
+        }, 5000); // ⏱️ Exactly 5 seconds to trigger
+      };
+
+      const clearTimer = () => {
+        clearTimeout(holdTimer);
+      };
+
+      // 📱 MOBILE & TELEGRAM TOUCH EVENTS
+      secretTrigger.addEventListener('touchstart', startTimer);
+      secretTrigger.addEventListener('touchend', clearTimer);
+      secretTrigger.addEventListener('touchmove', clearTimer);   // Cancels if they scroll
+      secretTrigger.addEventListener('touchcancel', clearTimer);
+
+      // 💻 LAPTOP & CHROME MOUSE EVENTS
+      secretTrigger.addEventListener('mousedown', startTimer);
+      secretTrigger.addEventListener('mouseup', clearTimer);
+      secretTrigger.addEventListener('mouseleave', clearTimer);  // Cancels if mouse slides off
+    }
+  </script>
 
 </body>
 </html>
