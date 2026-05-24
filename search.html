@@ -3,16 +3,20 @@
 <head>
   <title>File Hub • NTM Stream</title>
   <link rel="stylesheet" href="style.css">
-
-  <style>
-    /* 🔥 AD STYLE */
-    .ad {
-      margin-bottom: 15px;
-      text-align: center;
-    }
-  </style>
 </head>
 <body>
+
+  <div id="mysteryModal" class="custom-modal-overlay">
+    <div class="custom-modal-box">
+      <h3 id="modalTitle" class="custom-modal-title">Wow, you found the mystery box! 🎁</h3>
+      <p id="modalDesc" class="custom-modal-desc">Try your lucky word to find out what happens next:</p>
+      <input type="text" id="modalInput" class="custom-modal-input" placeholder="Enter secret word..." autocomplete="off">
+      <div class="custom-modal-buttons">
+        <button id="modalCancel" class="custom-modal-btn btn-cancel">Cancel</button>
+        <button id="modalSubmit" class="custom-modal-btn btn-submit">Submit</button>
+      </div>
+    </div>
+  </div>
 
   <button onclick="goHome()" class="back-btn">← Home</button>
 
@@ -57,24 +61,110 @@
   <script src="script.js"></script>
 
   <script>
-    // 1. THE CLOSURE VAULT (Hidden from F12 Console)
+    // 1. THE CLOSURE VAULT
     let secretCache = null;
 
-    // 2. SILENT PRELOADER (Costs exactly 1 read per page load)
+    // 2. SILENT PRELOADER 
     async function armTheTrap() {
       try {
         const docSnap = await db.collection("system_config").doc("security_keys").get();
         if (docSnap.exists) {
           secretCache = docSnap.data(); 
-          console.log("Search modules loaded successfully."); // Fake boring message to trick snoops
+          console.log("Search modules loaded successfully."); 
         }
       } catch (error) {
         console.log("Error 404: Resource unavailable"); 
       }
     }
-    
-    // Fire the silent download immediately
     armTheTrap();
+
+    // --- MODAL CONTROLLER LOGIC ---
+    const modal = document.getElementById('mysteryModal');
+    const mTitle = document.getElementById('modalTitle');
+    const mDesc = document.getElementById('modalDesc');
+    const mInput = document.getElementById('modalInput');
+    const btnCancel = document.getElementById('modalCancel');
+    const btnSubmit = document.getElementById('modalSubmit');
+    
+    let isAlertMode = false; // Tracks if we are showing the input box or a warning message
+
+    function showPromptModal() {
+      isAlertMode = false;
+      mTitle.innerText = "Wow, you found the mystery box! 🎁";
+      mDesc.innerText = "Try your lucky word to find out what happens next:";
+      mInput.style.display = "block";
+      mInput.value = "";
+      btnCancel.style.display = "block";
+      btnSubmit.innerText = "Submit";
+      modal.classList.add('active');
+      setTimeout(() => mInput.focus(), 100);
+    }
+
+    function showMessageModal(title, message) {
+      isAlertMode = true;
+      mTitle.innerText = title;
+      mDesc.innerText = message;
+      mInput.style.display = "none";
+      btnCancel.style.display = "none";
+      btnSubmit.innerText = "OK";
+      modal.classList.add('active');
+    }
+
+    function closeModal() {
+      modal.classList.remove('active');
+    }
+
+    btnCancel.onclick = closeModal;
+
+    // Handle the Enter Key being pressed in the input box
+    mInput.addEventListener("keypress", function(event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        btnSubmit.click();
+      }
+    });
+
+    btnSubmit.onclick = () => {
+      // If they are just clicking OK on a roast message, close it
+      if (isAlertMode) {
+        closeModal();
+        return;
+      }
+
+      // Capture their guess
+      let attempt = mInput.value;
+      if (attempt !== null && attempt.trim() !== "") {
+        
+        // A. Check for Master Key FIRST!
+        if (attempt === secretCache.bossHash) {
+          showMessageModal("System Override 👑", "Welcome back, Boss! Routing to Admin Panel...");
+          // Give them 1.5 seconds to read the welcome message before teleporting
+          setTimeout(() => {
+            window.location.href = atob(secretCache.bossRoute); 
+          }, 1500);
+          return;
+        }
+
+        // 🕵️‍♂️ THE ENCODER RING (Scrambles guess by +5)
+        let scrambledGuess = "";
+        let lowerAttempt = attempt.toLowerCase();
+        for (let i = 0; i < lowerAttempt.length; i++) {
+          scrambledGuess += String.fromCharCode(lowerAttempt.charCodeAt(i) + 5);
+        }
+
+        // B. Check the Comedy Dictionary using the SCRAMBLED guess
+        let response = secretCache.trapDictionary[scrambledGuess];
+        
+        if (response) {
+          showMessageModal("Access Denied 🛑", response);
+        } else {
+          showMessageModal("Intruder Alert ⚠️", "ACCESS DENIED. Your guess has been logged.");
+        }
+      } else {
+        closeModal(); // If they submitted empty, just close it
+      }
+    };
+
 
     // 3. THE 5-SECOND TRIGGER
     let holdTimer;
@@ -83,54 +173,32 @@
     if (secretTrigger) {
       
       const startTimer = (e) => {
-        // Ignore right-clicks on a mouse
         if (e.type === 'mousedown' && e.button !== 0) return; 
         
         holdTimer = setTimeout(() => {
-          
           if (!secretCache) {
-            alert("Network error. Please try again later.");
+            showMessageModal("Network Error 🌐", "Connection unstable. Please try again later.");
             return;
           }
-
-          // 🎁 THE TRAP IS SPRUNG
-          let attempt = prompt("Wow, you found the mystery box! 🎁\n\nTry your lucky word to find out what happens next:");
-          
-          if (attempt !== null && attempt.trim() !== "") {
-            
-            // A. Check for Master Key (@Lathu63035) locally
-            if (attempt === secretCache.bossHash) {
-              alert("Welcome back, Boss! 👑");
-              // Decode the cipher and teleport to the admin page
-              window.location.href = atob(secretCache.bossRoute); 
-              return;
-            }
-
-            // B. Check the Comedy Dictionary locally
-            let response = secretCache.trapDictionary[attempt.toLowerCase()];
-            if (response) {
-              alert(response);
-            } else {
-              alert("ACCESS DENIED. Your guess has been logged.");
-            }
-          }
-        }, 5000); // ⏱️ Exactly 5 seconds to trigger
+          // 🎁 OPEN THE NEW BEAUTIFUL MODAL
+          showPromptModal();
+        }, 5000); 
       };
 
       const clearTimer = () => {
         clearTimeout(holdTimer);
       };
 
-      // 📱 MOBILE & TELEGRAM TOUCH EVENTS
+      // 📱 TOUCH EVENTS
       secretTrigger.addEventListener('touchstart', startTimer);
       secretTrigger.addEventListener('touchend', clearTimer);
-      secretTrigger.addEventListener('touchmove', clearTimer);   // Cancels if they scroll
+      secretTrigger.addEventListener('touchmove', clearTimer);  
       secretTrigger.addEventListener('touchcancel', clearTimer);
 
-      // 💻 LAPTOP & CHROME MOUSE EVENTS
+      // 💻 MOUSE EVENTS
       secretTrigger.addEventListener('mousedown', startTimer);
       secretTrigger.addEventListener('mouseup', clearTimer);
-      secretTrigger.addEventListener('mouseleave', clearTimer);  // Cancels if mouse slides off
+      secretTrigger.addEventListener('mouseleave', clearTimer);  
     }
   </script>
 
