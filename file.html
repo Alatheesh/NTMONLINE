@@ -330,7 +330,7 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 let currentFileId = null;
-let allFileLinks = []; // 🚀 STORE EVERYTHING GLOBALLY TO PREVENT EXTRA FIREBASE READS
+let allFileLinks = []; 
 
 window.addEventListener("DOMContentLoaded", async function () {
   try {
@@ -381,7 +381,6 @@ async function loadFile() {
 
   currentFileId = file.id;
 
-  // Save links into memory for fast filtering
   if (Array.isArray(file.links) && file.links.length > 0) {
     allFileLinks = file.links;
   } 
@@ -392,7 +391,6 @@ async function loadFile() {
     allFileLinks = [file.link];
   }
 
-  // 🚀 QUALITY ANALYSIS ENGINE
   let isSeries = false;
   let availableQualities = new Set();
 
@@ -405,12 +403,11 @@ async function loadFile() {
 
   let qualityDropdownHTML = "";
   
-  if (isSeries && availableQualities.size > 0) {
-    // Sort logic (Auto, 480p, 720p, 1080p, 4K)
+  // 🔥 UPDATED: Only show if more than one quality exists
+  if (isSeries && availableQualities.size > 1) {
     const order = {"Auto": 1, "480p": 2, "720p": 3, "1080p": 4, "4K": 5};
     const sortedQualities = Array.from(availableQualities).sort((a, b) => (order[a] || 99) - (order[b] || 99));
     
-    // Check if 480p exists, if so set as default. Otherwise, default to first available.
     let defaultQ = sortedQualities.includes("480p") ? "480p" : sortedQualities[0];
 
     qualityDropdownHTML = `
@@ -435,7 +432,6 @@ async function loadFile() {
   renderButtons();
 }
 
-// 🚀 RENDER FILTERED BUTTONS
 function renderButtons() {
   const container = document.getElementById("dynamic-button-container");
   const qualitySelect = document.getElementById("qualitySelect");
@@ -465,7 +461,6 @@ function renderButtons() {
         }
       }
 
-      // We pass the index 'i' so the Binge player knows which episode to start on!
       downloadHTML += `
         <button onclick="openWatch(${i})">
           ${label}
@@ -481,26 +476,22 @@ function renderButtons() {
   container.innerHTML = downloadHTML;
 }
 
-// 🚀 CROSS-DOMAIN BINGE-WATCH PACKAGE LOGIC
 function openWatch(clickedIndex) {
   const modal = document.getElementById('warningModal');
   modal.style.display = 'flex';
   setTimeout(() => { modal.classList.add('active'); }, 10);
 
-  // Figure out the current active playlist
   let currentPlaylist = allFileLinks;
   const qualitySelect = document.getElementById("qualitySelect");
   if (qualitySelect) {
     currentPlaylist = allFileLinks.filter(l => typeof l === "object" && l.quality === qualitySelect.value);
   }
 
-  // Package the entire season data so the watch page doesn't need to load Firebase
   const bingeData = {
     currentIndex: clickedIndex,
     playlist: currentPlaylist
   };
 
-  // Scramble the whole JSON package
   let scrambledPayload = "";
   try {
     scrambledPayload = btoa(JSON.stringify(bingeData));
@@ -508,10 +499,8 @@ function openWatch(clickedIndex) {
     scrambledPayload = JSON.stringify(bingeData);
   }
 
-  // 🚀 UPDATE THIS LINE TO NETLIFY
   const netlifyUrl = "https://ntmonline.netlify.app/watch.html?data=" + encodeURIComponent(scrambledPayload);
 
-  // Send the payload to Netlify via the redirect page
   const finalDestination = "redirect.html?dest=" + encodeURIComponent(netlifyUrl);
   
   setTimeout(() => {
@@ -555,3 +544,4 @@ loadFile();
 
 </body>
 </html>
+
