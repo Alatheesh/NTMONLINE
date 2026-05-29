@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Search • NTM Stream</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* 🎬 NETFLIX-STYLE GRID */
+    .movie-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr; /* 2 columns */
+      gap: 15px;
+      padding: 15px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .movie-card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+      transition: transform 0.3s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .movie-card:hover {
+      transform: scale(1.02);
+    }
+
+    .movie-card img {
+      width: 100%;
+      aspect-ratio: 2/3;
+      object-fit: cover;
+    }
+
+    .movie-info {
+      padding: 10px;
+      text-align: center;
+    }
+
+    .movie-name {
+      font-weight: bold;
+      font-size: 14px;
+      color: white;
+      margin-bottom: 4px;
+    }
+
+    .movie-meta {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    /* 🏷️ NEW BADGE */
+    .new-badge {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: #e50914;
+      color: white;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: bold;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+
+  <button onclick="history.back()" class="back-btn">← Back</button>
+
+  <div class="container">
+    <div class="search-container">
+      <input type="text" id="search" placeholder="Search Movie...">
+    </div>
+    <div id="movie-grid" class="movie-grid"></div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+
+  <script>
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    async function loadTestSearch() {
+      const snapshot = await db.collection("files").get();
+      const grid = document.getElementById("movie-grid");
+      grid.innerHTML = "";
+
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        
+        // 🕒 Check if New (within 3 days)
+        const uploadDate = d.uploadDate ? d.uploadDate.toDate() : new Date(0);
+        const now = new Date();
+        const isNew = (now - uploadDate) < (3 * 24 * 60 * 60 * 1000);
+
+        const card = document.createElement("div");
+        card.className = "movie-card";
+        card.onclick = () => window.location.href = "file.html?id=" + d.customId;
+
+        card.innerHTML = `
+          ${isNew ? '<div class="new-badge">NEW</div>' : ''}
+          <img src="${d.image || 'https://via.placeholder.com/200x300'}">
+          <div class="movie-info">
+            <div class="movie-name">${d.name}</div>
+            <div class="movie-meta">${d.type} • ${d.category}</div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    loadTestSearch();
+  </script>
+</body>
+</html>
