@@ -8,12 +8,9 @@
 <h2>Auto Merge Firebase → files.json</h2>
 
 <button onclick="goBack()">← Back</button>
-
 <br><br>
-
 <button onclick="mergeData()">Merge Data</button>
 <button onclick="copyData()">Copy JSON</button>
-
 <br><br>
 
 <textarea id="output" rows="25" cols="90" placeholder="Merged JSON will appear here..."></textarea>
@@ -25,11 +22,9 @@
 
 <script>
 firebase.initializeApp(firebaseConfig);
-
 const db = firebase.firestore();
 const auth = firebase.auth();
 
-// 🔒 protect page
 auth.onAuthStateChanged(user => {
   if (!user) {
     alert("Login first");
@@ -37,60 +32,57 @@ auth.onAuthStateChanged(user => {
   }
 });
 
-// 🔥 MAIN MERGE FUNCTION
 async function mergeData() {
-
   try {
+    // 1. LOAD LOCAL JSON
+    let localFiles = [];
+    try {
+      const res = await fetch("files.json");
+      localFiles = await res.json();
+    } catch(e) {}
 
-    // 🔹 1. LOAD LOCAL JSON
-    const res = await fetch("files.json");
-    const localFiles = await res.json();
-
-    // 🔹 2. LOAD FIREBASE DATA
-    const snapshot = await db.collection("files").get();
-
+    // 2. LOAD FIREBASE ARRAY DATA (1 Read!)
+    const docSnap = await db.collection("movie_database").doc("master_list").get();
     const firebaseFiles = [];
 
-    snapshot.forEach(doc => {
-      const d = doc.data();
+    if (docSnap.exists && docSnap.data().movies) {
+        const movies = docSnap.data().movies;
+        movies.forEach(d => {
+            firebaseFiles.push({
+                id: d.customId,
+                name: d.name,
+                type: d.type,
+                category: d.category,
+                description: d.description || "",
+                image: d.image || "",
+                downloads: d.links || []
+            });
+        });
+    }
 
-      firebaseFiles.push({
-        id: d.customId,
-        name: d.name,
-        type: d.type,
-        category: d.category,
-        description: d.description || "",
-        image: d.image || "",
-        downloads: d.links || []
-      });
-    });
-
-    // 🔹 3. MERGE BOTH
+    // 3. MERGE BOTH
     const merged = [...localFiles, ...firebaseFiles];
 
-    // 🔹 4. REMOVE DUPLICATES (by id)
+    // 4. REMOVE DUPLICATES (by id)
     const uniqueMap = {};
-
     merged.forEach(item => {
       uniqueMap[item.id] = item;
     });
 
     const finalData = Object.values(uniqueMap);
 
-    // 🔹 5. SORT (latest first)
+    // 5. SORT (latest first)
     finalData.sort((a, b) => b.id - a.id);
 
-    // 🔹 6. OUTPUT CLEAN JSON
-    document.getElementById("output").value =
-      JSON.stringify(finalData, null, 2);
+    // 6. OUTPUT CLEAN JSON
+    document.getElementById("output").value = JSON.stringify(finalData, null, 2);
 
   } catch (err) {
     console.error(err);
-    alert("Error merging data");
+    alert("Error merging data: " + err.message);
   }
 }
 
-// 📋 COPY
 function copyData() {
   const textarea = document.getElementById("output");
   textarea.select();
@@ -98,7 +90,6 @@ function copyData() {
   alert("Copied!");
 }
 
-// 🔙 BACK
 function goBack() {
   window.location.href = "admin.html";
 }
