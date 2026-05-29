@@ -210,13 +210,14 @@ async function loadFile() {
     `;
   }
 
+  // Inject Native Share Button directly into the Card
   document.getElementById("fileCard").innerHTML = `
     <img src="${file.image || 'https://via.placeholder.com/400x220?text=No+Image'}">
     <h2>${file.name}</h2>
     <p><strong>${file.type}</strong> • ${file.category}</p>
     <p>${file.description || ''}</p>
     
-    <button class="share-btn" id="shareBtn" onclick="shareMovie()">🔗 Copy Link to Share</button>
+    <button class="share-btn" id="shareBtn" onclick="shareMovie()">📤 Share</button>
     
     ${qualityDropdownHTML}
     <div id="dynamic-button-container"></div>
@@ -297,20 +298,28 @@ function openWatch(clickedIndex) {
   setTimeout(() => { window.location.href = finalDestination; }, 3500);
 }
 
-// 🚀 SHARE BUTTON LOGIC
+// 🚀 NATIVE SHARE LOGIC
 function shareMovie() {
   const url = window.location.href;
-  navigator.clipboard.writeText(url).then(() => {
-    const btn = document.getElementById("shareBtn");
-    btn.innerHTML = "✅ Link Copied!";
-    btn.style.background = "rgba(40, 167, 69, 0.2)";
-    btn.style.borderColor = "#28a745";
-    setTimeout(() => {
-      btn.innerHTML = "🔗 Copy Link to Share";
-      btn.style.background = "rgba(255, 255, 255, 0.1)";
-      btn.style.borderColor = "rgba(255, 255, 255, 0.2)";
-    }, 2500);
-  }).catch(err => { prompt("Copy this link to share:", url); });
+  const movieTitle = document.querySelector('h2') ? document.querySelector('h2').innerText : "this movie";
+
+  // Check if the browser/device supports native sharing
+  if (navigator.share) {
+    navigator.share({
+      title: 'NTM Watch Hub',
+      text: `Check out ${movieTitle} on NTM Stream! 🍿`,
+      url: url
+    }).catch((error) => {
+      console.log('Error sharing or user cancelled', error);
+    });
+  } else {
+    // Fallback for desktop or older browsers
+    navigator.clipboard.writeText(url).then(() => {
+      alert("✅ Link copied to clipboard!");
+    }).catch(err => { 
+      prompt("Copy this link to share:", url); 
+    });
+  }
 }
 
 function reportIssue() {
