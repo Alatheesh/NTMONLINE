@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Add Movie • Admin</title>
+  <title>Add Movie/Series • Admin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
+    /* 💎 UNIVERSAL ADMIN CSS */
     body {
       font-family: Arial, sans-serif;
       background: #0a1128;
@@ -24,49 +25,50 @@
       border-radius: 15px;
       border: 1px solid rgba(255, 255, 255, 0.1);
       width: 100%;
-      max-width: 500px;
+      max-width: 600px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     }
     
-    label { display: block; margin-bottom: 5px; font-size: 13px; color: #00bfff; font-weight: bold; }
+    label.field-label { display: block; margin-bottom: 5px; font-size: 13px; color: #00bfff; font-weight: bold; }
     
-    input, select, textarea {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 12px;
-      margin-bottom: 15px;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.2);
-      background: rgba(0,0,0,0.2);
-      color: white;
-      outline: none;
-      font-family: Arial, sans-serif;
+    input[type="text"], input[type="number"], select, textarea {
+      width: 100%; box-sizing: border-box; padding: 12px; margin-bottom: 15px;
+      border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(0,0,0,0.2); color: white; outline: none; font-family: Arial, sans-serif;
     }
-    
     input:focus, select:focus, textarea:focus { border-color: #00bfff; background: rgba(255,255,255,0.05); }
     
     button {
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 12px;
-      border: none;
-      border-radius: 8px;
-      background: #00bfff;
-      color: black;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.3s;
+      width: 100%; padding: 12px; margin-bottom: 12px; border: none; border-radius: 8px;
+      background: #00bfff; color: black; font-weight: bold; cursor: pointer; transition: 0.3s;
     }
     button:hover { background: #008cba; transform: scale(1.02); }
     
-    .back-btn {
-      background: rgba(255, 255, 255, 0.1);
-      color: white;
-      width: auto;
-      padding: 8px 16px;
-      margin-bottom: 20px;
-    }
+    .back-btn { background: rgba(255, 255, 255, 0.1); color: white; width: auto; padding: 8px 16px; margin-bottom: 20px; }
     .back-btn:hover { background: rgba(255, 255, 255, 0.2); }
+    .btn-danger { background: #ff4d4d; color: white; width: auto; padding: 8px 12px; margin: 0; }
+    .btn-danger:hover { background: #cc0000; }
+
+    /* 🔘 FORMAT TOGGLE (Movie vs Series) */
+    .radio-group {
+      display: flex; justify-content: center; gap: 20px; margin-bottom: 20px;
+      background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);
+    }
+    .radio-group label { display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 15px; font-weight: bold; }
+
+    /* 🔗 LINK ROWS (Dynamic Layout) */
+    .link-row { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; flex-wrap: wrap; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); }
+    .link-row input, .link-row select, .link-row button { margin-bottom: 0; padding: 10px; }
+    .link-input { flex: 1; min-width: 150px; }
+    
+    /* ⚙️ SMART HIDING FOR MOVIE VS SERIES */
+    .ep-wrapper { display: none; align-items: center; gap: 5px; background: rgba(0,0,0,0.2); padding: 0 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); }
+    .ep-wrapper input { border: none; background: transparent; width: 45px; padding: 10px 0; color: white; outline: none; }
+    .quality-input { display: none; width: auto; }
+    
+    /* When Series is selected, show Ep and Quality */
+    .is-series .ep-wrapper { display: flex; }
+    .is-series .quality-input { display: block; }
   </style>
 </head>
 <body>
@@ -74,32 +76,34 @@
 <button class="back-btn" onclick="window.location.href='admin.html'">← Back to Dashboard</button>
 
 <div class="container">
-  <h2>➕ Add New Movie</h2>
+  <h2>➕ Add New File</h2>
+
+  <div class="radio-group">
+    <label><input type="radio" name="format" value="movie" checked onchange="toggleFormat()"> 🎬 Movie</label>
+    <label><input type="radio" name="format" value="series" onchange="toggleFormat()"> 📺 Series</label>
+  </div>
   
-  <label>Movie Name</label>
-  <input type="text" id="name" placeholder="Enter movie title">
+  <label class="field-label">File Name</label>
+  <input type="text" id="name" placeholder="e.g. Inception, Naruto">
 
-  <label>Type</label>
-  <select id="type">
-    <option value="Movie">Movie</option>
-    <option value="Series">Series</option>
-    <option value="Anime">Anime</option>
-  </select>
+  <label class="field-label">Type</label>
+  <input type="text" id="type" placeholder="e.g. Movie, Web Series, Anime">
 
-  <label>Category / Genre</label>
-  <input type="text" id="category" placeholder="e.g. Action, Comedy, Drama">
+  <label class="field-label">Category</label>
+  <input type="text" id="category" placeholder="e.g. Action, Comedy">
 
-  <label>Cover Image URL</label>
+  <label class="field-label">Cover Image URL</label>
   <input type="text" id="image" placeholder="Paste image link here">
 
-  <label>Description</label>
-  <textarea id="description" rows="3" placeholder="Brief description of the movie..."></textarea>
+  <label class="field-label">Download / Stream Links</label>
+  <div id="links-container">
+    </div>
+  <button style="background: rgba(255,255,255,0.1); color: white; border: 1px dashed rgba(255,255,255,0.3);" onclick="addLink()">➕ Add Another Link</button>
 
-  <label>Streaming/Download Link</label>
-  <input type="text" id="link" placeholder="Paste video or file link">
+  <label class="field-label" style="margin-top: 15px;">Description</label>
+  <textarea id="description" rows="3" placeholder="Brief description of the movie/series..."></textarea>
 
-  <button onclick="addFile()">Upload Movie 🚀</button>
-  <p id="status" style="text-align: center; font-size: 14px; margin-top: 10px;"></p>
+  <button onclick="addFile()" style="margin-top: 10px; font-size: 16px;">🚀 Upload to Database</button>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -110,77 +114,159 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
-  // Redirect if not logged in (uses the session we built earlier)
+  // 🕒 Instantly check the 24-Hour memory session from Admin
   if (!localStorage.getItem("ntm_admin_session")) {
+    alert("Session expired. Please log in again.");
     window.location.href = "admin.html";
+  } else {
+    // Session valid, load the first empty link row
+    addLink();
+  }
+
+  // Hide/Show Episode & Quality based on format
+  function toggleFormat() {
+    const isSeries = document.querySelector('input[name="format"]:checked').value === "series";
+    const container = document.getElementById("links-container");
+    if (isSeries) {
+      container.classList.add("is-series");
+    } else {
+      container.classList.remove("is-series");
+    }
+  }
+
+  // Create a new dynamic link row
+  function addLink() {
+    const container = document.getElementById("links-container");
+    const div = document.createElement("div");
+    div.classList.add("link-row");
+
+    div.innerHTML = `
+      <input type="text" placeholder="Paste video link..." class="link-input">
+      
+      <div class="ep-wrapper">
+        <span style="color:#00bfff; font-weight:bold; font-size: 14px;">Ep</span>
+        <input type="number" class="ep-input" min="1" value="1">
+      </div>
+
+      <select class="quality-input">
+        <option value="Auto">Auto</option>
+        <option value="480p">480p</option>
+        <option value="720p" selected>720p</option>
+        <option value="1080p">1080p</option>
+        <option value="4K">4K</option>
+      </select>
+
+      <input type="number" placeholder="Size" class="size-input" style="width:75px;" min="0" step="0.1">
+      <select class="size-unit" style="width:65px;">
+        <option value="MB" selected>MB</option>
+        <option value="GB">GB</option>
+      </select>
+
+      <button class="btn-danger" onclick="removeRow(this)">❌</button>
+    `;
+    container.appendChild(div);
+  }
+
+  function removeRow(btn) {
+    btn.parentElement.remove();
   }
 
   async function addFile() {
-    const btn = document.querySelector("button[onclick='addFile()']");
-    const status = document.getElementById("status");
-    
-    const name = document.getElementById("name").value.trim();
-    const type = document.getElementById("type").value;
-    const category = document.getElementById("category").value.trim();
-    const image = document.getElementById("image").value.trim();
-    const description = document.getElementById("description").value.trim();
-    const link = document.getElementById("link").value.trim();
+    const fileName = document.getElementById("name").value.trim();
+    const fileType = document.getElementById("type").value.trim();
+    const fileCategory = document.getElementById("category").value.trim();
+    const fileImage = document.getElementById("image").value.trim();
+    const fileDescription = document.getElementById("description").value.trim();
+    const isSeries = document.querySelector('input[name="format"]:checked').value === "series";
 
-    if (!name || !link) {
-      status.style.color = "#ff4d4d";
-      status.innerText = "❌ Name and Link are required!";
+    if (!fileName || !fileType || !fileCategory) {
+      alert("❌ Please fill in the Name, Type, and Category fields.");
       return;
     }
 
-    btn.innerText = "Uploading...";
+    const rows = document.querySelectorAll(".link-row");
+    let links = [];
+
+    rows.forEach(row => {
+      const url = row.querySelector(".link-input").value.trim();
+      const episodeNum = row.querySelector(".ep-input").value;
+      const quality = row.querySelector(".quality-input").value; 
+      const size = row.querySelector(".size-input").value.trim();
+      const unit = row.querySelector(".size-unit").value;
+
+      if (url) {
+        const scrambledUrl = btoa(url); // Encrypt URL
+        if (isSeries && episodeNum) {
+          // If Series: Save URL, Ep X, Quality, and Size
+          links.push({ url: scrambledUrl, episode: "Ep " + episodeNum, quality, size, unit }); 
+        } else {
+          // If Movie: Only save URL and Size (No Quality or Ep)
+          links.push({ url: scrambledUrl, size, unit }); 
+        }
+      }
+    });
+
+    if (links.length === 0) {
+      alert("❌ You must provide at least one valid link!");
+      return;
+    }
+
+    const btn = document.querySelector("button[onclick='addFile()']");
+    btn.innerText = "Processing...";
     btn.style.opacity = "0.7";
     btn.disabled = true;
 
     try {
-      // Get the master list document
+      // 1. Get local Max ID
+      const res = await fetch("files.json");
+      let localMax = 0;
+      try {
+        const localFiles = await res.json();
+        localMax = Math.max(...localFiles.map(f => f.id || 0), 0);
+      } catch(e) {}
+
+      // 2. Get Firebase Max ID from the 1-Read master_list
       const docRef = db.collection("movie_database").doc("master_list");
       const docSnap = await docRef.get();
+      let firebaseMax = 0;
       
-      let movies = [];
       if (docSnap.exists && docSnap.data().movies) {
-        movies = docSnap.data().movies;
+        const movies = docSnap.data().movies;
+        firebaseMax = Math.max(...movies.map(m => m.customId || 0), 0);
       }
 
-      // Generate ID (Timestamp)
-      const newId = Date.now();
+      const nextId = Math.max(localMax, firebaseMax) + 1;
 
-      // Create new movie object
       const newMovie = {
-        customId: newId,
-        name: name,
-        type: type,
-        category: category,
-        image: image,
-        description: description,
-        link: link,
-        dateAdded: new Date().toISOString()
+        customId: nextId,
+        name: fileName,
+        type: fileType,
+        category: fileCategory,
+        image: fileImage,
+        links: links,
+        description: fileDescription
       };
 
-      // Add to array and save back to Firebase (1-Read architecture)
-      movies.push(newMovie);
-      await docRef.set({ movies: movies }, { merge: true });
+      // 3. Save to Firebase Database
+      await docRef.set({
+        movies: firebase.firestore.FieldValue.arrayUnion(newMovie)
+      }, { merge: true });
 
-      status.style.color = "#00bfff";
-      status.innerText = "✅ Movie Added Successfully!";
-      
-      // Clear inputs
-      document.getElementById("name").value = "";
-      document.getElementById("category").value = "";
-      document.getElementById("image").value = "";
-      document.getElementById("description").value = "";
-      document.getElementById("link").value = "";
-      
-    } catch (error) {
-      status.style.color = "#ff4d4d";
-      status.innerText = "❌ Error: " + error.message;
+      alert("✅ File added successfully! ID: " + nextId);
+
+      // Clear the form
+      ["name","type","category","image","description"].forEach(id => {
+        document.getElementById(id).value = "";
+      });
+      document.getElementById("links-container").innerHTML = "";
+      addLink();
+
+    } catch (err) {
+      console.error(err);
+      alert("❌ Error: " + err.message);
     }
 
-    btn.innerText = "Upload Movie 🚀";
+    btn.innerText = "🚀 Upload to Database";
     btn.style.opacity = "1";
     btn.disabled = false;
   }
