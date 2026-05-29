@@ -1,96 +1,53 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Reports</title>
-
+  <title>Reports • Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body {
-      font-family: Arial;
-      background: #111;
-      color: white;
-      text-align: center;
-    }
+    /* 💎 UNIVERSAL ADMIN CSS */
+    body { font-family: Arial, sans-serif; background: #0a1128; color: white; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
+    h2 { color: #ff4d4d; margin-bottom: 20px; text-align: center; }
+    .container { background: rgba(255, 255, 255, 0.05); padding: 30px; border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1); width: 100%; max-width: 600px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    
+    .back-btn { background: rgba(255, 255, 255, 0.1); color: white; width: auto; padding: 8px 16px; margin-bottom: 20px; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s;}
+    .back-btn:hover { background: rgba(255, 255, 255, 0.2); }
 
-    .box {
-      border: 1px solid #444;
-      padding: 10px;
-      margin: 10px;
-      border-radius: 8px;
-    }
+    /* 🔘 CUSTOM TOGGLE SWITCH */
+    .switch-container { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 30px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; }
+    .switch { position: relative; display: inline-block; width: 60px; height: 34px; }
+    .switch input { display: none; }
+    .slider { position: absolute; cursor: pointer; background-color: rgba(255,255,255,0.2); border-radius: 34px; top: 0; left: 0; right: 0; bottom: 0; transition: 0.4s; }
+    .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background: white; border-radius: 50%; transition: 0.4s; }
+    input:checked + .slider { background: #00bfff; box-shadow: 0 0 15px rgba(0,191,255,0.5); }
+    input:checked + .slider:before { transform: translateX(26px); }
+    #status { font-weight: bold; font-size: 16px; }
 
-    button {
-      padding: 8px 12px;
-      margin: 5px;
-      cursor: pointer;
-      border: none;
-      border-radius: 5px;
-    }
-
-    .delete {
-      background: red;
-      color: white;
-    }
-
-    /* 🔥 SWITCH */
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 60px;
-      height: 34px;
-    }
-
-    .switch input {
-      display: none;
-    }
-
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      background-color: #ccc;
-      border-radius: 34px;
-      top: 0; left: 0; right: 0; bottom: 0;
-      transition: 0.4s;
-    }
-
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 26px;
-      width: 26px;
-      left: 4px;
-      bottom: 4px;
-      background: white;
-      border-radius: 50%;
-      transition: 0.4s;
-    }
-
-    input:checked + .slider {
-      background: #4CAF50;
-    }
-
-    input:checked + .slider:before {
-      transform: translateX(26px);
-    }
+    /* ⚠ REPORT BOXES */
+    .report-box { background: rgba(255,0,0,0.1); border: 1px solid rgba(255,77,77,0.3); padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+    .report-box strong { color: #ff4d4d; display: block; margin-bottom: 5px;}
+    .btn-danger { background: #ff4d4d; color: white; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; width: 100%;}
+    .btn-danger:hover { background: #cc0000; }
   </style>
-
 </head>
 <body>
 
-<h2>Reports Panel</h2>
+<button class="back-btn" onclick="window.location.href='admin.html'">← Back to Dashboard</button>
 
-<label class="switch">
-  <input type="checkbox" id="toggle" onchange="toggleReports(this)">
-  <span class="slider"></span>
-</label>
+<div class="container">
+  <h2>⚠ User Reports</h2>
 
-<p id="status">Loading...</p>
+  <div class="switch-container">
+    <label class="switch">
+      <input type="checkbox" id="toggle" onchange="toggleReports(this)">
+      <span class="slider"></span>
+    </label>
+    <span id="status">Checking Status...</span>
+  </div>
 
-<hr>
-
-<div id="reports">Loading...</div>
-
-<br>
-<button onclick="goBack()">← Back</button>
+  <div id="reports">
+    <p style="text-align: center; color: rgba(255,255,255,0.6);">Loading Reports...</p>
+  </div>
+</div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -98,88 +55,67 @@
 <script src="firebase-config.js"></script>
 
 <script>
-firebase.initializeApp(firebaseConfig);
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  const auth = firebase.auth();
 
-const db = firebase.firestore();
-const auth = firebase.auth();
+  auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
-// 🔒 Protect page
-auth.onAuthStateChanged(user => {
-  if (!user) {
-    alert("Login first");
-    window.location.href = "admin.html";
-  } else {
+  if (!localStorage.getItem("ntm_admin_session")) { window.location.href = "admin.html"; }
+
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      loadReports();
+      loadToggle();
+    } else {
+      window.location.href = "admin.html";
+    }
+  });
+
+  async function loadReports() {
+    const container = document.getElementById("reports");
+    const snapshot = await db.collection("reports").orderBy("time","desc").get();
+    container.innerHTML = "";
+
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      const date = d.time ? d.time.toDate().toLocaleString() : "Unknown Date";
+
+      container.innerHTML += `
+        <div class="report-box">
+          <span style="font-size: 11px; color: #ccc; float: right;">${date}</span>
+          <strong>File ID: ${d.fileId}</strong>
+          <span style="color: white;">"${d.message}"</span><br>
+          <button class="btn-danger" onclick="deleteReport('${doc.id}')">Dismiss Report</button>
+        </div>
+      `;
+    });
+
+    if (container.innerHTML === "") { container.innerHTML = "<p style='text-align:center;'>✅ No broken links reported!</p>"; }
+  }
+
+  async function deleteReport(id) {
+    if (!confirm("Dismiss this report?")) return;
+    await db.collection("reports").doc(id).delete();
     loadReports();
-    loadToggle();
-  }
-});
-
-// 🔙 Back
-function goBack() {
-  window.location.href = "admin.html";
-}
-
-// 🔄 Load reports
-async function loadReports() {
-  const container = document.getElementById("reports");
-  container.innerHTML = "Loading...";
-
-  const snapshot = await db.collection("reports").orderBy("time","desc").get();
-
-  container.innerHTML = "";
-
-  snapshot.forEach(doc => {
-    const d = doc.data();
-
-    container.innerHTML += `
-      <div class="box">
-        <strong>File ID:</strong> ${d.fileId}<br>
-        <strong>Message:</strong> ${d.message}<br>
-
-        <button class="delete" onclick="deleteReport('${doc.id}')">Delete</button>
-      </div>
-    `;
-  });
-
-  if (container.innerHTML === "") {
-    container.innerHTML = "No reports";
-  }
-}
-
-// 🗑 Delete
-async function deleteReport(id) {
-  if (!confirm("Delete report?")) return;
-
-  await db.collection("reports").doc(id).delete();
-  loadReports();
-}
-
-// 🔘 Load toggle state
-async function loadToggle() {
-  const doc = await db.collection("settings").doc("config").get();
-
-  let enabled = true;
-
-  if (doc.exists) {
-    enabled = doc.data().reportEnabled !== false;
   }
 
-  document.getElementById("toggle").checked = enabled;
-  document.getElementById("status").innerText =
-    enabled ? "Reports: ON" : "Reports: OFF";
-}
+  async function loadToggle() {
+    const doc = await db.collection("settings").doc("config").get();
+    let enabled = true;
+    if (doc.exists) { enabled = doc.data().reportEnabled !== false; }
+    
+    document.getElementById("toggle").checked = enabled;
+    document.getElementById("status").innerText = enabled ? "Reporting is ON" : "Reporting is OFF";
+    document.getElementById("status").style.color = enabled ? "#00bfff" : "#ff4d4d";
+  }
 
-// 🔘 Toggle function
-async function toggleReports(el) {
-  const enabled = el.checked;
-
-  await db.collection("settings").doc("config").set({
-    reportEnabled: enabled
-  });
-
-  document.getElementById("status").innerText =
-    enabled ? "Reports: ON" : "Reports: OFF";
-}
+  async function toggleReports(el) {
+    const enabled = el.checked;
+    await db.collection("settings").doc("config").set({ reportEnabled: enabled });
+    document.getElementById("status").innerText = enabled ? "Reporting is ON" : "Reporting is OFF";
+    document.getElementById("status").style.color = enabled ? "#00bfff" : "#ff4d4d";
+  }
 </script>
 
 </body>
