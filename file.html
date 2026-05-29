@@ -57,10 +57,6 @@
     .download-grid button { flex: 1; min-width: 130px; margin: 0; background: linear-gradient(135deg, #007bff, #00bfff); box-shadow: 0 4px 15px rgba(0, 191, 255, 0.3); padding: 12px 18px; border: none; border-radius: 10px; cursor: pointer; color: white; font-weight: bold; transition: all 0.3s ease; }
     .download-grid button:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 6px 20px rgba(0, 191, 255, 0.5); }
     
-    /* ✅ WATCHED BUTTON STATE */
-    .download-grid button.watched-btn { background: rgba(255, 255, 255, 0.05); color: rgba(255, 255, 255, 0.5); box-shadow: none; border: 1px solid rgba(255, 255, 255, 0.1); }
-    .download-grid button.watched-btn:hover { transform: none; background: rgba(255, 255, 255, 0.1); color: white; }
-
     .back { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); margin: 30px auto; display: block; padding: 12px 25px; color: white; border-radius: 10px; cursor: pointer; }
     .back:hover { background: rgba(255, 255, 255, 0.15); transform: scale(1.05); }
 
@@ -236,9 +232,6 @@ function renderButtons() {
     linksToRender = allFileLinks.filter(l => typeof l === "object" && l.quality === selectedQuality);
   }
 
-  // 🚀 LOAD WATCHED EPISODES MEMORY
-  let watchedMemory = JSON.parse(localStorage.getItem('watched_' + currentFileId)) || [];
-
   let downloadHTML = "";
   if (linksToRender.length > 0) {
     downloadHTML = `<div class="download-grid">`;
@@ -251,12 +244,7 @@ function renderButtons() {
         else if (l.size) label = `🎥 Watch ${l.size} ${l.unit} 🍿`;
       }
 
-      // Check if button index was watched
-      let isWatched = watchedMemory.includes(i);
-      let btnClass = isWatched ? 'watched-btn' : '';
-      let displayLabel = isWatched ? `${label} ✅` : label;
-
-      downloadHTML += `<button class="${btnClass}" onclick="openWatch(${i})">${displayLabel}</button>`;
+      downloadHTML += `<button onclick="openWatch(${i})">${label}</button>`;
     });
 
     downloadHTML += `</div>`;
@@ -268,14 +256,6 @@ function renderButtons() {
 }
 
 function openWatch(clickedIndex) {
-  // 🚀 SAVE TO WATCHED MEMORY
-  let watchedMemory = JSON.parse(localStorage.getItem('watched_' + currentFileId)) || [];
-  if (!watchedMemory.includes(clickedIndex)) {
-    watchedMemory.push(clickedIndex);
-    localStorage.setItem('watched_' + currentFileId, JSON.stringify(watchedMemory));
-    renderButtons(); // Re-render to show ✅ instantly!
-  }
-
   const modal = document.getElementById('warningModal');
   modal.style.display = 'flex';
   setTimeout(() => { modal.classList.add('active'); }, 10);
