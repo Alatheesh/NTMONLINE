@@ -1,334 +1,418 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>File Details • NTM Stream</title>
+  <title>File Hub • NTM Stream</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
   <style>
-    /* FULL HEIGHT FIX & BASE FONT */
-    html, body {
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-      min-height: 100dvh;
-      background: linear-gradient(180deg, #020202, #0a1128, #020202);
-      color: #ffffff;
-      overflow-x: hidden;
+    /* 🎬 NETFLIX-STYLE GRID */
+    .movie-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 10px; max-width: 800px; margin: 0 auto; }
+    
+    /* 🃏 CARD STYLES */
+    .movie-card { 
+      background: rgba(255, 255, 255, 0.05); 
+      border-radius: 12px; overflow: hidden; position: relative; 
+      transition: transform 0.3s ease; display: flex; flex-direction: column; 
+      cursor: pointer; text-decoration: none; color: white; 
+      border: 1px solid transparent;
+    }
+    .movie-card:hover { transform: scale(1.02); }
+    .movie-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; }
+    .movie-info { padding: 8px; text-align: center; }
+    .movie-name { font-weight: bold; font-size: 12px; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .movie-meta { font-size: 10px; opacity: 0.7; }
+    .new-badge { position: absolute; top: 5px; left: 5px; background: #e50914; color: white; padding: 2px 5px; border-radius: 4px; font-size: 9px; font-weight: bold; z-index: 10; }
+
+    /* ☀️ LIGHT MODE OVERRIDES */
+    body.light-mode .movie-card { background: rgba(0, 0, 0, 0.03); color: #111; border: 1px solid rgba(0,0,0,0.1); }
+    body.light-mode .movie-meta { color: #555; }
+    body.light-mode .page-info { color: #333; }
+
+    /* 🔍 UNIFIED SEARCH BAR (ANIMATED) */
+    .search-container { 
+      position: relative;
+      margin: 20px auto;
+      width: 85%;
+      max-width: 400px;
+    }
+    
+    #search { 
+      width: 100%; 
+      box-sizing: border-box;
+      padding: 12px 20px; /* Default padding, expands when clicked */
+      border-radius: 25px; 
+      border: 1px solid rgba(255,255,255,0.2); 
+      outline: none; 
+      background: rgba(255, 255, 255, 0.1); 
+      color: inherit;
+      font-size: 15px;
+      transition: all 0.3s ease;
+    }
+    
+    /* When clicked (focused) or active with text */
+    #search:focus, .search-container.active #search { 
+      border-color: #00bfff; 
+      background: rgba(255,255,255,0.15); 
+      padding-right: 50px; /* Make room for the button */
+    }
+    
+    #searchBtn { 
+      position: absolute;
+      right: 7px;
+      top: 50%;
+      transform: translateY(-50%) scale(0.5); /* Starts small and hidden */
+      background: rgba(0, 191, 255, 0.2); /* Subtle blue background */
+      border: none;
+      outline: none;
+      color: white;
+      cursor: pointer;
+      font-size: 16px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%; /* Perfect Circle */
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0; /* Invisible by default */
+      pointer-events: none; /* Cannot be clicked when invisible */
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Bouncy animation */
     }
-
-    /* 🌫️ GLOWING FALLING PARTICLES */
-    body::before {
-      content: ""; position: fixed; top: -100vh; left: 0; width: 100vw; height: 300vh;
-      background-image: radial-gradient(circle at 15vw 25vh, rgba(0,191,255,0.8) 0%, transparent 4px), radial-gradient(circle at 75vw 15vh, rgba(141,124,255,0.8) 0%, transparent 5px), radial-gradient(circle at 45vw 65vh, rgba(255,255,255,0.8) 0%, transparent 3px);
-      background-size: 100vw 100vh; z-index: -2; filter: drop-shadow(0 0 10px #00bfff) blur(0.5px); animation: fallDown 12s linear infinite; pointer-events: none;
+    
+    #searchBtn:hover { 
+      background: #00bfff; 
+      color: black; 
     }
-    @keyframes fallDown { 0% { transform: translateY(0); } 100% { transform: translateY(100vh); } }
-
-    /* 🛑 WARNING MODAL STYLING */
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; z-index: 9999; opacity: 0; transition: opacity 0.3s ease; }
-    .modal-overlay.active { display: flex; opacity: 1; }
-    .modal-box { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 30px; border-radius: 20px; text-align: center; max-width: 400px; width: 90%; transform: scale(0.8); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-    .modal-overlay.active .modal-box { transform: scale(1); }
-    .modal-box h3 { color: #00bfff; font-size: 24px; margin: 0 0 15px 0; }
-    .modal-box p { color: #ccc; font-size: 16px; line-height: 1.5; margin-bottom: 15px; }
     
-    .modal-spinner { width: 30px; height: 30px; border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid #00bfff; border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto 0 auto; }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-    /* LAYOUT */
-    .page { display: flex; justify-content: center; align-items: flex-start; width: 100%; margin-top: 60px; flex: 1; }
-    .side-ad { width: 160px; margin: 20px; text-align: center; z-index: 5; }
-    .center { max-width: 450px; width: 90%; margin: 0 15px; z-index: 5; }
-    @media (max-width: 900px) { .side-ad { display: none; } }
-
-    /* 💎 PREMIUM GLASSMORPHISM CARD */
-    .card { background: rgba(255, 255, 255, 0.04); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); padding: 30px; border-radius: 20px; text-align: center; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(255,255,255,0.02); overflow-wrap: break-word; transition: all 0.3s ease-in-out; }
-    .card img { width: 100%; max-width: 100%; height: auto; max-height: 400px; object-fit: contain; border-radius: 14px; margin-bottom: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.5); background: rgba(0, 0, 0, 0.2); }
-    .card h2 { margin: 10px 0 5px; font-size: 24px; background: linear-gradient(90deg, #fff, #b3e5fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .card p { color: #ccc; line-height: 1.5; font-size: 14px; }
-
-    /* 🔗 SHARE BUTTON */
-    .share-btn { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); padding: 8px 16px; border-radius: 20px; color: white; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; margin: 10px auto; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
-    .share-btn:hover { background: rgba(0, 191, 255, 0.2); border-color: #00bfff; transform: scale(1.05); }
-
-    /* 🔘 BUTTONS */
-    .download-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 25px; }
-    .download-grid button { flex: 1; min-width: 130px; margin: 0; background: linear-gradient(135deg, #007bff, #00bfff); box-shadow: 0 4px 15px rgba(0, 191, 255, 0.3); padding: 12px 18px; border: none; border-radius: 10px; cursor: pointer; color: white; font-weight: bold; transition: all 0.3s ease; }
-    .download-grid button:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 6px 20px rgba(0, 191, 255, 0.5); }
+    /* Reveal the button ONLY when clicking the search bar or typing */
+    .search-container:focus-within #searchBtn,
+    .search-container.active #searchBtn {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(-50%) scale(1); /* Pop in animation */
+    }
     
-    /* ✅ WATCHED BUTTON STATE */
-    .download-grid button.watched-btn { background: rgba(255, 255, 255, 0.05); color: rgba(255, 255, 255, 0.5); box-shadow: none; border: 1px solid rgba(255, 255, 255, 0.1); }
-    .download-grid button.watched-btn:hover { transform: none; background: rgba(255, 255, 255, 0.1); color: white; }
+    /* Search Bar Light Mode */
+    body.light-mode #search { background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.2); color: #111; }
+    body.light-mode #search:focus, body.light-mode .search-container.active #search { border-color: #008cba; }
+    body.light-mode #searchBtn { background: rgba(0, 140, 186, 0.2); color: #111; }
+    body.light-mode #searchBtn:hover { background: #008cba; color: white; }
 
-    /* 🎞️ RELATED SHOWS SLIDER */
-    .related-section { margin-top: 30px; text-align: left; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; }
-    .related-title { font-size: 14px; color: #00bfff; font-weight: bold; margin-bottom: 15px; }
-    .related-slider { display: flex; overflow-x: auto; gap: 12px; padding-bottom: 10px; scrollbar-width: thin; scrollbar-color: #00bfff rgba(255,255,255,0.1); }
-    .related-slider::-webkit-scrollbar { height: 6px; }
-    .related-slider::-webkit-scrollbar-thumb { background: #00bfff; border-radius: 10px; }
-    .related-card { min-width: 110px; max-width: 110px; text-decoration: none; color: white; border-radius: 8px; transition: transform 0.2s; }
-    .related-card:hover { transform: scale(1.05); }
-    .related-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; border-radius: 8px; background: rgba(0,0,0,0.5); margin-bottom: 5px; }
-    .related-name { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; opacity: 0.8; }
-
-    .back { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); margin: 30px auto; display: block; padding: 12px 25px; color: white; border-radius: 10px; cursor: pointer; }
-    .back:hover { background: rgba(255, 255, 255, 0.15); transform: scale(1.05); }
-
-    #reportBtn { position: fixed; top: 15px; right: 15px; background: linear-gradient(135deg, #ff4d4d, #cc0000); padding: 10px 16px; border-radius: 10px; z-index: 1000; display: none; box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3); border: none; color: white; cursor: pointer; }
-    #reportBtn:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(255, 0, 0, 0.5); }
+    /* 📄 PAGINATION STYLES */
+    .pagination-container { grid-column: span 3; text-align: center; margin-top: 20px; padding: 15px; }
+    .pagination-container button { background: rgba(0, 191, 255, 0.2); border: 1px solid #00bfff; color: white; padding: 8px 12px; margin: 0 4px; border-radius: 5px; cursor: pointer; transition: all 0.3s ease; }
+    .pagination-container button:hover:not(:disabled) { background: #00bfff; color: black; }
+    .pagination-container button:disabled { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.3); cursor: not-allowed; }
+    .pagination-container .active-page { background: #00bfff; color: black; font-weight: bold; }
+    .page-info { font-size: 12px; margin-bottom: 10px; opacity: 0.8; color: white; }
+    
+    body.light-mode .pagination-container button { color: #111; border-color: #008cba; background: rgba(0, 140, 186, 0.1); }
+    body.light-mode .pagination-container .active-page { background: #008cba; color: white; }
+    body.light-mode .pagination-container button:disabled { border-color: rgba(0,0,0,0.1); color: rgba(0,0,0,0.3); }
   </style>
 </head>
 <body>
 
-<div id="warningModal" class="modal-overlay">
-  <div class="modal-box">
-    <h3>🚀 Getting Your Movie Ready!</h3>
-    <p>We are moving you to the video player right now.</p>
-    <p style="color: #00bfff; text-shadow: 0 0 10px rgba(0, 191, 255, 0.4); font-weight: bold;">
-      Please wait for the timer to reach zero.
-    </p>
-    <div class="modal-spinner"></div>
-  </div>
-</div>
-
-<button id="reportBtn" onclick="reportIssue()">⚠ Report</button>
-
-<div class="page">
-  <div class="side-ad">
-    </div>
-
-  <div class="center">
-    <div class="card" id="fileCard">
-      <p style="opacity:0.7;">Loading Premium Details...</p>
-    </div>
-  </div>
-
-  <div class="side-ad">
-    </div>
-</div>
-
-<button class="back" onclick="history.back()">← Back</button>
-
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js"></script>
-
-<script>
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
-let currentFileId = null;
-let allFileLinks = []; 
-let currentCategory = "";
-let masterListCache = []; 
-
-window.addEventListener("DOMContentLoaded", async function () {
-  try {
-    const doc = await db.collection("settings").doc("config").get();
-    let enabled = true;
-    if (doc.exists) enabled = doc.data().reportEnabled !== false;
-    document.getElementById("reportBtn").style.display = enabled ? "block" : "none";
-  } catch (e) {}
-});
-
-async function loadFile() {
-  const id = Number(new URLSearchParams(location.search).get("id"));
-
-  // 1-READ TRICK: Check Memory Cache First!
-  const cachedData = sessionStorage.getItem("ntm_movie_cache");
-  
-  if (cachedData) {
-    masterListCache = JSON.parse(cachedData);
-  } else {
-    let localFiles = [];
-    let firebaseFiles = [];
-    try { const res = await fetch("files.json"); localFiles = await res.json(); } catch(e) {}
-    try {
-      const docSnap = await db.collection("movie_database").doc("master_list").get();
-      if (docSnap.exists && docSnap.data().movies) firebaseFiles = docSnap.data().movies;
-    } catch(e) {}
-    masterListCache = [...localFiles, ...firebaseFiles].filter(m => m && m.name && m.name !== "undefined");
-  }
-  
-  const file = masterListCache.find(f => Number(f.id || f.customId) === id);
-
-  if (!file) {
-    document.getElementById("fileCard").innerHTML = "File not found";
-    return;
-  }
-
-  currentFileId = file.id || file.customId;
-  currentCategory = file.category || "";
-
-  if (Array.isArray(file.links) && file.links.length > 0) allFileLinks = file.links;
-  else if (Array.isArray(file.downloads) && file.downloads.length > 0) allFileLinks = file.downloads;
-  else if (file.link) allFileLinks = [file.link];
-
-  let isSeries = false;
-  let availableQualities = new Set();
-
-  allFileLinks.forEach(l => {
-    if (typeof l === "object" && l.episode) {
-      isSeries = true;
-      if (l.quality) availableQualities.add(l.quality);
-    }
-  });
-
-  let qualityDropdownHTML = "";
-  if (isSeries && availableQualities.size > 1) {
-    const order = {"Auto": 1, "480p": 2, "720p": 3, "1080p": 4, "4K": 5};
-    const sortedQualities = Array.from(availableQualities).sort((a, b) => (order[a] || 99) - (order[b] || 99));
-    let defaultQ = sortedQualities.includes("480p") ? "480p" : sortedQualities[0];
-    qualityDropdownHTML = `
-      <div style="margin: 20px 0; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; border: 1px solid rgba(0, 191, 255, 0.3);">
-        <label for="qualitySelect" style="color: #00bfff; font-weight: bold; margin-right: 10px;">⚙️ Select Quality:</label>
-        <select id="qualitySelect" onchange="renderButtons()" style="padding: 6px 12px; border-radius: 5px; background: #0a1128; color: #fff; border: 1px solid #00bfff; font-weight: bold; outline: none; cursor: pointer;">
-          ${sortedQualities.map(q => `<option value="${q}" ${q === defaultQ ? "selected" : ""}>${q}</option>`).join("")}
-        </select>
+  <div id="mysteryModal" class="custom-modal-overlay">
+    <div class="custom-modal-box">
+      <h3 id="modalTitle" class="custom-modal-title">Wow, you found the mystery box! 🎁</h3>
+      <p id="modalDesc" class="custom-modal-desc">Try your lucky word to find out what happens next:</p>
+      <input type="text" id="modalInput" class="custom-modal-input" placeholder="Enter secret word..." autocomplete="off">
+      <div class="custom-modal-buttons">
+        <button id="modalCancel" class="custom-modal-btn btn-cancel">Cancel</button>
+        <button id="modalSubmit" class="custom-modal-btn btn-submit">Submit</button>
       </div>
-    `;
-  }
+    </div>
+  </div>
 
-  // 🚀 GENERATE RELATED SLIDER
-  let relatedHTML = "";
-  if (currentCategory) {
-    const related = masterListCache.filter(f => f.category === currentCategory && Number(f.id || f.customId) !== currentFileId).slice(0, 6);
-    if (related.length > 0) {
-      relatedHTML = `<div class="related-section"><div class="related-title">Similar to this</div><div class="related-slider">`;
-      related.forEach(r => {
-        relatedHTML += `
-          <a href="file.html?id=${r.id || r.customId}" class="related-card">
-            <img src="${r.image || 'https://via.placeholder.com/150x225'}" alt="${r.name}">
-            <div class="related-name">${r.name}</div>
-          </a>
-        `;
-      });
-      relatedHTML += `</div></div>`;
+  <button onclick="goHome()" class="back-btn">← Home</button>
+
+  <div class="container">
+
+    <div class="ad">
+      <script>
+        atOptions = {
+          'key' : '9d4e234e334f6012b5b60f60507d7877',
+          'format' : 'iframe',
+          'height' : 90,
+          'width' : 728,
+          'params' : {}
+        };
+      </script>
+      <script src="https://www.highperformanceformat.com/9d4e234e334f6012b5b60f60507d7877/invoke.js"></script>
+    </div>
+
+    <div class="top-bar">
+      <h1 id="secret-title" style="user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; cursor: default;">🎬 NTM Watch Hub 🍿</h1>
+      <button id="themeToggle">🌙</button>
+    </div>
+
+    <div class="search-container" id="searchWrapper">
+      <input type="text" id="search" placeholder="Search Movie...">
+      <button id="searchBtn">🔍</button>
+    </div>
+
+    <div id="movie-grid" class="movie-grid">
+      <p id="loadingText" style="text-align: center; grid-column: span 3;">Loading Database...</p>
+    </div>
+
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+
+  <script>
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // ==========================================
+    // 1. MYSTERY BOX LOGIC
+    // ==========================================
+    let secretCache = null;
+    async function armTheTrap() {
+      try {
+        const docSnap = await db.collection("system_config").doc("security_keys").get();
+        if (docSnap.exists) { secretCache = docSnap.data(); }
+      } catch (error) {}
     }
-  }
+    armTheTrap();
 
-  document.getElementById("fileCard").innerHTML = `
-    <img src="${file.image || 'https://via.placeholder.com/400x220?text=No+Image'}">
-    <h2>${file.name}</h2>
-    <p><strong>${file.type}</strong> • ${file.category}</p>
-    <p>${file.description || ''}</p>
+    const modal = document.getElementById('mysteryModal');
+    const mTitle = document.getElementById('modalTitle');
+    const mDesc = document.getElementById('modalDesc');
+    const mInput = document.getElementById('modalInput');
+    const btnCancel = document.getElementById('modalCancel');
+    const btnSubmit = document.getElementById('modalSubmit');
+    let isAlertMode = false;
+
+    function showPromptModal() {
+      isAlertMode = false; mTitle.innerText = "Wow, you found the mystery box! 🎁"; mDesc.innerText = "Try your lucky word to find out what happens next:";
+      mInput.style.display = "block"; mInput.value = ""; btnCancel.style.display = "block"; btnSubmit.innerText = "Submit";
+      modal.classList.add('active'); setTimeout(() => mInput.focus(), 100);
+    }
+    function showMessageModal(title, message) {
+      isAlertMode = true; mTitle.innerText = title; mDesc.innerText = message;
+      mInput.style.display = "none"; btnCancel.style.display = "none"; btnSubmit.innerText = "OK"; modal.classList.add('active');
+    }
+    function closeModal() { modal.classList.remove('active'); }
+    btnCancel.onclick = closeModal;
+
+    mInput.addEventListener("keypress", function(event) { if (event.key === "Enter") { event.preventDefault(); btnSubmit.click(); }});
     
-    <button class="share-btn" id="shareBtn" onclick="shareMovie()">🔗 Copy Link to Share</button>
+    btnSubmit.onclick = () => {
+      if (isAlertMode) { closeModal(); return; }
+      let attempt = mInput.value;
+      if (attempt !== null && attempt.trim() !== "") {
+        if (attempt === secretCache.bossHash) {
+          showMessageModal("System Override 👑", "Welcome back, Boss! Routing to Admin Panel...");
+          setTimeout(() => { window.location.href = atob(secretCache.bossRoute); }, 1500);
+          return;
+        }
+        let scrambledGuess = "";
+        let lowerAttempt = attempt.toLowerCase();
+        for (let i = 0; i < lowerAttempt.length; i++) scrambledGuess += String.fromCharCode(lowerAttempt.charCodeAt(i) + 5);
+        let response = secretCache.trapDictionary[scrambledGuess];
+        if (response) showMessageModal("Wow your lucky😉", response);
+        else showMessageModal("Unlucky 🫡", "Your guess is wrong, try again.");
+      } else { closeModal(); }
+    };
+
+    let holdTimer;
+    const secretTrigger = document.getElementById('secret-title'); 
+    if (secretTrigger) {
+      const startTimer = (e) => {
+        if (e.type === 'mousedown' && e.button !== 0) return; 
+        holdTimer = setTimeout(() => {
+          if (!secretCache) { showMessageModal("Network Error 🌐", "Connection unstable. Please try again later."); return; }
+          showPromptModal();
+        }, 1000); 
+      };
+      const clearTimer = () => clearTimeout(holdTimer);
+      secretTrigger.addEventListener('touchstart', startTimer); secretTrigger.addEventListener('touchend', clearTimer);
+      secretTrigger.addEventListener('touchcancel', clearTimer); secretTrigger.addEventListener('mousedown', startTimer);
+      secretTrigger.addEventListener('mouseup', clearTimer); secretTrigger.addEventListener('mouseleave', clearTimer);  
+    }
+
+    // ==========================================
+    // 2. THEME TOGGLE (LIGHT / DARK MODE)
+    // ==========================================
+    const toggleBtn = document.getElementById("themeToggle");
+    if (toggleBtn) {
+      if (localStorage.getItem("theme") === "light") {
+        document.body.classList.add("light-mode"); toggleBtn.textContent = "🌙";
+      } else { toggleBtn.textContent = "☀️"; }
+      
+      toggleBtn.addEventListener("click", function () {
+        document.body.classList.toggle("light-mode");
+        if (document.body.classList.contains("light-mode")) { localStorage.setItem("theme", "light"); toggleBtn.textContent = "🌙"; } 
+        else { localStorage.setItem("theme", "dark"); toggleBtn.textContent = "☀️"; }
+      });
+    }
+
+    // ==========================================
+    // 3. 1-READ FIREBASE + PAGINATION LOGIC
+    // ==========================================
+    let allMovies = []; 
+    let filteredMovies = [];
+    let currentPage = 1;
+    const itemsPerPage = 10;
     
-    ${qualityDropdownHTML}
-    <div id="dynamic-button-container"></div>
-    ${relatedHTML}
-  `;
+    async function loadDatabase() {
+      let localFiles = [];
+      let firebaseFiles = [];
+      
+      try { const res = await fetch("files.json"); localFiles = await res.json(); } catch (e) {}
+      
+      try {
+        const docSnap = await db.collection("movie_database").doc("master_list").get();
+        if (docSnap.exists && docSnap.data().movies) firebaseFiles = docSnap.data().movies;
+      } catch (e) {}
 
-  renderButtons();
-}
+      allMovies = [...localFiles, ...firebaseFiles];
+      allMovies = allMovies.filter(movie => movie && movie.name && movie.name !== "undefined");
+      
+      const uniqueMap = new Map();
+      allMovies.forEach(item => uniqueMap.set(item.customId || item.id, item));
+      allMovies = Array.from(uniqueMap.values());
+      
+      allMovies.sort((a, b) => (b.customId || b.id) - (a.customId || a.id));
 
-function renderButtons() {
-  const container = document.getElementById("dynamic-button-container");
-  const qualitySelect = document.getElementById("qualitySelect");
-  
-  let linksToRender = allFileLinks;
-  if (qualitySelect) {
-    const selectedQuality = qualitySelect.value;
-    linksToRender = allFileLinks.filter(l => typeof l === "object" && l.quality === selectedQuality);
-  }
+      filteredMovies = [...allMovies];
+      renderPage(1);
+    }
 
-  // 🚀 LOAD WATCHED EPISODES MEMORY
-  let watchedMemory = JSON.parse(localStorage.getItem('watched_' + currentFileId)) || [];
-
-  let downloadHTML = "";
-  if (linksToRender.length > 0) {
-    downloadHTML = `<div class="download-grid">`;
-
-    linksToRender.forEach((l, i) => {
-      let label = `Watch ${i+1}`; 
-      if (typeof l === "object" && l !== null) {
-        if (l.episode && l.size) label = `▶ ${l.episode} - ${l.size} ${l.unit}`;
-        else if (l.episode) label = `▶ ${l.episode}`;
-        else if (l.size) label = `🎥 Watch ${l.size} ${l.unit} 🍿`;
+    // 📄 RENDERS ONLY 10 MOVIES AT A TIME
+    function renderPage(page) {
+      currentPage = page;
+      const grid = document.getElementById("movie-grid");
+      grid.innerHTML = "";
+      
+      if (filteredMovies.length === 0) {
+        grid.innerHTML = `<p class="page-info" style="grid-column: span 3; text-align: center;">No movies found.</p>`;
+        return;
       }
 
-      // Check if button index was watched
-      let isWatched = watchedMemory.includes(i);
-      let btnClass = isWatched ? 'watched-btn' : '';
-      let displayLabel = isWatched ? `${label} ✅` : label;
+      const startIndex = (page - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const moviesToDisplay = filteredMovies.slice(startIndex, endIndex);
+      
+      moviesToDisplay.forEach(d => {
+        const uploadDate = new Date(d.customId || d.id);
+        const isNew = (new Date() - uploadDate) < (3 * 24 * 60 * 60 * 1000);
+        
+        const card = document.createElement("a");
+        card.className = "movie-card";
+        card.href = "file.html?id=" + (d.customId || d.id);
+        
+        card.innerHTML = `
+          ${isNew ? '<div class="new-badge">NEW</div>' : ''}
+          <img src="${d.image || 'https://via.placeholder.com/200x300'}" alt="${d.name}">
+          <div class="movie-info">
+            <div class="movie-name">${d.name}</div>
+            <div class="movie-meta">${d.type} • ${d.category}</div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
 
-      downloadHTML += `<button class="${btnClass}" onclick="openWatch(${i})">${displayLabel}</button>`;
+      renderPagination();
+    }
+
+    // 🔘 DRAWS THE NEXT/PREV BUTTONS
+    function renderPagination() {
+      const totalPages = Math.ceil(filteredMovies.length / itemsPerPage);
+      const startItem = (currentPage - 1) * itemsPerPage + 1;
+      const endItem = Math.min(currentPage * itemsPerPage, filteredMovies.length);
+
+      if (filteredMovies.length === 0) return;
+
+      const grid = document.getElementById("movie-grid");
+      
+      let paginationHtml = `
+        <div class="pagination-container">
+          <div class="page-info">Showing ${startItem}–${endItem} of ${filteredMovies.length} movies</div>
+      `;
+
+      paginationHtml += `<button onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>← Prev</button>`;
+
+      for (let i = 1; i <= totalPages; i++) {
+        paginationHtml += `<button class="${i === currentPage ? 'active-page' : ''}" onclick="goToPage(${i})">${i}</button>`;
+      }
+
+      paginationHtml += `<button onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Next →</button>`;
+      paginationHtml += `</div>`;
+
+      grid.innerHTML += paginationHtml;
+    }
+
+    window.goToPage = function(page) {
+      const totalPages = Math.ceil(filteredMovies.length / itemsPerPage);
+      if (page >= 1 && page <= totalPages) {
+        renderPage(page);
+      }
+    };
+
+    // ⚡ FIXED SEARCH LOGIC
+    const searchInput = document.getElementById("search");
+    const searchBtn = document.getElementById("searchBtn");
+    const searchWrapper = document.getElementById("searchWrapper");
+    let isSearchActive = false;
+
+    function executeSearch() {
+      const term = searchInput.value.toLowerCase().trim();
+      
+      if (!term) { 
+        filteredMovies = [...allMovies]; 
+        searchBtn.innerHTML = "🔍";
+        isSearchActive = false;
+        searchWrapper.classList.remove("active"); // Allows button to hide if unfocused
+      } else {
+        const searchWords = term.split(" ").filter(word => word !== "");
+        filteredMovies = allMovies.filter(file => {
+          const fileData = `${file.name || ""} ${file.type || ""} ${file.category || ""}`.toLowerCase();
+          return searchWords.every(word => fileData.includes(word));
+        });
+        searchBtn.innerHTML = "✖"; 
+        isSearchActive = true;
+      }
+      renderPage(1); 
+    }
+
+    // Keeps button visible if there is text in the box (even if user clicks away)
+    searchInput.addEventListener("input", function(e) {
+      if (e.target.value.trim() !== "") {
+        searchWrapper.classList.add("active");
+      } else {
+        searchWrapper.classList.remove("active");
+      }
+      
+      // Revert 'X' to '🔍' if user starts modifying a previous search
+      if (isSearchActive && e.target.value.trim() !== "") {
+        searchBtn.innerHTML = "🔍";
+        isSearchActive = false;
+      }
     });
 
-    downloadHTML += `</div>`;
-  } else {
-    downloadHTML = `<p style='opacity:0.7;'>No episodes available for this quality.</p>`;
-  }
+    searchBtn.addEventListener("click", function() {
+      if (isSearchActive) {
+        searchInput.value = "";
+        searchWrapper.classList.remove("active");
+        executeSearch(); 
+      } else {
+        executeSearch();
+      }
+    });
 
-  container.innerHTML = downloadHTML;
-}
+    searchInput.addEventListener("keypress", function(e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        executeSearch();
+      }
+    });
 
-function openWatch(clickedIndex) {
-  // 🚀 SAVE TO WATCHED MEMORY
-  let watchedMemory = JSON.parse(localStorage.getItem('watched_' + currentFileId)) || [];
-  if (!watchedMemory.includes(clickedIndex)) {
-    watchedMemory.push(clickedIndex);
-    localStorage.setItem('watched_' + currentFileId, JSON.stringify(watchedMemory));
-    renderButtons(); // Re-render to show ✅ instantly!
-  }
+    function goHome() { window.location.href = "index.html"; }
 
-  const modal = document.getElementById('warningModal');
-  modal.style.display = 'flex';
-  setTimeout(() => { modal.classList.add('active'); }, 10);
-
-  let currentPlaylist = allFileLinks;
-  const qualitySelect = document.getElementById("qualitySelect");
-  if (qualitySelect) {
-    currentPlaylist = allFileLinks.filter(l => typeof l === "object" && l.quality === qualitySelect.value);
-  }
-
-  const bingeData = { currentIndex: clickedIndex, playlist: currentPlaylist };
-
-  let scrambledPayload = "";
-  try { scrambledPayload = btoa(JSON.stringify(bingeData)); } 
-  catch(e) { scrambledPayload = JSON.stringify(bingeData); }
-
-  const netlifyUrl = "https://ntmonline.netlify.app/watch.html?data=" + encodeURIComponent(scrambledPayload);
-  const finalDestination = "redirect.html?dest=" + encodeURIComponent(netlifyUrl);
-  
-  setTimeout(() => { window.location.href = finalDestination; }, 3500);
-}
-
-// 🚀 SHARE BUTTON LOGIC
-function shareMovie() {
-  const url = window.location.href;
-  navigator.clipboard.writeText(url).then(() => {
-    const btn = document.getElementById("shareBtn");
-    btn.innerHTML = "✅ Link Copied!";
-    btn.style.background = "rgba(40, 167, 69, 0.2)";
-    btn.style.borderColor = "#28a745";
-    setTimeout(() => {
-      btn.innerHTML = "🔗 Copy Link to Share";
-      btn.style.background = "rgba(255, 255, 255, 0.1)";
-      btn.style.borderColor = "rgba(255, 255, 255, 0.2)";
-    }, 2500);
-  }).catch(err => { prompt("Copy this link to share:", url); });
-}
-
-function reportIssue() {
-  const msg = prompt("Describe the issue:");
-  if (!msg || msg.trim() === "") return;
-  if (!currentFileId) return;
-
-  db.collection("reports").add({ fileId: currentFileId, message: msg.trim(), time: new Date() })
-  .then(() => { alert("Report submitted successfully 👍"); })
-  .catch((error) => { alert("Failed to submit report ❌"); });
-}
-
-window.addEventListener('pageshow', function (event) {
-  const modal = document.getElementById('warningModal');
-  if (modal) { modal.classList.remove('active'); modal.style.display = 'none'; }
-});
-
-loadFile();
-</script>
-
+    loadDatabase();
+  </script>
 </body>
 </html>
