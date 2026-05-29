@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Search • NTM Stream</title>
+  <title>Test Search • NTM Stream</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
   <style>
@@ -23,6 +23,7 @@
       transition: transform 0.3s ease;
       display: flex;
       flex-direction: column;
+      cursor: pointer;
     }
 
     .movie-card:hover {
@@ -80,16 +81,27 @@
       max-width: 400px;
       border-radius: 20px;
       border: none;
+      outline: none;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+    
+    #search::placeholder {
+      color: rgba(255, 255, 255, 0.5);
     }
   </style>
 </head>
 <body>
 
+  <button onclick="history.back()" style="margin: 10px; padding: 8px 15px; background: rgba(255,255,255,0.1); color: white; border: none; border-radius: 5px; cursor: pointer;">← Back</button>
+
   <div class="search-container">
     <input type="text" id="search" placeholder="Search Movies...">
   </div>
 
-  <div id="movie-grid" class="movie-grid"></div>
+  <div id="movie-grid" class="movie-grid">
+    <p style="text-align: center; color: white; grid-column: span 3;">Loading Database (1 Read)...</p>
+  </div>
 
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -99,26 +111,67 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    async function loadMovies() {
-      const snapshot = await db.collection("files").get();
+    let allMovies = []; 
+
+    async function loadDatabase() {
+      const grid = document.getElementById("movie-grid");
+      let localFiles = [];
+      let firebaseFiles = [];
+
+      // 1. Load Local JSON (Cost: 0 Reads)
+      try {
+        const res = await fetch("files.json");
+        localFiles = await res.json();
+      } catch (e) {
+        console.log("No local JSON found or empty.");
+      }
+
+      // 2. Load Firebase Master Array (Cost: Exactly 1 Read)
+      try {
+        const docSnap = await db.collection("movie_database").doc("master_list").get();
+        if (docSnap.exists && docSnap.data().movies) {
+          firebaseFiles = docSnap.data().movies;
+        }
+      } catch (e) {
+        console.error("Firebase fetch error:", e);
+      }
+
+      // 3. Merge and Sort
+      allMovies = [...localFiles, ...firebaseFiles];
+      
+      // Filter duplicates by customId just in case
+      const uniqueMap = new Map();
+      allMovies.forEach(item => uniqueMap.set(item.customId || item.id, item));
+      allMovies = Array.from(uniqueMap.values());
+
+      // Sort newest first (highest ID first)
+      allMovies.sort((a, b) => (b.customId || b.id) - (a.customId || a.id));
+
+      renderGrid(allMovies);
+    }
+
+    function renderGrid(moviesToDisplay) {
       const grid = document.getElementById("movie-grid");
       grid.innerHTML = "";
 
-      snapshot.forEach(doc => {
-        const d = doc.data();
-        
-        // 🕒 Check if New (within 3 days)
-        const uploadDate = d.uploadDate ? d.uploadDate.toDate() : new Date(0);
+      if (moviesToDisplay.length === 0) {
+        grid.innerHTML = `<p style="text-align:center; color: white; grid-column: span 3;">No movies found.</p>`;
+        return;
+      }
+
+      moviesToDisplay.forEach(d => {
+        // 🕒 Check if New (within 3 days using the customId timestamp)
+        const uploadDate = new Date(d.customId || d.id);
         const now = new Date();
         const isNew = (now - uploadDate) < (3 * 24 * 60 * 60 * 1000);
 
         const card = document.createElement("div");
         card.className = "movie-card";
-        card.onclick = () => window.location.href = "file.html?id=" + d.customId;
+        card.onclick = () => window.location.href = "file.html?id=" + (d.customId || d.id);
 
         card.innerHTML = `
           ${isNew ? '<div class="new-badge">NEW</div>' : ''}
-          <img src="${d.image || 'https://via.placeholder.com/200x300'}">
+          <img src="${d.image || 'https://via.placeholder.com/200x300'}" alt="${d.name}">
           <div class="movie-info">
             <div class="movie-name">${d.name}</div>
             <div class="movie-meta">${d.type} • ${d.category}</div>
@@ -128,16 +181,27 @@
       });
     }
 
-    // Search Filter
+    // ⚡ 100% Free Memory Search
     document.getElementById("search").addEventListener("input", function(e) {
-      const term = e.target.value.toLowerCase();
-      document.querySelectorAll(".movie-card").forEach(card => {
-        const name = card.querySelector(".movie-name").innerText.toLowerCase();
-        card.style.display = name.includes(term) ? "flex" : "none";
+      const term = e.target.value.toLowerCase().trim();
+      
+      if (!term) {
+        renderGrid(allMovies);
+        return;
+      }
+
+      const searchWords = term.split(" ").filter(word => word !== "");
+      
+      const filtered = allMovies.filter(file => {
+        const fileData = `${file.name || ""} ${file.type || ""} ${file.category || ""}`.toLowerCase();
+        return searchWords.every(word => fileData.includes(word));
       });
+
+      renderGrid(filtered);
     });
 
-    loadMovies();
+    // Initialize Page
+    loadDatabase();
   </script>
 </body>
 </html>
