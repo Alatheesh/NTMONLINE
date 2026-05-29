@@ -61,17 +61,6 @@
     .download-grid button.watched-btn { background: rgba(255, 255, 255, 0.05); color: rgba(255, 255, 255, 0.5); box-shadow: none; border: 1px solid rgba(255, 255, 255, 0.1); }
     .download-grid button.watched-btn:hover { transform: none; background: rgba(255, 255, 255, 0.1); color: white; }
 
-    /* 🎞️ RELATED SHOWS SLIDER */
-    .related-section { margin-top: 30px; text-align: left; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; }
-    .related-title { font-size: 14px; color: #00bfff; font-weight: bold; margin-bottom: 15px; }
-    .related-slider { display: flex; overflow-x: auto; gap: 12px; padding-bottom: 10px; scrollbar-width: thin; scrollbar-color: #00bfff rgba(255,255,255,0.1); }
-    .related-slider::-webkit-scrollbar { height: 6px; }
-    .related-slider::-webkit-scrollbar-thumb { background: #00bfff; border-radius: 10px; }
-    .related-card { min-width: 110px; max-width: 110px; text-decoration: none; color: white; border-radius: 8px; transition: transform 0.2s; }
-    .related-card:hover { transform: scale(1.05); }
-    .related-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; border-radius: 8px; background: rgba(0,0,0,0.5); margin-bottom: 5px; }
-    .related-name { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; opacity: 0.8; }
-
     .back { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); margin: 30px auto; display: block; padding: 12px 25px; color: white; border-radius: 10px; cursor: pointer; }
     .back:hover { background: rgba(255, 255, 255, 0.15); transform: scale(1.05); }
 
@@ -96,7 +85,17 @@
 
 <div class="page">
   <div class="side-ad">
-    </div>
+    <script>
+      atOptions = {
+        'key' : '6d18eab8e3174f704484a4e5fb7166a4',
+        'format' : 'iframe',
+        'height' : 300,
+        'width' : 160,
+        'params' : {}
+      };
+    </script>
+    <script src="https://www.highperformanceformat.com/6d18eab8e3174f704484a4e5fb7166a4/invoke.js"></script>
+  </div>
 
   <div class="center">
     <div class="card" id="fileCard">
@@ -105,10 +104,33 @@
   </div>
 
   <div class="side-ad">
-    </div>
+    <script>
+      atOptions = {
+        'key' : '6d18eab8e3174f704484a4e5fb7166a4',
+        'format' : 'iframe',
+        'height' : 300,
+        'width' : 160,
+        'params' : {}
+      };
+    </script>
+    <script src="https://www.highperformanceformat.com/6d18eab8e3174f704484a4e5fb7166a4/invoke.js"></script>
+  </div>
 </div>
 
 <button class="back" onclick="history.back()">← Back</button>
+
+<div style="text-align: center; margin: 20px 0; width: 100%;">
+  <script>
+    atOptions = {
+      'key' : '9d4e234e334f6012b5b60f60507d7877',
+      'format' : 'iframe',
+      'height' : 90,
+      'width' : 728,
+      'params' : {}
+    };
+  </script>
+  <script src="https://www.highperformanceformat.com/9d4e234e334f6012b5b60f60507d7877/invoke.js"></script>
+</div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -120,7 +142,6 @@ const db = firebase.firestore();
 
 let currentFileId = null;
 let allFileLinks = []; 
-let currentCategory = "";
 let masterListCache = []; 
 
 window.addEventListener("DOMContentLoaded", async function () {
@@ -159,7 +180,6 @@ async function loadFile() {
   }
 
   currentFileId = file.id || file.customId;
-  currentCategory = file.category || "";
 
   if (Array.isArray(file.links) && file.links.length > 0) allFileLinks = file.links;
   else if (Array.isArray(file.downloads) && file.downloads.length > 0) allFileLinks = file.downloads;
@@ -190,24 +210,6 @@ async function loadFile() {
     `;
   }
 
-  // 🚀 GENERATE RELATED SLIDER
-  let relatedHTML = "";
-  if (currentCategory) {
-    const related = masterListCache.filter(f => f.category === currentCategory && Number(f.id || f.customId) !== currentFileId).slice(0, 6);
-    if (related.length > 0) {
-      relatedHTML = `<div class="related-section"><div class="related-title">Similar to this</div><div class="related-slider">`;
-      related.forEach(r => {
-        relatedHTML += `
-          <a href="file.html?id=${r.id || r.customId}" class="related-card">
-            <img src="${r.image || 'https://via.placeholder.com/150x225'}" alt="${r.name}">
-            <div class="related-name">${r.name}</div>
-          </a>
-        `;
-      });
-      relatedHTML += `</div></div>`;
-    }
-  }
-
   document.getElementById("fileCard").innerHTML = `
     <img src="${file.image || 'https://via.placeholder.com/400x220?text=No+Image'}">
     <h2>${file.name}</h2>
@@ -218,7 +220,6 @@ async function loadFile() {
     
     ${qualityDropdownHTML}
     <div id="dynamic-button-container"></div>
-    ${relatedHTML}
   `;
 
   renderButtons();
