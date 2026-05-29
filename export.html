@@ -1,19 +1,38 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Auto Merge Export</title>
+  <title>Export Data • Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    /* 💎 UNIVERSAL ADMIN CSS */
+    body { font-family: Arial, sans-serif; background: #0a1128; color: white; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
+    h2 { color: #00bfff; margin-bottom: 20px; text-align: center; }
+    .container { background: rgba(255, 255, 255, 0.05); padding: 30px; border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1); width: 100%; max-width: 700px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    
+    .back-btn { background: rgba(255, 255, 255, 0.1); color: white; width: auto; padding: 8px 16px; margin-bottom: 20px; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s;}
+    .back-btn:hover { background: rgba(255, 255, 255, 0.2); }
+
+    button { width: 100%; padding: 12px; margin-bottom: 12px; border: none; border-radius: 8px; background: #00bfff; color: black; font-weight: bold; cursor: pointer; transition: 0.3s; }
+    button:hover { background: #008cba; transform: scale(1.02); }
+
+    textarea {
+      width: 100%; height: 350px; box-sizing: border-box; padding: 15px; margin-top: 15px;
+      border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(0,0,0,0.3); color: #00ff00; outline: none; font-family: monospace; font-size: 13px;
+    }
+  </style>
 </head>
 <body>
 
-<h2>Auto Merge Firebase → files.json</h2>
+<button class="back-btn" onclick="window.location.href='admin.html'">← Back to Dashboard</button>
 
-<button onclick="goBack()">← Back</button>
-<br><br>
-<button onclick="mergeData()">Merge Data</button>
-<button onclick="copyData()">Copy JSON</button>
-<br><br>
-
-<textarea id="output" rows="25" cols="90" placeholder="Merged JSON will appear here..."></textarea>
+<div class="container">
+  <h2>💾 Merge & Export Data</h2>
+  <button onclick="mergeData()">1. Fetch & Merge Data</button>
+  <button onclick="copyData()" style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3);">2. Copy JSON to Clipboard</button>
+  
+  <textarea id="output" placeholder="Merged JSON data will appear here..." readonly></textarea>
+</div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -21,78 +40,69 @@
 <script src="firebase-config.js"></script>
 
 <script>
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const auth = firebase.auth();
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  const auth = firebase.auth();
+  
+  auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
-auth.onAuthStateChanged(user => {
-  if (!user) {
-    alert("Login first");
-    window.location.href = "admin.html";
-  }
-});
+  if (!localStorage.getItem("ntm_admin_session")) { window.location.href = "admin.html"; }
 
-async function mergeData() {
-  try {
-    // 1. LOAD LOCAL JSON
-    let localFiles = [];
+  auth.onAuthStateChanged(user => {
+    if (!user) { window.location.href = "admin.html"; }
+  });
+
+  async function mergeData() {
+    const btn = document.querySelector("button[onclick='mergeData()']");
+    btn.innerText = "Fetching...";
+    
     try {
-      const res = await fetch("files.json");
-      localFiles = await res.json();
-    } catch(e) {}
+      let localFiles = [];
+      try {
+        const res = await fetch("files.json");
+        localFiles = await res.json();
+      } catch(e) {}
 
-    // 2. LOAD FIREBASE ARRAY DATA (1 Read!)
-    const docSnap = await db.collection("movie_database").doc("master_list").get();
-    const firebaseFiles = [];
+      const docSnap = await db.collection("movie_database").doc("master_list").get();
+      const firebaseFiles = [];
 
-    if (docSnap.exists && docSnap.data().movies) {
-        const movies = docSnap.data().movies;
-        movies.forEach(d => {
-            firebaseFiles.push({
-                id: d.customId,
-                name: d.name,
-                type: d.type,
-                category: d.category,
-                description: d.description || "",
-                image: d.image || "",
-                downloads: d.links || []
-            });
-        });
+      if (docSnap.exists && docSnap.data().movies) {
+          const movies = docSnap.data().movies;
+          movies.forEach(d => {
+              firebaseFiles.push({
+                  id: d.customId,
+                  name: d.name,
+                  type: d.type,
+                  category: d.category,
+                  description: d.description || "",
+                  image: d.image || "",
+                  downloads: d.links || []
+              });
+          });
+      }
+
+      const merged = [...localFiles, ...firebaseFiles];
+
+      const uniqueMap = {};
+      merged.forEach(item => { uniqueMap[item.id] = item; });
+      const finalData = Object.values(uniqueMap);
+
+      finalData.sort((a, b) => b.id - a.id);
+      document.getElementById("output").value = JSON.stringify(finalData, null, 2);
+
+    } catch (err) {
+      alert("Error: " + err.message);
     }
-
-    // 3. MERGE BOTH
-    const merged = [...localFiles, ...firebaseFiles];
-
-    // 4. REMOVE DUPLICATES (by id)
-    const uniqueMap = {};
-    merged.forEach(item => {
-      uniqueMap[item.id] = item;
-    });
-
-    const finalData = Object.values(uniqueMap);
-
-    // 5. SORT (latest first)
-    finalData.sort((a, b) => b.id - a.id);
-
-    // 6. OUTPUT CLEAN JSON
-    document.getElementById("output").value = JSON.stringify(finalData, null, 2);
-
-  } catch (err) {
-    console.error(err);
-    alert("Error merging data: " + err.message);
+    btn.innerText = "1. Fetch & Merge Data";
   }
-}
 
-function copyData() {
-  const textarea = document.getElementById("output");
-  textarea.select();
-  document.execCommand("copy");
-  alert("Copied!");
-}
-
-function goBack() {
-  window.location.href = "admin.html";
-}
+  function copyData() {
+    const textarea = document.getElementById("output");
+    if (!textarea.value) { alert("Nothing to copy! Fetch data first."); return; }
+    textarea.select();
+    document.execCommand("copy");
+    alert("✅ Copied to clipboard!");
+  }
 </script>
 
 </body>
