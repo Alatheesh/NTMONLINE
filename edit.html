@@ -1,45 +1,119 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Edit Files</title>
+  <title>Edit Movie • Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    .ep-input { display: none; width: 80px; }
-    .is-series .ep-input { display: inline-block; }
+    /* 💎 UNIVERSAL ADMIN CSS */
+    body {
+      font-family: Arial, sans-serif;
+      background: #0a1128;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    h2 { color: #00bfff; margin-bottom: 20px; text-align: center; }
+    
+    .container {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 30px;
+      border-radius: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      width: 100%;
+      max-width: 600px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    
+    label.field-label { display: block; margin-bottom: 5px; font-size: 13px; color: #00bfff; font-weight: bold; }
+    
+    input[type="text"], input[type="number"], select, textarea {
+      width: 100%; box-sizing: border-box; padding: 12px; margin-bottom: 15px;
+      border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(0,0,0,0.2); color: white; outline: none; font-family: Arial, sans-serif;
+    }
+    input:focus, select:focus, textarea:focus { border-color: #00bfff; background: rgba(255,255,255,0.05); }
+    
+    /* 🛠️ THE DROPDOWN FIX (Makes options visible on Android/Windows) */
+    select option { background-color: #0a1128; color: white; padding: 10px; }
+    
+    button {
+      width: 100%; padding: 12px; margin-bottom: 12px; border: none; border-radius: 8px;
+      background: #00bfff; color: black; font-weight: bold; cursor: pointer; transition: 0.3s;
+    }
+    button:hover { background: #008cba; transform: scale(1.02); }
+    
+    .back-btn { background: rgba(255, 255, 255, 0.1); color: white; width: auto; padding: 8px 16px; margin-bottom: 20px; }
+    .back-btn:hover { background: rgba(255, 255, 255, 0.2); }
+    .btn-danger { background: #ff4d4d; color: white; width: auto; padding: 8px 12px; margin: 0; }
+    .btn-danger:hover { background: #cc0000; }
+
+    /* 🔘 FORMAT TOGGLE & LINKS */
+    .radio-group {
+      display: flex; justify-content: center; gap: 20px; margin-bottom: 20px;
+      background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);
+    }
+    .radio-group label { display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 15px; font-weight: bold; }
+
+    .link-row { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; flex-wrap: wrap; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); }
+    .link-row input, .link-row select, .link-row button { margin-bottom: 0; padding: 10px; }
+    .link-input { flex: 1; min-width: 150px; }
+    
+    .ep-wrapper { display: none; align-items: center; gap: 5px; background: rgba(0,0,0,0.2); padding: 0 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); }
+    .ep-wrapper input { border: none; background: transparent; width: 45px; padding: 10px 0; color: white; outline: none; }
+    .quality-input { display: none; width: auto; }
+    
+    .is-series .ep-wrapper { display: flex; }
+    .is-series .quality-input { display: block; }
   </style>
 </head>
 <body>
 
-<h2>Edit File</h2>
+<button class="back-btn" onclick="window.location.href='admin.html'">← Back to Dashboard</button>
 
-<button onclick="goBack()">← Back</button>
-<hr>
+<div class="container">
+  <h2>✏️ Edit Movie / Series</h2>
 
-<h3>Select File</h3>
-<div id="fileList">Loading...</div>
-<hr>
+  <label class="field-label">Select File to Edit</label>
+  <select id="movieSelect" onchange="loadMovieDetails()">
+    <option value="">-- Loading Database... --</option>
+  </select>
 
-<h3>Edit Selected File</h3>
+  <div id="editForm" style="display: none; margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+    
+    <div class="radio-group">
+      <label><input type="radio" name="format" value="movie" onchange="toggleFormat()"> 🎬 Movie</label>
+      <label><input type="radio" name="format" value="series" onchange="toggleFormat()"> 📺 Series</label>
+    </div>
 
-<div style="margin-bottom: 15px; padding: 10px; background: #eee; border-radius: 5px; display: inline-block;">
-  <strong>Format:</strong>
-  <label><input type="radio" name="format" value="movie" checked onchange="toggleFormat()"> Movie</label>
-  <label><input type="radio" name="format" value="series" onchange="toggleFormat()"> Series</label>
+    <label class="field-label">File Name</label>
+    <input type="text" id="name">
+
+    <label class="field-label">Type</label>
+    <input type="text" id="type">
+
+    <label class="field-label">Category</label>
+    <input type="text" id="category">
+
+    <label class="field-label">Cover Image URL</label>
+    <input type="text" id="image">
+
+    <label class="field-label">Download / Stream Links</label>
+    <div id="links-container"></div>
+    <button style="background: rgba(255,255,255,0.1); color: white; border: 1px dashed rgba(255,255,255,0.3); margin-top: 10px;" onclick="addLink()">➕ Add Another Link</button>
+
+    <label class="field-label" style="margin-top: 15px;">Description</label>
+    <textarea id="description" rows="3"></textarea>
+
+    <button onclick="saveChanges()" style="margin-top: 10px; font-size: 16px;">💾 Save Changes</button>
+  </div>
+  
+  <p id="status" style="text-align: center; font-size: 14px; margin-top: 10px;"></p>
 </div>
-<br>
-
-<input type="text" id="name" placeholder="File Name"><br><br>
-<input type="text" id="type" placeholder="Type"><br><br>
-<input type="text" id="category" placeholder="Category"><br><br>
-<input type="text" id="image" placeholder="Image URL"><br><br>
-
-<h3>Download Links</h3>
-<div id="links-container"></div>
-<br>
-<button onclick="addLink()">➕ Add More</button>
-<br><br>
-
-<textarea id="description" placeholder="Description"></textarea><br><br>
-<button onclick="updateFile()">Update File</button>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -47,202 +121,216 @@
 <script src="firebase-config.js"></script>
 
 <script>
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const auth = firebase.auth();
-
-let currentCustomId = null;
-let allMoviesList = [];
-
-auth.onAuthStateChanged(user => {
-  if (!user) {
-    alert("Login first");
-    window.location.href = "admin.html";
-  } else {
-    loadFiles();
-  }
-});
-
-function toggleFormat() {
-  const isSeries = document.querySelector('input[name="format"]:checked').value === "series";
-  const container = document.getElementById("links-container");
-  if (isSeries) {
-    container.classList.add("is-series");
-  } else {
-    container.classList.remove("is-series");
-  }
-}
-
-async function loadFiles() {
-  const container = document.getElementById("fileList");
-  container.innerHTML = "Loading...";
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  const auth = firebase.auth();
   
-  try {
-    const docSnap = await db.collection("movie_database").doc("master_list").get();
-    container.innerHTML = "";
-    
-    if (docSnap.exists && docSnap.data().movies) {
-      allMoviesList = docSnap.data().movies;
-      
-      allMoviesList.forEach(data => {
-        container.innerHTML += `
-          <div style="border:1px solid #ccc; padding:10px; margin:10px;">
-            <strong>${data.name}</strong><br>
-            ${data.type} • ${data.category}
-            <br><br>
-            <button onclick="selectFile(${data.customId})">Edit</button>
-          </div>
-        `;
-      });
+  // Keep you logged in on this device
+  auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+  // 🕒 Check 24-Hour Admin Session
+  if (!localStorage.getItem("ntm_admin_session")) {
+    window.location.href = "admin.html";
+  }
+
+  let allMovies = [];
+  let currentMovieIndex = -1;
+
+  // 🔐 Wait for Firebase to confirm you are the true admin before loading the database
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      fetchMovies();
     } else {
-      container.innerHTML = "No files found in database.";
-    }
-  } catch(e) {
-    container.innerHTML = "Error loading files.";
-  }
-}
-
-function addLink(url = "", episode = "", quality = "720p", size = "", unit = "MB") {
-  const container = document.getElementById("links-container");
-  const div = document.createElement("div");
-  div.classList.add("link-row");
-
-  div.innerHTML = `
-    <input type="text" value="${url}" placeholder="Enter link" class="link-input">
-    <input type="text" value="${episode}" placeholder="Ep 1" class="ep-input">
-    <select class="quality-input" style="width:80px;">
-      <option value="Auto" ${quality==="Auto"?"selected":""}>Auto</option>
-      <option value="480p" ${quality==="480p"?"selected":""}>480p</option>
-      <option value="720p" ${quality==="720p"?"selected":""}>720p</option>
-      <option value="1080p" ${quality==="1080p"?"selected":""}>1080p</option>
-      <option value="4K" ${quality==="4K"?"selected":""}>4K</option>
-    </select>
-    <input type="number" value="${size}" placeholder="Size" class="size-input" style="width:70px;">
-    <select class="size-unit">
-      <option value="KB" ${unit==="KB"?"selected":""}>KB</option>
-      <option value="MB" ${unit==="MB"?"selected":""}>MB</option>
-      <option value="GB" ${unit==="GB"?"selected":""}>GB</option>
-    </select>
-    <button onclick="removeRow(this)">❌</button>
-  `;
-  container.appendChild(div);
-}
-
-function removeRow(btn) {
-  btn.parentElement.remove();
-}
-
-function selectFile(customId) {
-  const data = allMoviesList.find(m => m.customId === customId);
-  if (!data) { alert("File not found"); return; }
-
-  currentCustomId = customId;
-
-  document.getElementById("name").value = data.name || "";
-  document.getElementById("type").value = data.type || "";
-  document.getElementById("category").value = data.category || "";
-  document.getElementById("image").value = data.image || "";
-  document.getElementById("description").value = data.description || "";
-
-  const container = document.getElementById("links-container");
-  container.innerHTML = "";
-
-  let isSeriesFormat = false;
-
-  if (Array.isArray(data.links)) {
-    data.links.forEach(link => {
-      if (typeof link === "string") {
-        let decodedUrl = link;
-        try { decodedUrl = atob(link); } catch(e) {}
-        addLink(decodedUrl, "", "Auto", "", "MB");
-      } else {
-        if (link.episode) isSeriesFormat = true;
-        let decodedUrl = link.url;
-        try { decodedUrl = atob(link.url); } catch(e) {}
-        addLink(decodedUrl, link.episode || "", link.quality || "720p", link.size || "", link.unit || "MB");
-      }
-    });
-  }
-
-  if (isSeriesFormat) {
-    document.querySelector('input[name="format"][value="series"]').checked = true;
-  } else {
-    document.querySelector('input[name="format"][value="movie"]').checked = true;
-  }
-  toggleFormat();
-
-  if (!data.links || data.links.length === 0) { addLink(); }
-}
-
-async function updateFile() {
-  if (!currentCustomId) { alert("Select a file first"); return; }
-
-  const fileName = document.getElementById("name").value.trim();
-  const fileType = document.getElementById("type").value.trim();
-  const fileCategory = document.getElementById("category").value.trim();
-  const fileImage = document.getElementById("image").value.trim();
-  const isSeries = document.querySelector('input[name="format"]:checked').value === "series";
-
-  const rows = document.querySelectorAll(".link-row");
-  let links = [];
-
-  rows.forEach(row => {
-    const url = row.querySelector(".link-input").value.trim();
-    const episode = row.querySelector(".ep-input").value.trim();
-    const quality = row.querySelector(".quality-input").value; 
-    const size = row.querySelector(".size-input").value.trim();
-    const unit = row.querySelector(".size-unit").value;
-
-    if (url) {
-      const scrambledUrl = btoa(url);
-      if (isSeries && episode) {
-        links.push({ url: scrambledUrl, episode, quality, size, unit });
-      } else {
-        links.push({ url: scrambledUrl, quality, size, unit });
-      }
+      window.location.href = "admin.html";
     }
   });
 
-  const fileDescription = document.getElementById("description").value.trim();
-  
-  const updatedMovie = {
-      customId: currentCustomId,
-      name: fileName,
-      type: fileType,
-      category: fileCategory,
-      image: fileImage,
-      links: links,
-      description: fileDescription
-  };
-
-  try {
-    const docRef = db.collection("movie_database").doc("master_list");
-    const docSnap = await docRef.get();
-    
-    if (docSnap.exists) {
-        let movies = docSnap.data().movies || [];
-        const index = movies.findIndex(m => m.customId === currentCustomId);
-        
-        if (index > -1) {
-            movies[index] = updatedMovie; // Replace old with new
-            await docRef.update({ movies: movies });
-            alert("File updated successfully!");
-            currentCustomId = null;
-            loadFiles();
-            document.getElementById("links-container").innerHTML = "";
-        } else {
-            alert("Could not find movie to update.");
-        }
+  async function fetchMovies() {
+    try {
+      const docSnap = await db.collection("movie_database").doc("master_list").get();
+      if (docSnap.exists && docSnap.data().movies) {
+        allMovies = docSnap.data().movies;
+        populateDropdown();
+      }
+    } catch (e) {
+      document.getElementById("status").innerText = "❌ Error loading movies.";
+      document.getElementById("status").style.color = "#ff4d4d";
     }
-  } catch (err) {
-    console.error(err);
-    alert(err.message);
   }
-}
 
-function goBack() {
-  window.location.href = "admin.html";
-}
+  function populateDropdown() {
+    const select = document.getElementById("movieSelect");
+    select.innerHTML = '<option value="">-- Select a file to edit --</option>'; 
+    allMovies.forEach((movie, index) => {
+      const option = document.createElement("option");
+      option.value = index;
+      option.text = movie.name + " (" + movie.type + ")";
+      select.appendChild(option);
+    });
+  }
+
+  function toggleFormat() {
+    const isSeries = document.querySelector('input[name="format"]:checked').value === "series";
+    const container = document.getElementById("links-container");
+    if (isSeries) {
+      container.classList.add("is-series");
+    } else {
+      container.classList.remove("is-series");
+    }
+  }
+
+  function addLink(url = "", ep = "1", quality = "720p", size = "", unit = "MB") {
+    const container = document.getElementById("links-container");
+    const div = document.createElement("div");
+    div.classList.add("link-row");
+
+    div.innerHTML = `
+      <input type="text" placeholder="Paste video link..." class="link-input" value="${url}">
+      <div class="ep-wrapper">
+        <span style="color:#00bfff; font-weight:bold; font-size: 14px;">Ep</span>
+        <input type="number" class="ep-input" min="1" value="${ep}">
+      </div>
+      <select class="quality-input">
+        <option value="Auto" ${quality === "Auto" ? "selected" : ""}>Auto</option>
+        <option value="480p" ${quality === "480p" ? "selected" : ""}>480p</option>
+        <option value="720p" ${quality === "720p" ? "selected" : ""}>720p</option>
+        <option value="1080p" ${quality === "1080p" ? "selected" : ""}>1080p</option>
+        <option value="4K" ${quality === "4K" ? "selected" : ""}>4K</option>
+      </select>
+      <input type="number" placeholder="Size" class="size-input" style="width:75px;" min="0" step="0.1" value="${size}">
+      <select class="size-unit" style="width:65px;">
+        <option value="MB" ${unit === "MB" ? "selected" : ""}>MB</option>
+        <option value="GB" ${unit === "GB" ? "selected" : ""}>GB</option>
+      </select>
+      <button class="btn-danger" onclick="removeRow(this)">❌</button>
+    `;
+    container.appendChild(div);
+  }
+
+  function removeRow(btn) {
+    btn.parentElement.remove();
+  }
+
+  function loadMovieDetails() {
+    const select = document.getElementById("movieSelect");
+    const index = select.value;
+    const form = document.getElementById("editForm");
+
+    if (index === "") {
+      form.style.display = "none";
+      return;
+    }
+
+    currentMovieIndex = parseInt(index);
+    const movie = allMovies[currentMovieIndex];
+
+    document.getElementById("name").value = movie.name || "";
+    document.getElementById("type").value = movie.type || "Movie";
+    document.getElementById("category").value = movie.category || "";
+    document.getElementById("image").value = movie.image || "";
+    document.getElementById("description").value = movie.description || "";
+    
+    const container = document.getElementById("links-container");
+    container.innerHTML = "";
+    let isSeriesFormat = false;
+
+    if (Array.isArray(movie.links) && movie.links.length > 0) {
+      movie.links.forEach(link => {
+        let url = "";
+        let ep = "1";
+        let quality = "720p";
+        let size = "";
+        let unit = "MB";
+
+        // Handle string format or object format
+        if (typeof link === "string") {
+          try { url = atob(link); } catch(e) { url = link; }
+        } else {
+          try { url = atob(link.url); } catch(e) { url = link.url; }
+          if (link.episode) {
+            isSeriesFormat = true;
+            ep = link.episode.replace("Ep ", "").trim();
+          }
+          quality = link.quality || "720p";
+          size = link.size || "";
+          unit = link.unit || "MB";
+        }
+        addLink(url, ep, quality, size, unit);
+      });
+    } else {
+      addLink(); 
+    }
+
+    if (isSeriesFormat) {
+      document.querySelector('input[name="format"][value="series"]').checked = true;
+    } else {
+      document.querySelector('input[name="format"][value="movie"]').checked = true;
+    }
+    toggleFormat();
+
+    form.style.display = "block";
+  }
+
+  async function saveChanges() {
+    const status = document.getElementById("status");
+    if (currentMovieIndex === -1) return;
+
+    const isSeries = document.querySelector('input[name="format"]:checked').value === "series";
+    const rows = document.querySelectorAll(".link-row");
+    let newLinks = [];
+
+    rows.forEach(row => {
+      const url = row.querySelector(".link-input").value.trim();
+      const episodeNum = row.querySelector(".ep-input").value;
+      const quality = row.querySelector(".quality-input").value; 
+      const size = row.querySelector(".size-input").value.trim();
+      const unit = row.querySelector(".size-unit").value;
+
+      if (url) {
+        const scrambledUrl = btoa(url);
+        if (isSeries && episodeNum) {
+          newLinks.push({ url: scrambledUrl, episode: "Ep " + episodeNum, quality, size, unit }); 
+        } else {
+          newLinks.push({ url: scrambledUrl, size, unit }); 
+        }
+      }
+    });
+
+    if (newLinks.length === 0) {
+      alert("❌ You must have at least one link!");
+      return;
+    }
+
+    // Disable button to prevent double-clicks
+    const btn = document.querySelector("button[onclick='saveChanges()']");
+    btn.innerText = "Saving...";
+    btn.disabled = true;
+
+    allMovies[currentMovieIndex].name = document.getElementById("name").value.trim();
+    allMovies[currentMovieIndex].type = document.getElementById("type").value.trim();
+    allMovies[currentMovieIndex].category = document.getElementById("category").value.trim();
+    allMovies[currentMovieIndex].image = document.getElementById("image").value.trim();
+    allMovies[currentMovieIndex].description = document.getElementById("description").value.trim();
+    allMovies[currentMovieIndex].links = newLinks;
+
+    try {
+      await db.collection("movie_database").doc("master_list").update({
+        movies: allMovies
+      });
+      status.style.color = "#00bfff";
+      status.innerText = "✅ Movie updated successfully!";
+      
+      const select = document.getElementById("movieSelect");
+      select.options[select.selectedIndex].text = allMovies[currentMovieIndex].name + " (" + allMovies[currentMovieIndex].type + ")";
+      
+    } catch (error) {
+      status.style.color = "#ff4d4d";
+      status.innerText = "❌ Error saving: " + error.message;
+    }
+
+    btn.innerText = "💾 Save Changes";
+    btn.disabled = false;
+  }
 </script>
 
 </body>
