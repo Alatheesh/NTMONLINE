@@ -38,6 +38,13 @@
     }
     input:focus, select:focus, textarea:focus { border-color: #00bfff; background: rgba(255,255,255,0.05); }
     
+    /* 🛠️ THE BUG FIX: Forces the dropdown menu itself to be dark */
+    select option {
+      background-color: #0a1128;
+      color: white;
+      padding: 10px;
+    }
+    
     button {
       width: 100%; padding: 12px; margin-bottom: 12px; border: none; border-radius: 8px;
       background: #00bfff; color: black; font-weight: bold; cursor: pointer; transition: 0.3s;
