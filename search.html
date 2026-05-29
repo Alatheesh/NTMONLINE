@@ -28,17 +28,18 @@
     body.light-mode .movie-meta { color: #555; }
     body.light-mode .page-info { color: #333; }
 
-    /* 🔍 UNIFIED SEARCH BAR (SLEEK DESIGN) */
+    /* 🔍 UNIFIED SEARCH BAR (ANIMATED) */
     .search-container { 
       position: relative;
       margin: 20px auto;
       width: 85%;
       max-width: 400px;
     }
+    
     #search { 
       width: 100%; 
       box-sizing: border-box;
-      padding: 12px 45px 12px 20px; 
+      padding: 12px 20px; /* Default padding, expands when clicked */
       border-radius: 25px; 
       border: 1px solid rgba(255,255,255,0.2); 
       outline: none; 
@@ -47,28 +48,54 @@
       font-size: 15px;
       transition: all 0.3s ease;
     }
-    #search:focus { border-color: #00bfff; background: rgba(255,255,255,0.15); }
+    
+    /* When clicked (focused) or active with text */
+    #search:focus, .search-container.active #search { 
+      border-color: #00bfff; 
+      background: rgba(255,255,255,0.15); 
+      padding-right: 50px; /* Make room for the button */
+    }
+    
     #searchBtn { 
       position: absolute;
-      right: 5px;
+      right: 7px;
       top: 50%;
-      transform: translateY(-50%);
-      background: transparent;
+      transform: translateY(-50%) scale(0.5); /* Starts small and hidden */
+      background: rgba(0, 191, 255, 0.2); /* Subtle blue background */
       border: none;
       outline: none;
-      color: inherit;
+      color: white;
       cursor: pointer;
       font-size: 16px;
-      padding: 10px;
-      transition: 0.3s;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%; /* Perfect Circle */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0; /* Invisible by default */
+      pointer-events: none; /* Cannot be clicked when invisible */
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Bouncy animation */
     }
-    #searchBtn:hover { color: #00bfff; transform: translateY(-50%) scale(1.1); }
+    
+    #searchBtn:hover { 
+      background: #00bfff; 
+      color: black; 
+    }
+    
+    /* Reveal the button ONLY when clicking the search bar or typing */
+    .search-container:focus-within #searchBtn,
+    .search-container.active #searchBtn {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(-50%) scale(1); /* Pop in animation */
+    }
     
     /* Search Bar Light Mode */
     body.light-mode #search { background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.2); color: #111; }
-    body.light-mode #search:focus { border-color: #008cba; }
-    body.light-mode #searchBtn { color: #555; }
-    body.light-mode #searchBtn:hover { color: #008cba; }
+    body.light-mode #search:focus, body.light-mode .search-container.active #search { border-color: #008cba; }
+    body.light-mode #searchBtn { background: rgba(0, 140, 186, 0.2); color: #111; }
+    body.light-mode #searchBtn:hover { background: #008cba; color: white; }
 
     /* 📄 PAGINATION STYLES */
     .pagination-container { grid-column: span 3; text-align: center; margin-top: 20px; padding: 15px; }
@@ -119,7 +146,7 @@
       <button id="themeToggle">🌙</button>
     </div>
 
-    <div class="search-container">
+    <div class="search-container" id="searchWrapper">
       <input type="text" id="search" placeholder="Search Movie...">
       <button id="searchBtn">🔍</button>
     </div>
@@ -254,7 +281,7 @@
       renderPage(1);
     }
 
-    // 📄 RENDERS ONLY 10 MOVIES AT A TIME (USING <a> TAGS)
+    // 📄 RENDERS ONLY 10 MOVIES AT A TIME
     function renderPage(page) {
       currentPage = page;
       const grid = document.getElementById("movie-grid");
@@ -325,57 +352,61 @@
       }
     };
 
-    // ⚡ FIXED SEARCH LOGIC (Only searches on Enter or Button Click)
+    // ⚡ FIXED SEARCH LOGIC
     const searchInput = document.getElementById("search");
     const searchBtn = document.getElementById("searchBtn");
+    const searchWrapper = document.getElementById("searchWrapper");
     let isSearchActive = false;
 
     function executeSearch() {
       const term = searchInput.value.toLowerCase().trim();
       
       if (!term) { 
-        // If empty, reset to all movies
         filteredMovies = [...allMovies]; 
         searchBtn.innerHTML = "🔍";
         isSearchActive = false;
+        searchWrapper.classList.remove("active"); // Allows button to hide if unfocused
       } else {
-        // Run the filter
         const searchWords = term.split(" ").filter(word => word !== "");
         filteredMovies = allMovies.filter(file => {
           const fileData = `${file.name || ""} ${file.type || ""} ${file.category || ""}`.toLowerCase();
           return searchWords.every(word => fileData.includes(word));
         });
-        searchBtn.innerHTML = "✖"; // Change button to 'X' to clear search
+        searchBtn.innerHTML = "✖"; 
         isSearchActive = true;
       }
-      renderPage(1); // Always load page 1 of results
+      renderPage(1); 
     }
 
-    // Run search ONLY when button is clicked
+    // Keeps button visible if there is text in the box (even if user clicks away)
+    searchInput.addEventListener("input", function(e) {
+      if (e.target.value.trim() !== "") {
+        searchWrapper.classList.add("active");
+      } else {
+        searchWrapper.classList.remove("active");
+      }
+      
+      // Revert 'X' to '🔍' if user starts modifying a previous search
+      if (isSearchActive && e.target.value.trim() !== "") {
+        searchBtn.innerHTML = "🔍";
+        isSearchActive = false;
+      }
+    });
+
     searchBtn.addEventListener("click", function() {
       if (isSearchActive) {
-        // If it's an 'X', clear the text and reset
         searchInput.value = "";
+        searchWrapper.classList.remove("active");
         executeSearch(); 
       } else {
-        // If it's a magnifying glass, run the search
         executeSearch();
       }
     });
 
-    // Run search ONLY when 'Enter' key is pressed
     searchInput.addEventListener("keypress", function(e) {
       if (e.key === "Enter") {
         e.preventDefault();
         executeSearch();
-      }
-    });
-
-    // Switch 'X' back to '🔍' visually if user modifies text, but DON'T auto-search
-    searchInput.addEventListener("input", function(e) {
-      if (isSearchActive && e.target.value.trim() !== "") {
-        searchBtn.innerHTML = "🔍";
-        isSearchActive = false;
       }
     });
 
