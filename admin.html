@@ -1,31 +1,102 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Admin Panel</title>
+  <title>Admin Panel • NTM Stream</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0a1128;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    
+    h2 {
+      color: #00bfff;
+      margin-bottom: 20px;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 30px;
+      border-radius: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      text-align: center;
+      width: 90%;
+      max-width: 350px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    input {
+      width: 90%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(0,0,0,0.2);
+      color: white;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #00bfff;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 12px;
+      border: none;
+      border-radius: 8px;
+      background: #00bfff;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #008cba;
+      transform: scale(1.02);
+    }
+
+    .btn-danger {
+      background: #ff4d4d;
+      color: white;
+      margin-top: 15px;
+    }
+
+    .btn-danger:hover {
+      background: #cc0000;
+    }
+  </style>
 </head>
 <body>
 
-<h2>Admin Panel</h2>
+<h2>⚙️ Admin Panel</h2>
 
-<div id="loginBox">
-  <input type="email" id="username" placeholder="Email"><br><br>
-  <input type="password" id="password" placeholder="Password"><br><br>
+<div id="loginBox" class="container">
+  <h3>Secure Login</h3>
+  <input type="email" id="username" placeholder="Admin Email"><br>
+  <input type="password" id="password" placeholder="Password"><br>
   <button onclick="login()">Login</button>
 </div>
 
-<div id="menuBox" style="display:none; text-align:center;">
+<div id="menuBox" class="container" style="display:none;">
+  <h3 style="margin-bottom: 25px;">Dashboard</h3>
 
-  <h3>Select Action</h3>
+  <button onclick="goTo('add.html')">➕ Add Movie</button>
+  <button onclick="goTo('edit.html')">✏️ Edit Movie</button>
+  <button onclick="goTo('delete.html')">🗑️ Delete Movie</button>
+  <button onclick="goTo('export.html')">💾 Export Data</button>
+  <button onclick="goTo('reports.html')">⚠ View Reports</button>
 
-  <button onclick="goTo('add.html')">Add File</button><br><br>
-  <button onclick="goTo('edit.html')">Edit File</button><br><br>
-  <button onclick="goTo('delete.html')">Delete File</button><br><br>
-  <button onclick="goTo('export.html')">Export Data</button><br><br>
-
-  <button onclick="goTo('reports.html')">Reports</button><br><br>
-
-  <button onclick="logout()">Logout</button>
-
+  <button class="btn-danger" onclick="logout()">Logout</button>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -34,28 +105,62 @@
 
 <script>
 firebase.initializeApp(firebaseConfig);
-
 const auth = firebase.auth();
 
-// ✅ persistence
+// Set Firebase persistence
 auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+// ==========================================
+// 🕒 24-HOUR MEMORY LOGIC
+// ==========================================
+
+function setAdminSession() {
+  const expireTime = Date.now() + 86400000; // Current time + 24 Hours in milliseconds
+  localStorage.setItem("ntm_admin_session", expireTime.toString());
+}
+
+function checkAdminSession() {
+  const session = localStorage.getItem("ntm_admin_session");
+  if (session) {
+    const expiry = parseInt(session);
+    if (Date.now() < expiry) {
+      return true; // Still within 24 hours
+    } else {
+      localStorage.removeItem("ntm_admin_session"); // Expired!
+      return false;
+    }
+  }
+  return false; // No session found
+}
+
+// ==========================================
+// 🔐 AUTHENTICATION
+// ==========================================
 
 // LOGIN
 function login() {
   const email = document.getElementById("username").value;
   const pass = document.getElementById("password").value;
 
+  if (!email || !pass) {
+    alert("Please enter both email and password.");
+    return;
+  }
+
   auth.signInWithEmailAndPassword(email, pass)
     .then(() => {
-      alert("Login successful");
+      setAdminSession(); // ⏱️ Start the 24-hour timer!
       showMenu();
     })
-    .catch(err => alert(err.message));
+    .catch(err => alert("Login Failed: " + err.message));
 }
 
 // LOGOUT
 function logout() {
-  auth.signOut();
+  localStorage.removeItem("ntm_admin_session"); // Clear the 24-hour timer
+  auth.signOut().then(() => {
+    window.location.reload();
+  });
 }
 
 // SHOW MENU
@@ -64,11 +169,16 @@ function showMenu() {
   document.getElementById("menuBox").style.display = "block";
 }
 
-// AUTH LISTENER
+// AUTH LISTENER (Checks both Firebase & 24-Hour Timer)
 auth.onAuthStateChanged(user => {
-  if (user) {
+  if (user && checkAdminSession()) {
+    // Both Firebase and our 24-hour timer agree you are logged in
     showMenu();
   } else {
+    // If the 24 hours passed, forcefully log them out of Firebase too
+    if (user) {
+      auth.signOut();
+    }
     document.getElementById("loginBox").style.display = "block";
     document.getElementById("menuBox").style.display = "none";
   }
