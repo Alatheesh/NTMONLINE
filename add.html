@@ -38,12 +38,8 @@
     }
     input:focus, select:focus, textarea:focus { border-color: #00bfff; background: rgba(255,255,255,0.05); }
     
-    /* 🛠️ THE BUG FIX: Forces the dropdown menu itself to be dark */
-    select option {
-      background-color: #0a1128;
-      color: white;
-      padding: 10px;
-    }
+    /* 🛠️ THE DROPDOWN FIX */
+    select option { background-color: #0a1128; color: white; padding: 10px; }
     
     button {
       width: 100%; padding: 12px; margin-bottom: 12px; border: none; border-radius: 8px;
@@ -115,20 +111,31 @@
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="firebase-config.js"></script>
 
 <script>
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
+  const auth = firebase.auth();
+  
+  // Keep you logged in on this device
+  auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
-  // 🕒 Instantly check the 24-Hour memory session from Admin
+  // 🕒 Check 24-Hour Admin Session
   if (!localStorage.getItem("ntm_admin_session")) {
-    alert("Session expired. Please log in again.");
     window.location.href = "admin.html";
-  } else {
-    // Session valid, load the first empty link row
-    addLink();
   }
+
+  // 🔐 Wait for Firebase to confirm you are the true admin before loading links
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      document.getElementById("links-container").innerHTML = "";
+      addLink(); 
+    } else {
+      window.location.href = "admin.html";
+    }
+  });
 
   // Hide/Show Episode & Quality based on format
   function toggleFormat() {
@@ -204,10 +211,8 @@
       if (url) {
         const scrambledUrl = btoa(url); // Encrypt URL
         if (isSeries && episodeNum) {
-          // If Series: Save URL, Ep X, Quality, and Size
           links.push({ url: scrambledUrl, episode: "Ep " + episodeNum, quality, size, unit }); 
         } else {
-          // If Movie: Only save URL and Size (No Quality or Ep)
           links.push({ url: scrambledUrl, size, unit }); 
         }
       }
@@ -251,10 +256,11 @@
         category: fileCategory,
         image: fileImage,
         links: links,
-        description: fileDescription
+        description: fileDescription,
+        dateAdded: new Date().toISOString()
       };
 
-      // 3. Save to Firebase Database
+      // 3. Save to Firebase Database (Now authenticated properly!)
       await docRef.set({
         movies: firebase.firestore.FieldValue.arrayUnion(newMovie)
       }, { merge: true });
