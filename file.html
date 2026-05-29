@@ -17,223 +17,66 @@
       flex-direction: column;
     }
 
-    /* 🌫️ GLOWING FALLING PARTICLES (Matches Search Page) */
+    /* 🌫️ GLOWING FALLING PARTICLES */
     body::before {
-      content: "";
-      position: fixed;
-      top: -100vh; left: 0; width: 100vw; height: 300vh;
-      background-image:
-        radial-gradient(circle at 15vw 25vh, rgba(0,191,255,0.8) 0%, transparent 4px),
-        radial-gradient(circle at 75vw 15vh, rgba(141,124,255,0.8) 0%, transparent 5px),
-        radial-gradient(circle at 45vw 65vh, rgba(255,255,255,0.8) 0%, transparent 3px),
-        radial-gradient(circle at 85vw 85vh, rgba(0,191,255,0.8) 0%, transparent 6px),
-        radial-gradient(circle at 25vw 95vh, rgba(141,124,255,0.8) 0%, transparent 4px);
-      background-size: 100vw 100vh;
-      z-index: -2;
-      filter: drop-shadow(0 0 10px #00bfff) blur(0.5px);
-      animation: fallDown 12s linear infinite;
-      pointer-events: none;
+      content: ""; position: fixed; top: -100vh; left: 0; width: 100vw; height: 300vh;
+      background-image: radial-gradient(circle at 15vw 25vh, rgba(0,191,255,0.8) 0%, transparent 4px), radial-gradient(circle at 75vw 15vh, rgba(141,124,255,0.8) 0%, transparent 5px), radial-gradient(circle at 45vw 65vh, rgba(255,255,255,0.8) 0%, transparent 3px);
+      background-size: 100vw 100vh; z-index: -2; filter: drop-shadow(0 0 10px #00bfff) blur(0.5px); animation: fallDown 12s linear infinite; pointer-events: none;
     }
-
-    body::after {
-      content: "";
-      position: fixed;
-      top: -100vh; left: 0; width: 100vw; height: 300vh;
-      background-image:
-        radial-gradient(circle at 10vw 10vh, rgba(0, 191, 255, 0.4) 0%, transparent 8px),
-        radial-gradient(circle at 80vw 40vh, rgba(141, 124, 255, 0.4) 0%, transparent 10px),
-        radial-gradient(circle at 40vw 80vh, rgba(255, 255, 255, 0.2) 0%, transparent 6px);
-      background-size: 100vw 100vh;
-      z-index: -3;
-      filter: drop-shadow(0 0 15px #8d7cff) blur(2px);
-      animation: fallDown 20s linear infinite;
-      pointer-events: none;
-    }
-
-    @keyframes fallDown {
-      0% { transform: translateY(0); }
-      100% { transform: translateY(100vh); }
-    }
+    @keyframes fallDown { 0% { transform: translateY(0); } 100% { transform: translateY(100vh); } }
 
     /* 🛑 WARNING MODAL STYLING */
-    .modal-overlay {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(10px);
-      display: none; justify-content: center; align-items: center; z-index: 9999;
-      opacity: 0; transition: opacity 0.3s ease;
-    }
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; z-index: 9999; opacity: 0; transition: opacity 0.3s ease; }
     .modal-overlay.active { display: flex; opacity: 1; }
-    
-    .modal-box {
-      background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
-      padding: 30px; border-radius: 20px; text-align: center; max-width: 400px; width: 90%;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,191,255,0.1);
-      transform: scale(0.8); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
+    .modal-box { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 30px; border-radius: 20px; text-align: center; max-width: 400px; width: 90%; transform: scale(0.8); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
     .modal-overlay.active .modal-box { transform: scale(1); }
-    
     .modal-box h3 { color: #00bfff; font-size: 24px; margin: 0 0 15px 0; }
     .modal-box p { color: #ccc; font-size: 16px; line-height: 1.5; margin-bottom: 15px; }
-    .warning-text { color: #00bfff; font-weight: bold; font-size: 18px; text-shadow: 0 0 10px rgba(0, 191, 255, 0.4); }
     
-    .modal-spinner {
-      width: 30px; height: 30px; border: 3px solid rgba(255,255,255,0.1);
-      border-top: 3px solid #00bfff; border-radius: 50%; animation: spin 1s linear infinite;
-      margin: 20px auto 0 auto;
-    }
-    
+    .modal-spinner { width: 30px; height: 30px; border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid #00bfff; border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto 0 auto; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
     /* LAYOUT */
-    .page {
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      width: 100%;
-      margin-top: 60px;
-      flex: 1;
-    }
-
-    .side-ad {
-      width: 160px;
-      margin: 20px;
-      text-align: center;
-      z-index: 5;
-    }
-
-    .center {
-      max-width: 450px;
-      width: 90%;
-      margin: 0 15px;
-      z-index: 5;
-    }
-
-    @media (max-width: 900px) {
-      .side-ad { display: none; }
-    }
+    .page { display: flex; justify-content: center; align-items: flex-start; width: 100%; margin-top: 60px; flex: 1; }
+    .side-ad { width: 160px; margin: 20px; text-align: center; z-index: 5; }
+    .center { max-width: 450px; width: 90%; margin: 0 15px; z-index: 5; }
+    @media (max-width: 900px) { .side-ad { display: none; } }
 
     /* 💎 PREMIUM GLASSMORPHISM CARD */
-    .card {
-      background: rgba(255, 255, 255, 0.04);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      padding: 30px;
-      border-radius: 20px;
-      text-align: center;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(255,255,255,0.02);
-      overflow-wrap: break-word;
-      word-wrap: break-word;
-      word-break: break-word;
-      transition: all 0.3s ease-in-out;
-    }
+    .card { background: rgba(255, 255, 255, 0.04); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); padding: 30px; border-radius: 20px; text-align: center; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(255,255,255,0.02); overflow-wrap: break-word; transition: all 0.3s ease-in-out; }
+    .card img { width: 100%; max-width: 100%; height: auto; max-height: 400px; object-fit: contain; border-radius: 14px; margin-bottom: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.5); background: rgba(0, 0, 0, 0.2); }
+    .card h2 { margin: 10px 0 5px; font-size: 24px; background: linear-gradient(90deg, #fff, #b3e5fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .card p { color: #ccc; line-height: 1.5; font-size: 14px; }
 
-    .card img {
-      width: 100%;
-      max-width: 100%;
-      height: auto;
-      max-height: 400px;
-      object-fit: contain;
-      border-radius: 14px;
-      margin-bottom: 20px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.5);
-      background: rgba(0, 0, 0, 0.2);
-    }
-
-    .card h2 {
-      margin: 10px 0 5px;
-      font-size: 24px;
-      background: linear-gradient(90deg, #fff, #b3e5fc);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .card p {
-      color: #ccc;
-      line-height: 1.5;
-      font-size: 14px;
-    }
+    /* 🔗 SHARE BUTTON */
+    .share-btn { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); padding: 8px 16px; border-radius: 20px; color: white; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; margin: 10px auto; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+    .share-btn:hover { background: rgba(0, 191, 255, 0.2); border-color: #00bfff; transform: scale(1.05); }
 
     /* 🔘 BUTTONS */
-    button {
-      margin: 8px 6px;
-      padding: 12px 18px;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      color: white;
-      font-weight: bold;
-      transition: all 0.3s ease;
-    }
+    .download-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 25px; }
+    .download-grid button { flex: 1; min-width: 130px; margin: 0; background: linear-gradient(135deg, #007bff, #00bfff); box-shadow: 0 4px 15px rgba(0, 191, 255, 0.3); padding: 12px 18px; border: none; border-radius: 10px; cursor: pointer; color: white; font-weight: bold; transition: all 0.3s ease; }
+    .download-grid button:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 6px 20px rgba(0, 191, 255, 0.5); }
+    
+    /* ✅ WATCHED BUTTON STATE */
+    .download-grid button.watched-btn { background: rgba(255, 255, 255, 0.05); color: rgba(255, 255, 255, 0.5); box-shadow: none; border: 1px solid rgba(255, 255, 255, 0.1); }
+    .download-grid button.watched-btn:hover { transform: none; background: rgba(255, 255, 255, 0.1); color: white; }
 
-    .download-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 25px;
-    }
+    /* 🎞️ RELATED SHOWS SLIDER */
+    .related-section { margin-top: 30px; text-align: left; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; }
+    .related-title { font-size: 14px; color: #00bfff; font-weight: bold; margin-bottom: 15px; }
+    .related-slider { display: flex; overflow-x: auto; gap: 12px; padding-bottom: 10px; scrollbar-width: thin; scrollbar-color: #00bfff rgba(255,255,255,0.1); }
+    .related-slider::-webkit-scrollbar { height: 6px; }
+    .related-slider::-webkit-scrollbar-thumb { background: #00bfff; border-radius: 10px; }
+    .related-card { min-width: 110px; max-width: 110px; text-decoration: none; color: white; border-radius: 8px; transition: transform 0.2s; }
+    .related-card:hover { transform: scale(1.05); }
+    .related-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; border-radius: 8px; background: rgba(0,0,0,0.5); margin-bottom: 5px; }
+    .related-name { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; opacity: 0.8; }
 
-    .download-grid button {
-      flex: 1;
-      min-width: 130px;
-      margin: 0;
-      background: linear-gradient(135deg, #007bff, #00bfff);
-      box-shadow: 0 4px 15px rgba(0, 191, 255, 0.3);
-    }
+    .back { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); margin: 30px auto; display: block; padding: 12px 25px; color: white; border-radius: 10px; cursor: pointer; }
+    .back:hover { background: rgba(255, 255, 255, 0.15); transform: scale(1.05); }
 
-    .download-grid button:hover {
-      transform: translateY(-3px) scale(1.02);
-      box-shadow: 0 6px 20px rgba(0, 191, 255, 0.5);
-    }
-
-    .back {
-      background: rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      margin: 30px auto;
-      display: block;
-      padding: 12px 25px;
-    }
-
-    .back:hover {
-      background: rgba(255, 255, 255, 0.15);
-      transform: scale(1.05);
-    }
-
-    #reportBtn {
-      position: fixed;
-      top: 15px;
-      right: 15px;
-      background: linear-gradient(135deg, #ff4d4d, #cc0000);
-      padding: 10px 16px;
-      border-radius: 10px;
-      z-index: 1000;
-      display: none;
-      box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3);
-    }
-
-    #reportBtn:hover {
-      transform: scale(1.05);
-      box-shadow: 0 6px 20px rgba(255, 0, 0, 0.5);
-    }
-
-    .mobile-ad {
-      display: none;
-      text-align: center;
-      margin: 20px;
-      z-index: 5;
-    }
-
-    @media (max-width: 900px) {
-      .mobile-ad { display: block; }
-    }
-
-    .bottom-banner {
-      width: 100%;
-      text-align: center;
-      margin: 20px 0;
-      z-index: 5;
-    }
+    #reportBtn { position: fixed; top: 15px; right: 15px; background: linear-gradient(135deg, #ff4d4d, #cc0000); padding: 10px 16px; border-radius: 10px; z-index: 1000; display: none; box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3); border: none; color: white; cursor: pointer; }
+    #reportBtn:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(255, 0, 0, 0.5); }
   </style>
 </head>
 <body>
@@ -242,11 +85,9 @@
   <div class="modal-box">
     <h3>🚀 Getting Your Movie Ready!</h3>
     <p>We are moving you to the video player right now.</p>
-    
-    <p class="warning-text" style="color: #00bfff; text-shadow: 0 0 10px rgba(0, 191, 255, 0.4);">
-      The next screen is completely automatic. Please leave the page open and wait for the timer to reach zero.
+    <p style="color: #00bfff; text-shadow: 0 0 10px rgba(0, 191, 255, 0.4); font-weight: bold;">
+      Please wait for the timer to reach zero.
     </p>
-    
     <div class="modal-spinner"></div>
   </div>
 </div>
@@ -254,19 +95,8 @@
 <button id="reportBtn" onclick="reportIssue()">⚠ Report</button>
 
 <div class="page">
-
   <div class="side-ad">
-    <script>
-      atOptions = {
-        'key' : '6d18eab8e3174f704484a4e5fb7166a4',
-        'format' : 'iframe',
-        'height' : 300,
-        'width' : 160,
-        'params' : {}
-      };
-    </script>
-    <script src="https://www.highperformanceformat.com/6d18eab8e3174f704484a4e5fb7166a4/invoke.js"></script>
-  </div>
+    </div>
 
   <div class="center">
     <div class="card" id="fileCard">
@@ -275,47 +105,10 @@
   </div>
 
   <div class="side-ad">
-    <script>
-      atOptions = {
-        'key' : '6d18eab8e3174f704484a4e5fb7166a4',
-        'format' : 'iframe',
-        'height' : 300,
-        'width' : 160,
-        'params' : {}
-      };
-    </script>
-    <script src="https://www.highperformanceformat.com/6d18eab8e3174f704484a4e5fb7166a4/invoke.js"></script>
-  </div>
-
+    </div>
 </div>
 
 <button class="back" onclick="history.back()">← Back</button>
-
-<div class="mobile-ad">
-  <script>
-    atOptions = {
-      'key' : '6d18eab8e3174f704484a4e5fb7166a4',
-      'format' : 'iframe',
-      'height' : 300,
-      'width' : 160,
-      'params' : {}
-    };
-  </script>
-  <script src="https://www.highperformanceformat.com/6d18eab8e3174f704484a4e5fb7166a4/invoke.js"></script>
-</div>
-
-<div class="bottom-banner">
-  <script>
-    atOptions = {
-      'key' : '9d4e234e334f6012b5b60f60507d7877',
-      'format' : 'iframe',
-      'height' : 90,
-      'width' : 728,
-      'params' : {}
-    };
-  </script>
-  <script src="https://www.highperformanceformat.com/9d4e234e334f6012b5b60f60507d7877/invoke.js"></script>
-</div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -327,45 +120,38 @@ const db = firebase.firestore();
 
 let currentFileId = null;
 let allFileLinks = []; 
+let currentCategory = "";
+let masterListCache = []; 
 
 window.addEventListener("DOMContentLoaded", async function () {
   try {
     const doc = await db.collection("settings").doc("config").get();
     let enabled = true;
     if (doc.exists) enabled = doc.data().reportEnabled !== false;
-    const btn = document.getElementById("reportBtn");
-    btn.style.display = enabled ? "block" : "none";
-  } catch (e) {
-    console.error("Error loading report setting:", e);
-  }
+    document.getElementById("reportBtn").style.display = enabled ? "block" : "none";
+  } catch (e) {}
 });
 
 async function loadFile() {
   const id = Number(new URLSearchParams(location.search).get("id"));
 
-  // 1. Fetch Local Files
-  let localFiles = [];
-  try {
-    const res = await fetch("files.json");
-    localFiles = await res.json();
-  } catch(e) {}
-
-  // 2. Fetch Firebase Master Array (1 Read!)
-  let firebaseFiles = [];
-  try {
-    const docSnap = await db.collection("movie_database").doc("master_list").get();
-    if (docSnap.exists && docSnap.data().movies) {
-      firebaseFiles = docSnap.data().movies;
-    }
-  } catch(e) {
-    console.error("Firebase error", e);
-  }
-
-  // 3. Merge and Ghost Filter
-  const allFiles = [...localFiles, ...firebaseFiles].filter(m => m && m.name && m.name !== "undefined");
+  // 1-READ TRICK: Check Memory Cache First!
+  const cachedData = sessionStorage.getItem("ntm_movie_cache");
   
-  // 4. Find the correct movie
-  const file = allFiles.find(f => Number(f.id || f.customId) === id);
+  if (cachedData) {
+    masterListCache = JSON.parse(cachedData);
+  } else {
+    let localFiles = [];
+    let firebaseFiles = [];
+    try { const res = await fetch("files.json"); localFiles = await res.json(); } catch(e) {}
+    try {
+      const docSnap = await db.collection("movie_database").doc("master_list").get();
+      if (docSnap.exists && docSnap.data().movies) firebaseFiles = docSnap.data().movies;
+    } catch(e) {}
+    masterListCache = [...localFiles, ...firebaseFiles].filter(m => m && m.name && m.name !== "undefined");
+  }
+  
+  const file = masterListCache.find(f => Number(f.id || f.customId) === id);
 
   if (!file) {
     document.getElementById("fileCard").innerHTML = "File not found";
@@ -373,15 +159,11 @@ async function loadFile() {
   }
 
   currentFileId = file.id || file.customId;
+  currentCategory = file.category || "";
 
-  // Extract Links
-  if (Array.isArray(file.links) && file.links.length > 0) {
-    allFileLinks = file.links;
-  } else if (Array.isArray(file.downloads) && file.downloads.length > 0) {
-    allFileLinks = file.downloads;
-  } else if (file.link && typeof file.link === "string" && file.link.trim() !== "") {
-    allFileLinks = [file.link];
-  }
+  if (Array.isArray(file.links) && file.links.length > 0) allFileLinks = file.links;
+  else if (Array.isArray(file.downloads) && file.downloads.length > 0) allFileLinks = file.downloads;
+  else if (file.link) allFileLinks = [file.link];
 
   let isSeries = false;
   let availableQualities = new Set();
@@ -394,14 +176,10 @@ async function loadFile() {
   });
 
   let qualityDropdownHTML = "";
-  
-  // 🔥 Only show if more than one quality exists
   if (isSeries && availableQualities.size > 1) {
     const order = {"Auto": 1, "480p": 2, "720p": 3, "1080p": 4, "4K": 5};
     const sortedQualities = Array.from(availableQualities).sort((a, b) => (order[a] || 99) - (order[b] || 99));
-    
     let defaultQ = sortedQualities.includes("480p") ? "480p" : sortedQualities[0];
-
     qualityDropdownHTML = `
       <div style="margin: 20px 0; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; border: 1px solid rgba(0, 191, 255, 0.3);">
         <label for="qualitySelect" style="color: #00bfff; font-weight: bold; margin-right: 10px;">⚙️ Select Quality:</label>
@@ -412,13 +190,35 @@ async function loadFile() {
     `;
   }
 
+  // 🚀 GENERATE RELATED SLIDER
+  let relatedHTML = "";
+  if (currentCategory) {
+    const related = masterListCache.filter(f => f.category === currentCategory && Number(f.id || f.customId) !== currentFileId).slice(0, 6);
+    if (related.length > 0) {
+      relatedHTML = `<div class="related-section"><div class="related-title">Similar to this</div><div class="related-slider">`;
+      related.forEach(r => {
+        relatedHTML += `
+          <a href="file.html?id=${r.id || r.customId}" class="related-card">
+            <img src="${r.image || 'https://via.placeholder.com/150x225'}" alt="${r.name}">
+            <div class="related-name">${r.name}</div>
+          </a>
+        `;
+      });
+      relatedHTML += `</div></div>`;
+    }
+  }
+
   document.getElementById("fileCard").innerHTML = `
     <img src="${file.image || 'https://via.placeholder.com/400x220?text=No+Image'}">
     <h2>${file.name}</h2>
     <p><strong>${file.type}</strong> • ${file.category}</p>
     <p>${file.description || ''}</p>
+    
+    <button class="share-btn" id="shareBtn" onclick="shareMovie()">🔗 Copy Link to Share</button>
+    
     ${qualityDropdownHTML}
     <div id="dynamic-button-container"></div>
+    ${relatedHTML}
   `;
 
   renderButtons();
@@ -429,31 +229,32 @@ function renderButtons() {
   const qualitySelect = document.getElementById("qualitySelect");
   
   let linksToRender = allFileLinks;
-
   if (qualitySelect) {
     const selectedQuality = qualitySelect.value;
     linksToRender = allFileLinks.filter(l => typeof l === "object" && l.quality === selectedQuality);
   }
 
-  let downloadHTML = "";
+  // 🚀 LOAD WATCHED EPISODES MEMORY
+  let watchedMemory = JSON.parse(localStorage.getItem('watched_' + currentFileId)) || [];
 
+  let downloadHTML = "";
   if (linksToRender.length > 0) {
     downloadHTML = `<div class="download-grid">`;
 
     linksToRender.forEach((l, i) => {
       let label = `Watch ${i+1}`; 
-      
       if (typeof l === "object" && l !== null) {
-        if (l.episode && l.size) {
-          label = `▶ ${l.episode} - ${l.size} ${l.unit}`;
-        } else if (l.episode) {
-          label = `▶ ${l.episode}`;
-        } else if (l.size) {
-          label = `🎥 Watch ${l.size} ${l.unit} 🍿`;
-        }
+        if (l.episode && l.size) label = `▶ ${l.episode} - ${l.size} ${l.unit}`;
+        else if (l.episode) label = `▶ ${l.episode}`;
+        else if (l.size) label = `🎥 Watch ${l.size} ${l.unit} 🍿`;
       }
 
-      downloadHTML += `<button onclick="openWatch(${i})">${label}</button>`;
+      // Check if button index was watched
+      let isWatched = watchedMemory.includes(i);
+      let btnClass = isWatched ? 'watched-btn' : '';
+      let displayLabel = isWatched ? `${label} ✅` : label;
+
+      downloadHTML += `<button class="${btnClass}" onclick="openWatch(${i})">${displayLabel}</button>`;
     });
 
     downloadHTML += `</div>`;
@@ -465,6 +266,14 @@ function renderButtons() {
 }
 
 function openWatch(clickedIndex) {
+  // 🚀 SAVE TO WATCHED MEMORY
+  let watchedMemory = JSON.parse(localStorage.getItem('watched_' + currentFileId)) || [];
+  if (!watchedMemory.includes(clickedIndex)) {
+    watchedMemory.push(clickedIndex);
+    localStorage.setItem('watched_' + currentFileId, JSON.stringify(watchedMemory));
+    renderButtons(); // Re-render to show ✅ instantly!
+  }
+
   const modal = document.getElementById('warningModal');
   modal.style.display = 'flex';
   setTimeout(() => { modal.classList.add('active'); }, 10);
@@ -475,53 +284,47 @@ function openWatch(clickedIndex) {
     currentPlaylist = allFileLinks.filter(l => typeof l === "object" && l.quality === qualitySelect.value);
   }
 
-  const bingeData = {
-    currentIndex: clickedIndex,
-    playlist: currentPlaylist
-  };
+  const bingeData = { currentIndex: clickedIndex, playlist: currentPlaylist };
 
   let scrambledPayload = "";
-  try {
-    scrambledPayload = btoa(JSON.stringify(bingeData));
-  } catch(e) {
-    scrambledPayload = JSON.stringify(bingeData);
-  }
+  try { scrambledPayload = btoa(JSON.stringify(bingeData)); } 
+  catch(e) { scrambledPayload = JSON.stringify(bingeData); }
 
   const netlifyUrl = "https://ntmonline.netlify.app/watch.html?data=" + encodeURIComponent(scrambledPayload);
   const finalDestination = "redirect.html?dest=" + encodeURIComponent(netlifyUrl);
   
-  setTimeout(() => {
-    window.location.href = finalDestination;
-  }, 3500);
+  setTimeout(() => { window.location.href = finalDestination; }, 3500);
+}
+
+// 🚀 SHARE BUTTON LOGIC
+function shareMovie() {
+  const url = window.location.href;
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.getElementById("shareBtn");
+    btn.innerHTML = "✅ Link Copied!";
+    btn.style.background = "rgba(40, 167, 69, 0.2)";
+    btn.style.borderColor = "#28a745";
+    setTimeout(() => {
+      btn.innerHTML = "🔗 Copy Link to Share";
+      btn.style.background = "rgba(255, 255, 255, 0.1)";
+      btn.style.borderColor = "rgba(255, 255, 255, 0.2)";
+    }, 2500);
+  }).catch(err => { prompt("Copy this link to share:", url); });
 }
 
 function reportIssue() {
   const msg = prompt("Describe the issue:");
   if (!msg || msg.trim() === "") return;
+  if (!currentFileId) return;
 
-  if (!currentFileId) {
-    alert("Error: File not loaded yet.");
-    return;
-  }
-
-  db.collection("reports").add({
-    fileId: currentFileId,
-    message: msg.trim(),
-    time: new Date()
-  })
+  db.collection("reports").add({ fileId: currentFileId, message: msg.trim(), time: new Date() })
   .then(() => { alert("Report submitted successfully 👍"); })
-  .catch((error) => {
-    console.error("Error adding report:", error);
-    alert("Failed to submit report ❌");
-  });
+  .catch((error) => { alert("Failed to submit report ❌"); });
 }
 
 window.addEventListener('pageshow', function (event) {
   const modal = document.getElementById('warningModal');
-  if (modal) {
-    modal.classList.remove('active');
-    modal.style.display = 'none';
-  }
+  if (modal) { modal.classList.remove('active'); modal.style.display = 'none'; }
 });
 
 loadFile();
