@@ -1,193 +1,189 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Add File</title>
+  <title>Add Movie • Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    .ep-input { display: none; width: 80px; }
-    .is-series .ep-input { display: inline-block; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #0a1128;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    h2 { color: #00bfff; margin-bottom: 20px; text-align: center; }
+    
+    .container {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 30px;
+      border-radius: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      width: 100%;
+      max-width: 500px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    
+    label { display: block; margin-bottom: 5px; font-size: 13px; color: #00bfff; font-weight: bold; }
+    
+    input, select, textarea {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(0,0,0,0.2);
+      color: white;
+      outline: none;
+      font-family: Arial, sans-serif;
+    }
+    
+    input:focus, select:focus, textarea:focus { border-color: #00bfff; background: rgba(255,255,255,0.05); }
+    
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 12px;
+      border: none;
+      border-radius: 8px;
+      background: #00bfff;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover { background: #008cba; transform: scale(1.02); }
+    
+    .back-btn {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      width: auto;
+      padding: 8px 16px;
+      margin-bottom: 20px;
+    }
+    .back-btn:hover { background: rgba(255, 255, 255, 0.2); }
   </style>
 </head>
 <body>
 
-<h2>Add New File</h2>
+<button class="back-btn" onclick="window.location.href='admin.html'">← Back to Dashboard</button>
 
-<div style="margin-bottom: 15px; padding: 10px; background: #eee; border-radius: 5px; display: inline-block;">
-  <strong>Format:</strong>
-  <label><input type="radio" name="format" value="movie" checked onchange="toggleFormat()"> Movie</label>
-  <label><input type="radio" name="format" value="series" onchange="toggleFormat()"> Series</label>
+<div class="container">
+  <h2>➕ Add New Movie</h2>
+  
+  <label>Movie Name</label>
+  <input type="text" id="name" placeholder="Enter movie title">
+
+  <label>Type</label>
+  <select id="type">
+    <option value="Movie">Movie</option>
+    <option value="Series">Series</option>
+    <option value="Anime">Anime</option>
+  </select>
+
+  <label>Category / Genre</label>
+  <input type="text" id="category" placeholder="e.g. Action, Comedy, Drama">
+
+  <label>Cover Image URL</label>
+  <input type="text" id="image" placeholder="Paste image link here">
+
+  <label>Description</label>
+  <textarea id="description" rows="3" placeholder="Brief description of the movie..."></textarea>
+
+  <label>Streaming/Download Link</label>
+  <input type="text" id="link" placeholder="Paste video or file link">
+
+  <button onclick="addFile()">Upload Movie 🚀</button>
+  <p id="status" style="text-align: center; font-size: 14px; margin-top: 10px;"></p>
 </div>
-<br>
-
-<input type="text" id="name" placeholder="File Name"><br><br>
-<input type="text" id="type" placeholder="Type (e.g. Series, Movie)"><br><br>
-<input type="text" id="category" placeholder="Category"><br><br>
-
-<input type="text" id="image" placeholder="Image URL"><br><br>
-
-<h3>Download Links</h3>
-
-<div id="links-container">
-</div>
-
-<br>
-<button onclick="addLink()">➕ Add More</button>
-
-<br><br>
-
-<textarea id="description" placeholder="Description"></textarea><br><br>
-
-<button onclick="addFile()">Add File</button>
-<br><br>
-<button onclick="goBack()">← Back</button>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="firebase-config.js"></script>
 
 <script>
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const auth = firebase.auth();
-auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
-auth.onAuthStateChanged(user => {
-  if (!user) {
-    alert("Login first");
+  // Redirect if not logged in (uses the session we built earlier)
+  if (!localStorage.getItem("ntm_admin_session")) {
     window.location.href = "admin.html";
-  } else {
-    addLink(); 
   }
-});
 
-function toggleFormat() {
-  const isSeries = document.querySelector('input[name="format"]:checked').value === "series";
-  const container = document.getElementById("links-container");
-  if (isSeries) {
-    container.classList.add("is-series");
-  } else {
-    container.classList.remove("is-series");
-  }
-}
+  async function addFile() {
+    const btn = document.querySelector("button[onclick='addFile()']");
+    const status = document.getElementById("status");
+    
+    const name = document.getElementById("name").value.trim();
+    const type = document.getElementById("type").value;
+    const category = document.getElementById("category").value.trim();
+    const image = document.getElementById("image").value.trim();
+    const description = document.getElementById("description").value.trim();
+    const link = document.getElementById("link").value.trim();
 
-function addLink() {
-  const container = document.getElementById("links-container");
-  const div = document.createElement("div");
-  div.classList.add("link-row");
-
-  div.innerHTML = `
-    <input type="text" placeholder="Enter link" class="link-input">
-    <input type="text" placeholder="Ep 1" class="ep-input">
-    <select class="quality-input" style="width:80px;">
-      <option value="Auto">Auto</option>
-      <option value="480p">480p</option>
-      <option value="720p" selected>720p</option>
-      <option value="1080p">1080p</option>
-      <option value="4K">4K</option>
-    </select>
-    <input type="number" placeholder="Size" class="size-input" style="width:70px;">
-    <select class="size-unit">
-      <option value="KB">KB</option>
-      <option value="MB" selected>MB</option>
-      <option value="GB">GB</option>
-    </select>
-    <button onclick="removeRow(this)">❌</button>
-  `;
-  container.appendChild(div);
-}
-
-function removeRow(btn) {
-  btn.parentElement.remove();
-}
-
-async function addFile() {
-  const fileName = document.getElementById("name").value.trim();
-  const fileType = document.getElementById("type").value.trim();
-  const fileCategory = document.getElementById("category").value.trim();
-  const fileImage = document.getElementById("image").value.trim();
-  const isSeries = document.querySelector('input[name="format"]:checked').value === "series";
-
-  const rows = document.querySelectorAll(".link-row");
-  let links = [];
-
-  rows.forEach(row => {
-    const url = row.querySelector(".link-input").value.trim();
-    const episode = row.querySelector(".ep-input").value.trim();
-    const quality = row.querySelector(".quality-input").value; 
-    const size = row.querySelector(".size-input").value.trim();
-    const unit = row.querySelector(".size-unit").value;
-
-    if (url) {
-      const scrambledUrl = btoa(url);
-      if (isSeries && episode) {
-        links.push({ url: scrambledUrl, episode, quality, size, unit }); 
-      } else {
-        links.push({ url: scrambledUrl, quality, size, unit }); 
-      }
+    if (!name || !link) {
+      status.style.color = "#ff4d4d";
+      status.innerText = "❌ Name and Link are required!";
+      return;
     }
-  });
 
-  const fileDescription = document.getElementById("description").value.trim();
+    btn.innerText = "Uploading...";
+    btn.style.opacity = "0.7";
+    btn.disabled = true;
 
-  if (!fileName || !fileType || !fileCategory) {
-    alert("Fill required fields");
-    return;
-  }
-
-  try {
-    // 1. Get local Max ID
-    const res = await fetch("files.json");
-    let localMax = 0;
     try {
-      const localFiles = await res.json();
-      localMax = Math.max(...localFiles.map(f => f.id || 0), 0);
-    } catch(e) {}
+      // Get the master list document
+      const docRef = db.collection("movie_database").doc("master_list");
+      const docSnap = await docRef.get();
+      
+      let movies = [];
+      if (docSnap.exists && docSnap.data().movies) {
+        movies = docSnap.data().movies;
+      }
 
-    // 2. Get Firebase Max ID from the master_list array
-    const docRef = db.collection("movie_database").doc("master_list");
-    const docSnap = await docRef.get();
-    let firebaseMax = 0;
-    
-    if (docSnap.exists && docSnap.data().movies) {
-      const movies = docSnap.data().movies;
-      firebaseMax = Math.max(...movies.map(m => m.customId || 0), 0);
+      // Generate ID (Timestamp)
+      const newId = Date.now();
+
+      // Create new movie object
+      const newMovie = {
+        customId: newId,
+        name: name,
+        type: type,
+        category: category,
+        image: image,
+        description: description,
+        link: link,
+        dateAdded: new Date().toISOString()
+      };
+
+      // Add to array and save back to Firebase (1-Read architecture)
+      movies.push(newMovie);
+      await docRef.set({ movies: movies }, { merge: true });
+
+      status.style.color = "#00bfff";
+      status.innerText = "✅ Movie Added Successfully!";
+      
+      // Clear inputs
+      document.getElementById("name").value = "";
+      document.getElementById("category").value = "";
+      document.getElementById("image").value = "";
+      document.getElementById("description").value = "";
+      document.getElementById("link").value = "";
+      
+    } catch (error) {
+      status.style.color = "#ff4d4d";
+      status.innerText = "❌ Error: " + error.message;
     }
 
-    const nextId = Math.max(localMax, firebaseMax) + 1;
-
-    const newMovie = {
-      customId: nextId,
-      name: fileName,
-      type: fileType,
-      category: fileCategory,
-      image: fileImage,
-      links: links,
-      description: fileDescription
-    };
-
-    // 3. Save to Firebase (creates doc if it doesn't exist)
-    await docRef.set({
-      movies: firebase.firestore.FieldValue.arrayUnion(newMovie)
-    }, { merge: true });
-
-    alert("File added successfully! ID: " + nextId);
-
-    ["name","type","category","image","description"].forEach(id => {
-      document.getElementById(id).value = "";
-    });
-    
-    document.getElementById("links-container").innerHTML = "";
-    addLink();
-
-  } catch (err) {
-    console.error(err);
-    alert(err.message);
+    btn.innerText = "Upload Movie 🚀";
+    btn.style.opacity = "1";
+    btn.disabled = false;
   }
-}
-
-function goBack() {
-  window.location.href = "admin.html";
-}
 </script>
 
 </body>
