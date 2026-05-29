@@ -4,7 +4,7 @@
   <title>File Hub • NTM Stream</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    /* 🎬 NETFLIX-STYLE GRID - ADDED TO YOUR EXISTING CSS */
+    /* 🎬 NETFLIX-STYLE GRID */
     .movie-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 10px; max-width: 800px; margin: 0 auto; }
     .movie-card { background: rgba(255, 255, 255, 0.05); border-radius: 12px; overflow: hidden; position: relative; transition: transform 0.3s ease; display: flex; flex-direction: column; cursor: pointer; }
     .movie-card:hover { transform: scale(1.02); }
@@ -13,6 +13,14 @@
     .movie-name { font-weight: bold; font-size: 12px; color: white; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .movie-meta { font-size: 10px; color: rgba(255, 255, 255, 0.6); }
     .new-badge { position: absolute; top: 5px; left: 5px; background: #e50914; color: white; padding: 2px 5px; border-radius: 4px; font-size: 9px; font-weight: bold; z-index: 10; }
+    
+    /* 📄 PAGINATION STYLES */
+    .pagination-container { grid-column: span 3; text-align: center; margin-top: 20px; padding: 15px; }
+    .pagination-container button { background: rgba(0, 191, 255, 0.2); border: 1px solid #00bfff; color: white; padding: 8px 12px; margin: 0 4px; border-radius: 5px; cursor: pointer; transition: all 0.3s ease; }
+    .pagination-container button:hover:not(:disabled) { background: #00bfff; color: black; }
+    .pagination-container button:disabled { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.3); cursor: not-allowed; }
+    .pagination-container .active-page { background: #00bfff; color: black; font-weight: bold; }
+    .page-info { color: rgba(255,255,255,0.6); font-size: 12px; margin-bottom: 10px; }
   </style>
 </head>
 <body>
@@ -154,9 +162,12 @@
     }
 
     // ==========================================
-    // 3. NEW 1-READ FIREBASE & GRID LOGIC
+    // 3. 1-READ FIREBASE + PAGINATION LOGIC
     // ==========================================
     let allMovies = []; 
+    let filteredMovies = [];
+    let currentPage = 1;
+    const itemsPerPage = 10;
     
     async function loadDatabase() {
       let localFiles = [];
@@ -178,17 +189,24 @@
       
       allMovies.sort((a, b) => (b.customId || b.id) - (a.customId || a.id));
 
-      renderGrid(allMovies);
+      filteredMovies = [...allMovies];
+      renderPage(1);
     }
 
-    function renderGrid(moviesToDisplay) {
+    // 📄 RENDERS ONLY 10 MOVIES AT A TIME
+    function renderPage(page) {
+      currentPage = page;
       const grid = document.getElementById("movie-grid");
       grid.innerHTML = "";
       
-      if (moviesToDisplay.length === 0) {
+      if (filteredMovies.length === 0) {
         grid.innerHTML = `<p style="text-align:center; color: white; grid-column: span 3;">No movies found.</p>`;
         return;
       }
+
+      const startIndex = (page - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const moviesToDisplay = filteredMovies.slice(startIndex, endIndex);
       
       moviesToDisplay.forEach(d => {
         const uploadDate = new Date(d.customId || d.id);
@@ -208,18 +226,58 @@
         `;
         grid.appendChild(card);
       });
+
+      renderPagination();
     }
 
+    // 🔘 DRAWS THE NEXT/PREV BUTTONS
+    function renderPagination() {
+      const totalPages = Math.ceil(filteredMovies.length / itemsPerPage);
+      const startItem = (currentPage - 1) * itemsPerPage + 1;
+      const endItem = Math.min(currentPage * itemsPerPage, filteredMovies.length);
+
+      if (filteredMovies.length === 0) return;
+
+      const grid = document.getElementById("movie-grid");
+      
+      let paginationHtml = `
+        <div class="pagination-container">
+          <div class="page-info">Showing ${startItem}–${endItem} of ${filteredMovies.length} movies</div>
+      `;
+
+      paginationHtml += `<button onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>← Prev</button>`;
+
+      for (let i = 1; i <= totalPages; i++) {
+        paginationHtml += `<button class="${i === currentPage ? 'active-page' : ''}" onclick="goToPage(${i})">${i}</button>`;
+      }
+
+      paginationHtml += `<button onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Next →</button>`;
+      paginationHtml += `</div>`;
+
+      grid.innerHTML += paginationHtml;
+    }
+
+    window.goToPage = function(page) {
+      const totalPages = Math.ceil(filteredMovies.length / itemsPerPage);
+      if (page >= 1 && page <= totalPages) {
+        renderPage(page);
+      }
+    };
+
+    // ⚡ INSTANT MEMORY SEARCH (Resets to Page 1)
     document.getElementById("search").addEventListener("input", function(e) {
       const term = e.target.value.toLowerCase().trim();
-      if (!term) { renderGrid(allMovies); return; }
       
-      const searchWords = term.split(" ").filter(word => word !== "");
-      const filtered = allMovies.filter(file => {
-        const fileData = `${file.name || ""} ${file.type || ""} ${file.category || ""}`.toLowerCase();
-        return searchWords.every(word => fileData.includes(word));
-      });
-      renderGrid(filtered);
+      if (!term) { 
+        filteredMovies = [...allMovies]; 
+      } else {
+        const searchWords = term.split(" ").filter(word => word !== "");
+        filteredMovies = allMovies.filter(file => {
+          const fileData = `${file.name || ""} ${file.type || ""} ${file.category || ""}`.toLowerCase();
+          return searchWords.every(word => fileData.includes(word));
+        });
+      }
+      renderPage(1); // Always go back to page 1 when searching
     });
 
     function goHome() { window.location.href = "index.html"; }
