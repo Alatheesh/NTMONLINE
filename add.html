@@ -1,59 +1,95 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Add Movie • Admin</title>
+  <title>Add Content • Admin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     /* 💎 UNIVERSAL ADMIN CSS */
     body { font-family: Arial, sans-serif; background: #0a1128; color: white; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
     h2 { color: #00bfff; margin-bottom: 20px; text-align: center; }
-    .container { background: rgba(255, 255, 255, 0.05); padding: 30px; border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1); width: 100%; max-width: 600px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    .container { background: rgba(255, 255, 255, 0.05); padding: 30px; border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1); width: 100%; max-width: 700px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
     
     label.field-label { display: block; margin-bottom: 5px; font-size: 13px; color: #00bfff; font-weight: bold; }
     input, select, textarea { width: 100%; box-sizing: border-box; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.2); color: white; outline: none; }
-    input:focus { border-color: #00bfff; }
-    button { width: 100%; padding: 12px; margin-bottom: 12px; border: none; border-radius: 8px; background: #00bfff; color: black; font-weight: bold; cursor: pointer; }
-    button:hover { background: #008cba; }
+    input:focus, select:focus, textarea:focus { border-color: #00bfff; background: rgba(255,255,255,0.05); }
+    select option { background-color: #0a1128; color: white; }
     
-    .link-row { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; background: rgba(255,255,255,0.02); padding: 8px; border-radius: 8px; }
+    button { width: 100%; padding: 12px; margin-bottom: 12px; border: none; border-radius: 8px; background: #00bfff; color: black; font-weight: bold; cursor: pointer; transition: 0.3s; }
+    button:hover { background: #008cba; transform: scale(1.02); }
+    
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    
+    .link-row { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); flex-wrap: wrap;}
+    .link-row input, .link-row select, .link-row button { margin-bottom: 0; padding: 10px; }
+    .btn-danger { background: #ff4d4d; color: white; width: auto; font-size: 14px; }
   </style>
 </head>
 <body>
 
-<button class="back-btn" onclick="window.location.href='admin.html'">← Back to Dashboard</button>
+<button onclick="window.location.href='admin.html'" style="width:auto; background:rgba(255,255,255,0.1); color:white; margin-bottom:20px;">← Back to Dashboard</button>
 
 <div class="container">
-  <h2>➕ Add New Content</h2>
+  <h2>➕ Add Premium Content</h2>
 
-  <label class="field-label">File Name</label>
+  <label class="field-label">Search & Auto-Fill (TMDB)</label>
   <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-    <input type="text" id="name" style="margin-bottom:0;">
-    <button onclick="autoFillMovie()" style="width: auto; padding: 0 15px; background: #333; color: white;">🔍 Fetch</button>
+    <input type="text" id="searchInput" placeholder="Type movie or anime name..." style="margin-bottom:0; flex: 1;">
+    <button onclick="autoFillMovie()" style="width: auto; padding: 0 20px; background: #333; color: white;">🔍 Fetch</button>
   </div>
+  <p id="status" style="text-align: center; font-size: 13px; margin-top: -5px; margin-bottom: 15px;"></p>
 
-  <label class="field-label">Type (Movie/Series)</label>
-  <input type="text" id="type" placeholder="e.g. Movie">
+  <hr style="border-color: rgba(255,255,255,0.1); margin-bottom: 20px;">
 
-  <label class="field-label">Category</label>
-  <input type="text" id="category" placeholder="e.g. Action">
-
-  <label class="field-label">Cover Image URL</label>
-  <input type="text" id="image">
-
-  <label class="field-label">Description</label>
-  <textarea id="description" rows="3"></textarea>
-
-  <label class="field-label">Download Links</label>
-  <div id="links-container">
-    <div class="link-row">
-      <input type="text" placeholder="Link" class="link-input">
-      <button onclick="this.parentElement.remove()" style="width: auto; background: #ff4d4d; color: white;">❌</button>
+  <div class="grid-2">
+    <div>
+      <label class="field-label">File Name</label>
+      <input type="text" id="name">
+    </div>
+    <div>
+      <label class="field-label">Upload Type</label>
+      <select id="type">
+        <option value="Movie">🎬 Movie</option>
+        <option value="Series">📺 Series / Anime</option>
+      </select>
     </div>
   </div>
-  <button onclick="addLinkRow()" style="background: rgba(255,255,255,0.1); color: white;">+ Add More Links</button>
 
-  <button onclick="saveMovie()" style="margin-top: 20px; font-size: 16px;">💾 Save to Database</button>
-  <p id="status" style="text-align: center; margin-top: 10px;"></p>
+  <div class="grid-2">
+    <div>
+      <label class="field-label">Category / Genres</label>
+      <input type="text" id="category" placeholder="Action, Sci-Fi...">
+    </div>
+    <div>
+      <label class="field-label">Release Date</label>
+      <input type="text" id="release_date" placeholder="YYYY-MM-DD">
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div>
+      <label class="field-label">Rating (Out of 10)</label>
+      <input type="text" id="rating" placeholder="8.5">
+    </div>
+    <div>
+      <label class="field-label">Runtime</label>
+      <input type="text" id="runtime" placeholder="120 mins">
+    </div>
+  </div>
+
+  <label class="field-label">Cover Image URL (Vertical)</label>
+  <input type="text" id="image">
+
+  <label class="field-label">Backdrop Image URL (Horizontal)</label>
+  <input type="text" id="backdrop">
+
+  <label class="field-label">Description / Plot</label>
+  <textarea id="description" rows="4"></textarea>
+
+  <label class="field-label" style="margin-top: 10px;">Download / Stream Links</label>
+  <div id="links-container"></div>
+  <button onclick="addLinkRow()" style="background: rgba(255,255,255,0.1); color: white; border: 1px dashed rgba(255,255,255,0.3);">➕ Add Media Link</button>
+
+  <button onclick="saveMovie()" style="margin-top: 25px; font-size: 16px; padding: 15px;">💾 Save to Database</button>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -64,62 +100,143 @@
 <script>
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
-  const auth = firebase.auth();
+
+  // Load first link row on start
+  window.onload = () => addLinkRow();
 
   async function autoFillMovie() {
-    const movieName = document.getElementById("name").value.trim();
+    const query = document.getElementById("searchInput").value.trim();
     const status = document.getElementById("status");
-    const apiKey = "e262bd07ebfb205acaed257bb4227ea6";
+    const apiKey = "e262bd07ebfb205acaed257bb4227ea6"; 
 
-    if (!movieName) { alert("Enter a name first!"); return; }
+    if (!query) { alert("Enter a search term!"); return; }
 
-    status.innerText = "Fetching...";
+    status.innerText = "⏳ Searching TMDB...";
+    status.style.color = "#ffcc00";
+
     try {
-      const res = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(movieName)}`);
-      const data = await res.json();
-      if (data.results && data.results.length > 0) {
-        const movie = data.results[0];
-        document.getElementById("name").value = movie.title;
-        document.getElementById("image").value = "https://image.tmdb.org/t/p/w500" + movie.poster_path;
-        document.getElementById("description").value = movie.overview;
-        status.innerText = "✅ Details fetched!";
-      } else { alert("No results found."); }
-    } catch (e) { status.innerText = "❌ Error fetching."; }
+      // Step 1: Search for the title (Allows both TV and Movies)
+      const searchRes = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(query)}`);
+      const searchData = await searchRes.json();
+
+      if (searchData.results && searchData.results.length > 0) {
+        // Filter out people, just get media
+        const media = searchData.results.find(m => m.media_type === 'movie' || m.media_type === 'tv');
+        
+        if (!media) {
+          status.innerText = "❌ No movies or series found.";
+          return;
+        }
+
+        status.innerText = "⏳ Fetching Deep Details...";
+
+        // Step 2: Fetch detailed info based on ID and Type
+        const detailRes = await fetch(`https://api.themoviedb.org/3/${media.media_type}/${media.id}?api_key=${apiKey}`);
+        const details = await detailRes.json();
+
+        // 📝 POPULATE FIELDS
+        document.getElementById("name").value = details.title || details.name;
+        document.getElementById("type").value = media.media_type === 'tv' ? 'Series' : 'Movie';
+        document.getElementById("category").value = details.genres.map(g => g.name).join(", ");
+        document.getElementById("release_date").value = details.release_date || details.first_air_date || "";
+        document.getElementById("rating").value = details.vote_average ? details.vote_average.toFixed(1) : "";
+        
+        // Runtime logic (TV vs Movie)
+        let runtimeText = "";
+        if (details.runtime) runtimeText = details.runtime + " mins";
+        else if (details.episode_run_time && details.episode_run_time.length > 0) runtimeText = details.episode_run_time[0] + " mins/ep";
+        document.getElementById("runtime").value = runtimeText;
+
+        document.getElementById("image").value = details.poster_path ? "https://image.tmdb.org/t/p/w780" + details.poster_path : "";
+        document.getElementById("backdrop").value = details.backdrop_path ? "https://image.tmdb.org/t/p/w1280" + details.backdrop_path : "";
+        document.getElementById("description").value = details.overview;
+        
+        status.innerText = "✅ High-Res Details Fetched!";
+        status.style.color = "#00ff00";
+      } else { 
+        status.innerText = "❌ No results found on TMDB.";
+        status.style.color = "#ff4d4d";
+      }
+    } catch (e) { 
+      status.innerText = "❌ Error fetching API.";
+      status.style.color = "#ff4d4d";
+    }
   }
 
   function addLinkRow() {
     const div = document.createElement("div");
     div.className = "link-row";
-    div.innerHTML = `<input type="text" placeholder="Link" class="link-input"><button onclick="this.parentElement.remove()" style="width: auto; background: #ff4d4d; color: white;">❌</button>`;
+    div.innerHTML = `
+      <input type="text" placeholder="Video URL..." class="link-url" style="flex: 1; min-width: 150px;">
+      <input type="number" placeholder="Ep" class="link-ep" style="width: 60px;" min="1" value="1">
+      <select class="link-quality" style="width: 90px;">
+        <option value="Auto">Auto</option>
+        <option value="480p">480p</option>
+        <option value="720p" selected>720p</option>
+        <option value="1080p">1080p</option>
+        <option value="4K">4K</option>
+      </select>
+      <input type="number" placeholder="Size" class="link-size" style="width: 75px;" min="0" step="0.1">
+      <select class="link-unit" style="width: 65px;">
+        <option value="MB">MB</option>
+        <option value="GB">GB</option>
+      </select>
+      <button class="btn-danger" onclick="this.parentElement.remove()">❌</button>
+    `;
     document.getElementById("links-container").appendChild(div);
   }
 
   async function saveMovie() {
-    const status = document.getElementById("status");
-    const name = document.getElementById("name").value;
-    const links = Array.from(document.querySelectorAll(".link-input")).map(i => btoa(i.value));
+    const btn = document.querySelector("button[onclick='saveMovie()']");
+    const name = document.getElementById("name").value.trim();
+    if (!name) { alert("File Name is required!"); return; }
 
-    if (!name) { alert("Missing fields!"); return; }
+    btn.innerText = "Saving...";
+    btn.disabled = true;
+
+    // Gather links
+    let finalLinks = [];
+    document.querySelectorAll(".link-row").forEach(row => {
+      const url = row.querySelector(".link-url").value.trim();
+      if (url) {
+        finalLinks.push({
+          url: btoa(url),
+          episode: "Ep " + row.querySelector(".link-ep").value,
+          quality: row.querySelector(".link-quality").value,
+          size: row.querySelector(".link-size").value.trim(),
+          unit: row.querySelector(".link-unit").value
+        });
+      }
+    });
 
     try {
       const docRef = db.collection("movie_database").doc("master_list");
       const doc = await docRef.get();
-      let movies = doc.exists ? doc.data().movies : [];
+      let movies = doc.exists && doc.data().movies ? doc.data().movies : [];
       
       movies.push({
         customId: Date.now(),
         name: name,
         type: document.getElementById("type").value,
         category: document.getElementById("category").value,
+        release_date: document.getElementById("release_date").value,
+        rating: document.getElementById("rating").value,
+        runtime: document.getElementById("runtime").value,
         image: document.getElementById("image").value,
+        backdrop: document.getElementById("backdrop").value,
         description: document.getElementById("description").value,
-        links: links
+        links: finalLinks
       });
 
       await docRef.update({ movies: movies });
-      status.innerText = "✅ Saved Successfully!";
-      status.style.color = "#00bfff";
-    } catch (e) { alert("Error: " + e.message); }
+      alert("✅ Saved Successfully to Database!");
+      window.location.reload(); // Refresh form
+      
+    } catch (e) { 
+      alert("Error saving: " + e.message); 
+      btn.innerText = "💾 Save to Database";
+      btn.disabled = false;
+    }
   }
 </script>
 
