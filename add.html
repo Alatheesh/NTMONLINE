@@ -18,10 +18,21 @@
     button:hover { background: #008cba; transform: scale(1.02); }
     
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
     
     .link-row { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); flex-wrap: wrap;}
     .link-row input, .link-row select, .link-row button { margin-bottom: 0; padding: 10px; }
     .btn-danger { background: #ff4d4d; color: white; width: auto; font-size: 14px; }
+
+    /* 🔎 SEARCH DROPDOWN UI */
+    .search-wrapper { position: relative; margin-bottom: 15px; }
+    #searchResults { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #0f1938; border: 1px solid #00bfff; border-radius: 8px; max-height: 250px; overflow-y: auto; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+    .search-item { padding: 10px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; }
+    .search-item:hover { background: rgba(0, 191, 255, 0.2); }
+    .search-thumb { width: 40px; height: 60px; object-fit: cover; border-radius: 4px; background: #333; }
+    .search-info { display: flex; flex-direction: column; }
+    .search-title { font-weight: bold; font-size: 14px; color: white; }
+    .search-meta { font-size: 12px; color: #aaa; }
   </style>
 </head>
 <body>
@@ -31,20 +42,22 @@
 <div class="container">
   <h2>➕ Add Premium Content</h2>
 
-  <label class="field-label">Search & Auto-Fill (TMDB)</label>
-  <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-    <input type="text" id="searchInput" placeholder="Type movie or anime name..." style="margin-bottom:0; flex: 1;">
-    <button onclick="autoFillMovie()" style="width: auto; padding: 0 20px; background: #333; color: white;">🔍 Fetch</button>
+  <label class="field-label">Search TMDB (Name or Name + Year)</label>
+  <div class="search-wrapper">
+    <div style="display: flex; gap: 10px;">
+      <input type="text" id="searchInput" placeholder="e.g. Spider-Man 2002..." style="margin-bottom:0; flex: 1;" onkeypress="if(event.key === 'Enter') searchTMDB()">
+      <button onclick="searchTMDB()" style="width: auto; padding: 0 20px; background: #333; color: white;">🔍 Search</button>
+    </div>
+    <div id="searchResults"></div>
   </div>
   <p id="status" style="text-align: center; font-size: 13px; margin-top: -5px; margin-bottom: 15px;"></p>
 
   <hr style="border-color: rgba(255,255,255,0.1); margin-bottom: 20px;">
 
-  <div class="grid-2">
-    <div>
-      <label class="field-label">File Name</label>
-      <input type="text" id="name">
-    </div>
+  <label class="field-label">File Name</label>
+  <input type="text" id="name">
+
+  <div class="grid-3">
     <div>
       <label class="field-label">Upload Type</label>
       <select id="type">
@@ -52,12 +65,9 @@
         <option value="Series">📺 Series / Anime</option>
       </select>
     </div>
-  </div>
-
-  <div class="grid-2">
     <div>
-      <label class="field-label">Category / Genres</label>
-      <input type="text" id="category" placeholder="Action, Sci-Fi...">
+      <label class="field-label">Quality Tag</label>
+      <input type="text" id="upload_quality" placeholder="HD, CAM, WEB-DL">
     </div>
     <div>
       <label class="field-label">Release Date</label>
@@ -65,27 +75,32 @@
     </div>
   </div>
 
-  <div class="grid-2">
-    <div>
-      <label class="field-label">Rating (Out of 10)</label>
-      <input type="text" id="rating" placeholder="8.5">
+  <div class="grid-3">
+    <div style="grid-column: span 2;">
+      <label class="field-label">Category / Genres</label>
+      <input type="text" id="category" placeholder="Action, Sci-Fi...">
     </div>
     <div>
-      <label class="field-label">Runtime</label>
-      <input type="text" id="runtime" placeholder="120 mins">
+      <label class="field-label">Rating</label>
+      <input type="text" id="rating" placeholder="8.5">
     </div>
   </div>
 
-  <label class="field-label">Cover Image URL (Vertical)</label>
-  <input type="text" id="image">
-
-  <label class="field-label">Backdrop Image URL (Horizontal)</label>
-  <input type="text" id="backdrop">
+  <div class="grid-2">
+    <div>
+      <label class="field-label">Cover Image (Vertical)</label>
+      <input type="text" id="image">
+    </div>
+    <div>
+      <label class="field-label">Backdrop (Horizontal)</label>
+      <input type="text" id="backdrop">
+    </div>
+  </div>
 
   <label class="field-label">Description / Plot</label>
-  <textarea id="description" rows="4"></textarea>
+  <textarea id="description" rows="3"></textarea>
 
-  <label class="field-label" style="margin-top: 10px;">Download / Stream Links</label>
+  <label class="field-label" style="margin-top: 10px;">Media Links</label>
   <div id="links-container"></div>
   <button onclick="addLinkRow()" style="background: rgba(255,255,255,0.1); color: white; border: 1px dashed rgba(255,255,255,0.3);">➕ Add Media Link</button>
 
@@ -101,65 +116,90 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
-  // Load first link row on start
+  const API_KEY = "e262bd07ebfb205acaed257bb4227ea6"; 
+
   window.onload = () => addLinkRow();
 
-  async function autoFillMovie() {
+  // STEP 1: Search and show dropdown menu
+  async function searchTMDB() {
     const query = document.getElementById("searchInput").value.trim();
     const status = document.getElementById("status");
-    const apiKey = "e262bd07ebfb205acaed257bb4227ea6"; 
+    const dropdown = document.getElementById("searchResults");
 
     if (!query) { alert("Enter a search term!"); return; }
 
     status.innerText = "⏳ Searching TMDB...";
     status.style.color = "#ffcc00";
+    dropdown.style.display = "none";
 
     try {
-      // Step 1: Search for the title (Allows both TV and Movies)
-      const searchRes = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(query)}`);
-      const searchData = await searchRes.json();
+      const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
+      const data = await res.json();
 
-      if (searchData.results && searchData.results.length > 0) {
-        // Filter out people, just get media
-        const media = searchData.results.find(m => m.media_type === 'movie' || m.media_type === 'tv');
+      const media = data.results.filter(m => m.media_type === 'movie' || m.media_type === 'tv');
+
+      if (media.length > 0) {
+        status.innerText = `✅ Found ${media.length} results. Select one from the menu.`;
+        status.style.color = "#00bfff";
         
-        if (!media) {
-          status.innerText = "❌ No movies or series found.";
-          return;
-        }
+        dropdown.innerHTML = "";
+        media.forEach(item => {
+          const title = item.title || item.name;
+          const yearRaw = item.release_date || item.first_air_date || "";
+          const year = yearRaw ? yearRaw.split("-")[0] : "N/A";
+          const typeLabel = item.media_type === 'tv' ? '📺 Series' : '🎬 Movie';
+          const thumb = item.poster_path ? `https://image.tmdb.org/t/p/w92${item.poster_path}` : 'https://via.placeholder.com/40x60?text=No+Img';
 
-        status.innerText = "⏳ Fetching Deep Details...";
-
-        // Step 2: Fetch detailed info based on ID and Type
-        const detailRes = await fetch(`https://api.themoviedb.org/3/${media.media_type}/${media.id}?api_key=${apiKey}`);
-        const details = await detailRes.json();
-
-        // 📝 POPULATE FIELDS
-        document.getElementById("name").value = details.title || details.name;
-        document.getElementById("type").value = media.media_type === 'tv' ? 'Series' : 'Movie';
-        document.getElementById("category").value = details.genres.map(g => g.name).join(", ");
-        document.getElementById("release_date").value = details.release_date || details.first_air_date || "";
-        document.getElementById("rating").value = details.vote_average ? details.vote_average.toFixed(1) : "";
-        
-        // Runtime logic (TV vs Movie)
-        let runtimeText = "";
-        if (details.runtime) runtimeText = details.runtime + " mins";
-        else if (details.episode_run_time && details.episode_run_time.length > 0) runtimeText = details.episode_run_time[0] + " mins/ep";
-        document.getElementById("runtime").value = runtimeText;
-
-        document.getElementById("image").value = details.poster_path ? "https://image.tmdb.org/t/p/w780" + details.poster_path : "";
-        document.getElementById("backdrop").value = details.backdrop_path ? "https://image.tmdb.org/t/p/w1280" + details.backdrop_path : "";
-        document.getElementById("description").value = details.overview;
-        
-        status.innerText = "✅ High-Res Details Fetched!";
-        status.style.color = "#00ff00";
+          const div = document.createElement("div");
+          div.className = "search-item";
+          div.onclick = () => fetchDeepDetails(item.id, item.media_type);
+          div.innerHTML = `
+            <img src="${thumb}" class="search-thumb">
+            <div class="search-info">
+              <span class="search-title">${title} (${year})</span>
+              <span class="search-meta">${typeLabel}</span>
+            </div>
+          `;
+          dropdown.appendChild(div);
+        });
+        dropdown.style.display = "block";
       } else { 
-        status.innerText = "❌ No results found on TMDB.";
+        status.innerText = "❌ No results found. Check spelling or try adding a year.";
         status.style.color = "#ff4d4d";
       }
     } catch (e) { 
-      status.innerText = "❌ Error fetching API.";
+      status.innerText = "❌ Error connecting to TMDB.";
       status.style.color = "#ff4d4d";
+    }
+  }
+
+  // STEP 2: User clicks a movie, fetch full details
+  async function fetchDeepDetails(id, type) {
+    document.getElementById("searchResults").style.display = "none";
+    const status = document.getElementById("status");
+    status.innerText = "⏳ Pulling high-res details...";
+
+    try {
+      const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${API_KEY}`);
+      const details = await res.json();
+
+      document.getElementById("name").value = details.title || details.name;
+      document.getElementById("type").value = type === 'tv' ? 'Series' : 'Movie';
+      document.getElementById("category").value = details.genres ? details.genres.map(g => g.name).join(", ") : "";
+      document.getElementById("release_date").value = details.release_date || details.first_air_date || "";
+      document.getElementById("rating").value = details.vote_average ? details.vote_average.toFixed(1) : "";
+      
+      document.getElementById("image").value = details.poster_path ? "https://image.tmdb.org/t/p/w780" + details.poster_path : "";
+      document.getElementById("backdrop").value = details.backdrop_path ? "https://image.tmdb.org/t/p/w1280" + details.backdrop_path : "";
+      document.getElementById("description").value = details.overview || "";
+      
+      // Clear Quality tag so you can set it fresh
+      document.getElementById("upload_quality").value = ""; 
+      
+      status.innerText = "✅ Form Auto-Filled! Add your links and save.";
+      status.style.color = "#00ff00";
+    } catch (e) {
+      status.innerText = "❌ Error fetching deep details.";
     }
   }
 
@@ -194,7 +234,6 @@
     btn.innerText = "Saving...";
     btn.disabled = true;
 
-    // Gather links
     let finalLinks = [];
     document.querySelectorAll(".link-row").forEach(row => {
       const url = row.querySelector(".link-url").value.trim();
@@ -218,10 +257,10 @@
         customId: Date.now(),
         name: name,
         type: document.getElementById("type").value,
+        upload_quality: document.getElementById("upload_quality").value.trim() || "HD", // Defaults to HD if left blank
         category: document.getElementById("category").value,
         release_date: document.getElementById("release_date").value,
         rating: document.getElementById("rating").value,
-        runtime: document.getElementById("runtime").value,
         image: document.getElementById("image").value,
         backdrop: document.getElementById("backdrop").value,
         description: document.getElementById("description").value,
@@ -230,7 +269,7 @@
 
       await docRef.update({ movies: movies });
       alert("✅ Saved Successfully to Database!");
-      window.location.reload(); // Refresh form
+      window.location.reload(); 
       
     } catch (e) { 
       alert("Error saving: " + e.message); 
