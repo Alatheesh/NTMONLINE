@@ -177,6 +177,14 @@ async function loadFile() {
 
   currentFileId = file.id || file.customId;
 
+  // --- NEW FEATURE: APPLY CINEMATIC BACKDROP ---
+  if (file.backdrop) {
+    document.body.style.backgroundImage = `linear-gradient(180deg, rgba(2,2,2,0.85), rgba(10,17,40,0.9), rgba(2,2,2,0.95)), url('${file.backdrop}')`;
+    document.body.style.backgroundSize = "cover";
+    document.body.style.backgroundPosition = "center top";
+    document.body.style.backgroundAttachment = "fixed";
+  }
+
   if (Array.isArray(file.links) && file.links.length > 0) allFileLinks = file.links;
   else if (Array.isArray(file.downloads) && file.downloads.length > 0) allFileLinks = file.downloads;
   else if (file.link) allFileLinks = [file.link];
@@ -206,12 +214,20 @@ async function loadFile() {
     `;
   }
 
-  // Inject Native Share Button directly into the Card
+  // --- UPGRADED CARD HTML (Added TMDB Meta Data) ---
   document.getElementById("fileCard").innerHTML = `
     <img src="${file.image || 'https://via.placeholder.com/400x220?text=No+Image'}">
     <h2>${file.name}</h2>
-    <p><strong>${file.type}</strong> • ${file.category}</p>
-    <p>${file.description || ''}</p>
+    
+    <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 12px 0; font-size: 13px; font-weight: bold; color: #ccc;">
+      ${file.upload_quality ? `<span style="background: #ffcc00; color: black; padding: 3px 8px; border-radius: 4px;">${file.upload_quality}</span>` : ''}
+      ${file.rating ? `<span style="color: #ffcc00;">⭐ ${file.rating}/10</span>` : ''}
+      ${file.release_date ? `<span>📅 ${file.release_date.split('-')[0]}</span>` : ''}
+      ${file.runtime ? `<span>⏳ ${file.runtime}</span>` : ''}
+    </div>
+
+    <p style="margin-top: 5px;"><strong>${file.type || 'Movie'}</strong> • ${file.category || 'Uncategorized'}</p>
+    <p style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; border-left: 3px solid #00bfff; font-size: 14px; text-align: left;">${file.description || 'No description provided.'}</p>
     
     <button class="share-btn" id="shareBtn" onclick="shareMovie()">📤 Share</button>
     
