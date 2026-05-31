@@ -38,9 +38,14 @@
 
     /* LAYOUT */
     .page { display: flex; justify-content: center; align-items: flex-start; width: 100%; margin-top: 60px; flex: 1; }
-    .side-ad { width: 160px; margin: 20px; text-align: center; z-index: 5; }
+    .side-ad { width: 160px; margin: 20px; text-align: center; z-index: 5; display: flex; justify-content: center; }
     .center { max-width: 450px; width: 90%; margin: 0 15px; z-index: 5; }
-    @media (max-width: 900px) { .side-ad { display: none; } }
+    
+    /* 📱 MOBILE RESPONSIVE LAYOUT */
+    @media (max-width: 900px) { 
+      .page { flex-direction: column; align-items: center; }
+      .side-ad { width: 100%; margin: 15px 0; } 
+    }
 
     /* 💎 PREMIUM GLASSMORPHISM CARD */
     .card { background: rgba(255, 255, 255, 0.04); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); padding: 30px; border-radius: 20px; text-align: center; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(255,255,255,0.02); overflow-wrap: break-word; transition: all 0.3s ease-in-out; }
@@ -115,7 +120,7 @@
 
 <button class="back" onclick="history.back()">← Back</button>
 
-<div style="text-align: center; margin: 20px 0; width: 100%;">
+<div style="text-align: center; margin: 20px 0; width: 100%; overflow-x: hidden;">
   <script>
     atOptions = {
       'key' : '9d4e234e334f6012b5b60f60507d7877',
