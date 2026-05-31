@@ -34,6 +34,69 @@
     }
 
     /* =========================================
+       🏆 BINGE CARD BUTTON (TOP RIGHT)
+       ========================================= */
+    .stats-btn {
+      position: absolute;
+      top: 35px;
+      right: 20px;
+      background: rgba(0, 191, 255, 0.1);
+      border: 1px solid rgba(0, 191, 255, 0.4);
+      color: #00bfff;
+      padding: 10px 18px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+      backdrop-filter: blur(5px);
+      transition: all 0.3s ease;
+      z-index: 100;
+      box-shadow: 0 4px 15px rgba(0, 191, 255, 0.2);
+    }
+    .stats-btn:hover {
+      background: #00bfff;
+      color: #000;
+      box-shadow: 0 4px 20px rgba(0, 191, 255, 0.6);
+      transform: translateY(-2px);
+    }
+
+    /* =========================================
+       🃏 BINGE CARD MODAL (GAMER PROFILE)
+       ========================================= */
+    .binge-modal {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(10px);
+      display: none; justify-content: center; align-items: center;
+      z-index: 9999; opacity: 0; transition: opacity 0.3s ease;
+    }
+    .binge-modal.active { display: flex; opacity: 1; }
+    
+    .binge-card {
+      background: linear-gradient(135deg, rgba(20, 25, 45, 0.95), rgba(5, 10, 25, 0.95));
+      border: 1px solid rgba(0, 191, 255, 0.3);
+      padding: 30px; border-radius: 20px; width: 90%; max-width: 380px;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(0, 191, 255, 0.05);
+      transform: scale(0.8); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      color: white; text-align: left; position: relative;
+    }
+    .binge-modal.active .binge-card { transform: scale(1); }
+
+    .close-binge { position: absolute; top: 15px; right: 20px; color: #aaa; font-size: 24px; cursor: pointer; transition: color 0.3s; }
+    .close-binge:hover { color: #fff; }
+
+    .binge-header { text-align: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; }
+    .binge-header h2 { margin: 0; font-size: 24px; color: #00bfff; text-shadow: 0 0 10px rgba(0,191,255,0.5); }
+    .binge-header p { margin: 5px 0 0 0; font-size: 13px; color: #ccc; }
+
+    .stat-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; background: rgba(255,255,255,0.03); padding: 10px 15px; border-radius: 10px; border-left: 3px solid #00bfff; }
+    .stat-label { font-size: 13px; color: #aaa; font-weight: bold; }
+    .stat-value { font-size: 15px; font-weight: bold; color: #fff; }
+
+    .progress-bar-bg { width: 100%; background: #333; border-radius: 10px; height: 10px; margin-top: 8px; overflow: hidden; display: flex; }
+    .progress-series { background: #00bfff; height: 100%; transition: width 0.5s; }
+    .progress-movies { background: #ff4d4d; height: 100%; transition: width 0.5s; }
+
+    /* =========================================
        📝 PREMIUM MINIMALIST FOOTER
        ========================================= */
     .premium-footer {
@@ -47,29 +110,10 @@
       z-index: 10;
     }
 
-    .footer-links {
-      display: flex;
-      gap: 20px;
-    }
-
-    .footer-links a {
-      color: rgba(255, 255, 255, 0.5);
-      text-decoration: none;
-      font-size: 12px;
-      font-weight: 500;
-      letter-spacing: 0.5px;
-      transition: color 0.3s ease;
-    }
-
-    .footer-links a:hover {
-      color: #00bfff;
-    }
-
-    .footer-credits {
-      color: rgba(255, 255, 255, 0.3);
-      font-size: 11px;
-      letter-spacing: 0.5px;
-    }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-links a { color: rgba(255, 255, 255, 0.5); text-decoration: none; font-size: 12px; font-weight: 500; letter-spacing: 0.5px; transition: color 0.3s ease; }
+    .footer-links a:hover { color: #00bfff; }
+    .footer-credits { color: rgba(255, 255, 255, 0.3); font-size: 11px; letter-spacing: 0.5px; }
   </style>
 </head>
 <body>
@@ -82,36 +126,135 @@
   <img src="https://raw.githubusercontent.com/Alatheesh/PERSONAL_WEBSITE/main/images/logo.png" alt="NTM Online Logo" class="top-corner-logo">
 </a>
 
+<button class="stats-btn" onclick="openBingeCard()">🏆 My Stats</button>
+
 <div class="hero glass-card">
-
   <h1>🎬 NTM Online 🍿</h1>
-
   <p class="subtitle">Your binge starts here 🎥</p>
-
   <button onclick="goToApp()" class="premium-btn">
     Get Started →
   </button>
-
 </div>
 
 <div class="premium-footer">
-  
   <div class="footer-links">
     <a href="terms.html">Terms of Service</a>
     <a href="privacy.html">Privacy Policy</a>
     <a href="dmca.html">DMCA</a>
     <a href="disclaimer.html">Disclaimer</a>
   </div>
-
   <div class="footer-credits">
     © 2026 NTM Online. All rights reserved.
   </div>
+</div>
 
+<!-- 🎮 BINGE CARD MODAL -->
+<div id="bingeModal" class="binge-modal" onclick="closeBingeCard(event)">
+  <div class="binge-card">
+    <span class="close-binge" onclick="closeBingeCard(event, true)">&times;</span>
+    
+    <div class="binge-header">
+      <h2>NTM Profile</h2>
+      <p id="bc-firstTicket">Loading...</p>
+    </div>
+
+    <div id="bc-content">
+      <!-- Stats will be injected here via JavaScript -->
+    </div>
+    
+  </div>
 </div>
 
 <script>
 function goToApp() {
   window.location.href = "search.html"; 
+}
+
+// ==========================================
+// 🏆 BINGE CARD LOGIC
+// ==========================================
+function openBingeCard() {
+  const modal = document.getElementById("bingeModal");
+  const content = document.getElementById("bc-content");
+  const headerDate = document.getElementById("bc-firstTicket");
+  
+  let rawData = localStorage.getItem("ntm_user_stats");
+  
+  if (!rawData) {
+    headerDate.innerText = "No data yet.";
+    content.innerHTML = `
+      <div style="text-align:center; padding: 20px;">
+        <p style="color: #aaa; font-size: 14px;">You haven't watched anything yet.</p>
+        <button onclick="goToApp()" style="margin-top: 15px; padding: 8px 15px; background: #00bfff; border: none; border-radius: 5px; color: black; font-weight: bold; cursor: pointer;">Start Watching 🍿</button>
+      </div>`;
+  } else {
+    let stats = JSON.parse(rawData);
+    
+    // 1. Calculate Rank
+    let rank = "Popcorn Rookie 🍿";
+    if (stats.streamsStarted >= 50) rank = "Cinema Boss 👑";
+    else if (stats.streamsStarted >= 20) rank = "Cinephile 🎬";
+    else if (stats.streamsStarted >= 5) rank = "Binge Watcher 🛋️";
+
+    // 2. Calculate Top Genre
+    let topGenre = "None";
+    let maxVal = 0;
+    if (stats.genres) {
+      for (let g in stats.genres) {
+        if (stats.genres[g] > maxVal) { maxVal = stats.genres[g]; topGenre = g; }
+      }
+    }
+
+    // 3. Calculate Persona
+    let personaMap = { morning: "Early Bird ☕", afternoon: "Daytime Viewer ☀️", evening: "Prime Time 🍿", night: "Night Owl 🌙" };
+    let topTime = "night";
+    let timeMax = 0;
+    if (stats.timeOfDay) {
+      for (let t in stats.timeOfDay) {
+        if (stats.timeOfDay[t] > timeMax) { timeMax = stats.timeOfDay[t]; topTime = t; }
+      }
+    }
+    let persona = personaMap[topTime];
+
+    // 4. Calculate Preferences
+    let totalMedia = (stats.seriesCount || 0) + (stats.moviesCount || 0);
+    let sPct = totalMedia === 0 ? 50 : Math.round(((stats.seriesCount || 0) / totalMedia) * 100);
+    let mPct = totalMedia === 0 ? 50 : Math.round(((stats.moviesCount || 0) / totalMedia) * 100);
+
+    // Build the UI
+    headerDate.innerText = `🎫 Joined: ${stats.firstTicket}`;
+    
+    content.innerHTML = `
+      <div class="stat-row"><span class="stat-label">👑 NTM Rank</span> <span class="stat-value">${rank}</span></div>
+      <div class="stat-row"><span class="stat-label">🔥 Hot Streak</span> <span class="stat-value">${stats.streak || 1} Days</span></div>
+      <div class="stat-row"><span class="stat-label">🎬 Streams Started</span> <span class="stat-value">${stats.streamsStarted || 0}</span></div>
+      <div class="stat-row"><span class="stat-label">📊 Top Genre</span> <span class="stat-value">${topGenre}</span></div>
+      <div class="stat-row"><span class="stat-label">🦉 Persona</span> <span class="stat-value">${persona}</span></div>
+      <div class="stat-row"><span class="stat-label">📢 Hype Score</span> <span class="stat-value">${stats.hypeScore || 0} Shares</span></div>
+      
+      <div style="margin-top: 20px;">
+        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: bold; color: #ccc;">
+          <span style="color: #00bfff;">📺 Series (${sPct}%)</span>
+          <span style="color: #ff4d4d;">🎬 Movies (${mPct}%)</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-series" style="width: ${sPct}%;"></div>
+          <div class="progress-movies" style="width: ${mPct}%;"></div>
+        </div>
+      </div>
+    `;
+  }
+  
+  modal.style.display = "flex";
+  setTimeout(() => { modal.classList.add("active"); }, 10);
+}
+
+function closeBingeCard(event, forceClose = false) {
+  const modal = document.getElementById("bingeModal");
+  if (forceClose || event.target === modal) {
+    modal.classList.remove("active");
+    setTimeout(() => { modal.style.display = "none"; }, 300);
+  }
 }
 </script>
 
