@@ -127,7 +127,6 @@
     if (!user) { window.location.href = "admin.html"; }
   });
 
-
   const API_KEY = "e262bd07ebfb205acaed257bb4227ea6"; 
 
   window.onload = () => addLinkRow();
@@ -196,7 +195,12 @@
       const details = await res.json();
 
       document.getElementById("name").value = details.title || details.name;
-      document.getElementById("type").value = type === 'tv' ? 'Series' : 'Movie';
+      
+      // Auto-update the "Upload Type" and trigger the change event to hide/show Episode boxes
+      const typeSelect = document.getElementById("type");
+      typeSelect.value = type === 'tv' ? 'Series' : 'Movie';
+      typeSelect.dispatchEvent(new Event('change'));
+
       document.getElementById("category").value = details.genres ? details.genres.map(g => g.name).join(", ") : "";
       document.getElementById("release_date").value = details.release_date || details.first_air_date || "";
       document.getElementById("rating").value = details.vote_average ? details.vote_average.toFixed(1) : "";
@@ -216,11 +220,14 @@
   }
 
   function addLinkRow() {
+    const isSeries = document.getElementById("type").value === "Series";
+    const epDisplay = isSeries ? "inline-block" : "none";
+    
     const div = document.createElement("div");
     div.className = "link-row";
     div.innerHTML = `
       <input type="text" placeholder="Video URL..." class="link-url" style="flex: 1; min-width: 150px;">
-      <input type="number" placeholder="Ep" class="link-ep" style="width: 60px;" min="1" value="1">
+      <input type="number" placeholder="Ep" class="link-ep" style="width: 60px; display: ${epDisplay};" min="1" value="1">
       <select class="link-quality" style="width: 90px;">
         <option value="Auto">Auto</option>
         <option value="480p">480p</option>
@@ -249,14 +256,20 @@
     let finalLinks = [];
     document.querySelectorAll(".link-row").forEach(row => {
       const url = row.querySelector(".link-url").value.trim();
+      const isSeries = document.getElementById("type").value === "Series";
+      
       if (url) {
-        finalLinks.push({
+        let linkData = {
           url: btoa(url),
-          episode: "Ep " + row.querySelector(".link-ep").value,
           quality: row.querySelector(".link-quality").value,
           size: row.querySelector(".link-size").value.trim(),
           unit: row.querySelector(".link-unit").value
-        });
+        };
+        // Only attach episode data if it's a series
+        if (isSeries) {
+          linkData.episode = "Ep " + row.querySelector(".link-ep").value;
+        }
+        finalLinks.push(linkData);
       }
     });
 
@@ -289,6 +302,38 @@
       btn.disabled = false;
     }
   }
+
+  // ==========================================
+  // UI BUG FIXES
+  // ==========================================
+
+  // BUG 1: Toggle Episode field visibility when Upload Type changes
+  document.getElementById("type").addEventListener("change", function() {
+    const isSeries = this.value === "Series";
+    document.querySelectorAll(".link-ep").forEach(input => {
+      input.style.display = isSeries ? "inline-block" : "none";
+    });
+  });
+
+  // BUG 2: Hide search dropdown when clicking outside
+  document.addEventListener("click", function(event) {
+    const searchWrapper = document.querySelector(".search-wrapper");
+    const dropdown = document.getElementById("searchResults");
+    
+    // If the click is outside the search wrapper, hide the dropdown
+    if (!searchWrapper.contains(event.target)) {
+      dropdown.style.display = "none";
+    }
+  });
+
+  // BUG 2: Hide and clear search dropdown when the search bar is emptied
+  document.getElementById("searchInput").addEventListener("input", function(e) {
+    if (e.target.value.trim() === "") {
+      document.getElementById("searchResults").style.display = "none";
+      document.getElementById("status").innerText = "";
+    }
+  });
+
 </script>
 
 </body>
