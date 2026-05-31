@@ -63,7 +63,6 @@
       max-height: 350px; overflow-y: auto; padding-right: 10px;
     }
     
-    /* Sleek Custom Scrollbar for Episodes */
     .download-grid::-webkit-scrollbar { width: 6px; }
     .download-grid::-webkit-scrollbar-thumb { background: #00bfff; border-radius: 10px; }
     .download-grid::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 10px; }
@@ -150,6 +149,7 @@
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
+let currentFile = null; // 🌟 GLOBALLY TRACK THE MOVIE FOR STATS
 let currentFileId = null;
 let allFileLinks = []; 
 let masterListCache = []; 
@@ -166,9 +166,7 @@ window.addEventListener("DOMContentLoaded", async function () {
 async function loadFile() {
   const id = Number(new URLSearchParams(location.search).get("id"));
 
-  // 1-READ TRICK: Check Memory Cache First!
   const cachedData = sessionStorage.getItem("ntm_movie_cache");
-  
   if (cachedData) {
     masterListCache = JSON.parse(cachedData);
   } else {
@@ -189,9 +187,9 @@ async function loadFile() {
     return;
   }
 
+  currentFile = file; // 🌟 SAVE FILE DATA FOR TRACKING
   currentFileId = file.id || file.customId;
 
-  // Apply Cinematic Backdrop
   if (file.backdrop) {
     document.body.style.backgroundImage = `linear-gradient(180deg, rgba(2,2,2,0.85), rgba(10,17,40,0.9), rgba(2,2,2,0.95)), url('${file.backdrop}')`;
     document.body.style.backgroundSize = "cover";
@@ -199,13 +197,10 @@ async function loadFile() {
     document.body.style.backgroundAttachment = "fixed";
   }
 
-  // Load Links
   if (Array.isArray(file.links) && file.links.length > 0) allFileLinks = file.links;
   else if (Array.isArray(file.downloads) && file.downloads.length > 0) allFileLinks = file.downloads;
   else if (file.link) allFileLinks = [file.link];
 
-  // 🧠 AUTOMATED EPISODE SORTING
-  // This extracts the exact number from "Ep X" and sorts them mathematically!
   if (file.type === "Series") {
     allFileLinks.sort((a, b) => {
       let epA = 0, epB = 0;
@@ -246,7 +241,6 @@ async function loadFile() {
     `;
   }
 
-  // Populate UI
   document.getElementById("fileCard").innerHTML = `
     <img src="${file.image || 'https://via.placeholder.com/400x220?text=No+Image'}">
     <h2>${file.name}</h2>
@@ -283,7 +277,6 @@ function renderButtons() {
   let downloadHTML = "";
   if (linksToRender.length > 0) {
     downloadHTML = `<div class="download-grid">`;
-
     linksToRender.forEach((l, i) => {
       let label = `Watch ${i+1}`; 
       if (typeof l === "object" && l !== null) {
@@ -291,12 +284,9 @@ function renderButtons() {
         else if (l.episode) label = `▶ ${l.episode}`;
         else if (l.size) label = `🎥 Watch ${l.size} ${l.unit} 🍿`;
       }
-
-      // We pass the absolute 'allFileLinks' index to openWatch to guarantee the playlist matches the click!
       const absoluteIndex = allFileLinks.indexOf(l);
       downloadHTML += `<button onclick="openWatch(${absoluteIndex})">${label}</button>`;
     });
-
     downloadHTML += `</div>`;
   } else {
     downloadHTML = `<p style='opacity:0.7;'>No episodes available for this quality.</p>`;
@@ -305,10 +295,70 @@ function renderButtons() {
   container.innerHTML = downloadHTML;
 }
 
+// 🧠 INVISIBLE DATA TRACKER (BINGE CARD ENGINE)
+function trackBingeStats(file) {
+  if (!file) return;
+
+  // 1. Get current stats or create a brand new profile
+  let stats = JSON.parse(localStorage.getItem("ntm_user_stats")) || {
+    firstTicket: new Date().toLocaleString('default', { month: 'short', year: 'numeric' }),
+    lastVisit: "",
+    streak: 0,
+    streamsStarted: 0,
+    moviesCount: 0,
+    seriesCount: 0,
+    genres: {},
+    timeOfDay: { morning: 0, afternoon: 0, evening: 0, night: 0 },
+    hypeScore: 0
+  };
+
+  // 2. STREAK LOGIC
+  const today = new Date().toISOString().split('T')[0]; 
+  if (stats.lastVisit !== today) {
+    let yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yestStr = yesterday.toISOString().split('T')[0];
+
+    if (stats.lastVisit === yestStr) stats.streak += 1; // Played yesterday! Keep streak alive.
+    else stats.streak = 1; // Missed a day. Reset streak to 1.
+    
+    stats.lastVisit = today;
+  }
+
+  // 3. STREAMS STARTED
+  stats.streamsStarted += 1;
+
+  // 4. FORMAT PREFERENCE
+  if (file.type === "Series") stats.seriesCount += 1;
+  else stats.moviesCount += 1;
+
+  // 5. GENRE TALLY
+  if (file.category) {
+    const fileGenres = file.category.split(",").map(g => g.trim());
+    fileGenres.forEach(g => {
+      if (!stats.genres[g]) stats.genres[g] = 0;
+      stats.genres[g] += 1;
+    });
+  }
+
+  // 6. PERSONA (TIME OF DAY)
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 12) stats.timeOfDay.morning += 1;
+  else if (hour >= 12 && hour < 17) stats.timeOfDay.afternoon += 1;
+  else if (hour >= 17 && hour < 22) stats.timeOfDay.evening += 1;
+  else stats.timeOfDay.night += 1;
+
+  // 7. SAVE SECRETY TO BROWSER
+  localStorage.setItem("ntm_user_stats", JSON.stringify(stats));
+}
+
 function openWatch(clickedIndex) {
   const modal = document.getElementById('warningModal');
   modal.style.display = 'flex';
   setTimeout(() => { modal.classList.add('active'); }, 10);
+
+  // 🚀 FIRE THE INVISIBLE TRACKER RIGHT BEFORE THEY WATCH
+  trackBingeStats(currentFile);
 
   let currentPlaylist = allFileLinks;
   const qualitySelect = document.getElementById("qualitySelect");
@@ -316,7 +366,6 @@ function openWatch(clickedIndex) {
     currentPlaylist = allFileLinks.filter(l => typeof l === "object" && l.quality === qualitySelect.value);
   }
 
-  // Adjust clickedIndex so it matches the filtered playlist array
   const activeLink = allFileLinks[clickedIndex];
   const playlistIndex = currentPlaylist.indexOf(activeLink);
 
@@ -336,6 +385,13 @@ function openWatch(clickedIndex) {
 function shareMovie() {
   const url = window.location.href;
   const movieTitle = document.querySelector('h2') ? document.querySelector('h2').innerText : "this movie";
+
+  // 🚀 TRACK HYPE SCORE
+  let stats = JSON.parse(localStorage.getItem("ntm_user_stats"));
+  if (stats) {
+    stats.hypeScore = (stats.hypeScore || 0) + 1;
+    localStorage.setItem("ntm_user_stats", JSON.stringify(stats));
+  }
 
   if (navigator.share) {
     navigator.share({
