@@ -57,8 +57,17 @@
     .share-btn { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); padding: 8px 16px; border-radius: 20px; color: white; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; margin: 10px auto; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
     .share-btn:hover { background: rgba(0, 191, 255, 0.2); border-color: #00bfff; transform: scale(1.05); }
 
-    /* 🔘 BUTTONS */
-    .download-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 25px; }
+    /* 🔘 BUTTONS & 📜 SCROLL BOX */
+    .download-grid { 
+      display: flex; flex-wrap: wrap; gap: 12px; margin-top: 25px; 
+      max-height: 350px; overflow-y: auto; padding-right: 10px;
+    }
+    
+    /* Sleek Custom Scrollbar for Episodes */
+    .download-grid::-webkit-scrollbar { width: 6px; }
+    .download-grid::-webkit-scrollbar-thumb { background: #00bfff; border-radius: 10px; }
+    .download-grid::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 10px; }
+
     .download-grid button { flex: 1; min-width: 130px; margin: 0; background: linear-gradient(135deg, #007bff, #00bfff); box-shadow: 0 4px 15px rgba(0, 191, 255, 0.3); padding: 12px 18px; border: none; border-radius: 10px; cursor: pointer; color: white; font-weight: bold; transition: all 0.3s ease; }
     .download-grid button:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 6px 20px rgba(0, 191, 255, 0.5); }
     
@@ -182,7 +191,7 @@ async function loadFile() {
 
   currentFileId = file.id || file.customId;
 
-  // --- NEW FEATURE: APPLY CINEMATIC BACKDROP ---
+  // Apply Cinematic Backdrop
   if (file.backdrop) {
     document.body.style.backgroundImage = `linear-gradient(180deg, rgba(2,2,2,0.85), rgba(10,17,40,0.9), rgba(2,2,2,0.95)), url('${file.backdrop}')`;
     document.body.style.backgroundSize = "cover";
@@ -190,9 +199,27 @@ async function loadFile() {
     document.body.style.backgroundAttachment = "fixed";
   }
 
+  // Load Links
   if (Array.isArray(file.links) && file.links.length > 0) allFileLinks = file.links;
   else if (Array.isArray(file.downloads) && file.downloads.length > 0) allFileLinks = file.downloads;
   else if (file.link) allFileLinks = [file.link];
+
+  // 🧠 AUTOMATED EPISODE SORTING
+  // This extracts the exact number from "Ep X" and sorts them mathematically!
+  if (file.type === "Series") {
+    allFileLinks.sort((a, b) => {
+      let epA = 0, epB = 0;
+      if (typeof a === "object" && a.episode) {
+        const matchA = a.episode.match(/\d+/);
+        if (matchA) epA = parseInt(matchA[0]);
+      }
+      if (typeof b === "object" && b.episode) {
+        const matchB = b.episode.match(/\d+/);
+        if (matchB) epB = parseInt(matchB[0]);
+      }
+      return epA - epB;
+    });
+  }
 
   let isSeries = false;
   let availableQualities = new Set();
@@ -219,7 +246,7 @@ async function loadFile() {
     `;
   }
 
-  // --- UPGRADED CARD HTML (Added TMDB Meta Data) ---
+  // Populate UI
   document.getElementById("fileCard").innerHTML = `
     <img src="${file.image || 'https://via.placeholder.com/400x220?text=No+Image'}">
     <h2>${file.name}</h2>
@@ -265,7 +292,9 @@ function renderButtons() {
         else if (l.size) label = `🎥 Watch ${l.size} ${l.unit} 🍿`;
       }
 
-      downloadHTML += `<button onclick="openWatch(${i})">${label}</button>`;
+      // We pass the absolute 'allFileLinks' index to openWatch to guarantee the playlist matches the click!
+      const absoluteIndex = allFileLinks.indexOf(l);
+      downloadHTML += `<button onclick="openWatch(${absoluteIndex})">${label}</button>`;
     });
 
     downloadHTML += `</div>`;
@@ -287,7 +316,11 @@ function openWatch(clickedIndex) {
     currentPlaylist = allFileLinks.filter(l => typeof l === "object" && l.quality === qualitySelect.value);
   }
 
-  const bingeData = { currentIndex: clickedIndex, playlist: currentPlaylist };
+  // Adjust clickedIndex so it matches the filtered playlist array
+  const activeLink = allFileLinks[clickedIndex];
+  const playlistIndex = currentPlaylist.indexOf(activeLink);
+
+  const bingeData = { currentIndex: playlistIndex, playlist: currentPlaylist };
 
   let scrambledPayload = "";
   try { scrambledPayload = btoa(JSON.stringify(bingeData)); } 
@@ -304,22 +337,15 @@ function shareMovie() {
   const url = window.location.href;
   const movieTitle = document.querySelector('h2') ? document.querySelector('h2').innerText : "this movie";
 
-  // Check if the browser/device supports native sharing
   if (navigator.share) {
     navigator.share({
       title: 'NTM Watch Hub',
       text: `Check out ${movieTitle} on NTM Stream! 🍿`,
       url: url
-    }).catch((error) => {
-      console.log('Error sharing or user cancelled', error);
-    });
+    }).catch((error) => console.log('Error sharing:', error));
   } else {
-    // Fallback for desktop or older browsers
-    navigator.clipboard.writeText(url).then(() => {
-      alert("✅ Link copied to clipboard!");
-    }).catch(err => { 
-      prompt("Copy this link to share:", url); 
-    });
+    navigator.clipboard.writeText(url).then(() => alert("✅ Link copied to clipboard!"))
+    .catch(err => prompt("Copy this link to share:", url));
   }
 }
 
