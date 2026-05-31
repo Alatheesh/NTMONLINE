@@ -65,7 +65,7 @@
     <div class="grid-3">
       <div>
         <label class="field-label">Upload Type</label>
-        <select id="type">
+        <select id="type" onchange="toggleMediaFields()">
           <option value="Movie">🎬 Movie</option>
           <option value="Series">📺 Series</option>
         </select>
@@ -129,6 +129,7 @@
 
   const API_KEY = "e262bd07ebfb205acaed257bb4227ea6"; 
 
+  // 🔒 SECURITY CHECK
   auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
   if (!localStorage.getItem("ntm_admin_session")) { window.location.href = "admin.html"; }
 
@@ -139,6 +140,30 @@
     if (user) { fetchMovies(); } 
     else { window.location.href = "admin.html"; }
   });
+
+  // --- HIDE SEARCH DROPDOWN LOGIC ---
+  document.addEventListener("click", function(event) {
+    const wrapper = document.querySelector(".search-wrapper");
+    if (wrapper && !wrapper.contains(event.target)) {
+      document.getElementById("searchResults").style.display = "none";
+    }
+  });
+
+  document.getElementById("searchInput").addEventListener("input", function(e) {
+    if(e.target.value.trim() === "") {
+      document.getElementById("searchResults").style.display = "none";
+      document.getElementById("status").innerText = "";
+    }
+  });
+
+  // --- TOGGLE MEDIA FIELDS LOGIC ---
+  function toggleMediaFields() {
+    const isSeries = document.getElementById("type").value === "Series";
+    const displayStyle = isSeries ? "inline-block" : "none";
+    
+    document.querySelectorAll(".link-ep").forEach(el => el.style.display = displayStyle);
+    document.querySelectorAll(".link-quality").forEach(el => el.style.display = displayStyle);
+  }
 
   async function fetchMovies() {
     try {
@@ -182,7 +207,6 @@
     document.getElementById("backdrop").value = movie.backdrop || "";
     document.getElementById("description").value = movie.description || "";
     
-    // Set Search bar to the current movie name automatically
     document.getElementById("searchInput").value = movie.name || "";
     document.getElementById("status").innerText = "";
 
@@ -209,16 +233,20 @@
     }
 
     form.style.display = "block";
+    toggleMediaFields(); // Trigger UI cleanup after load
   }
 
   function addLinkRow(url = "", ep = "1", quality = "720p", size = "", unit = "MB") {
+    const isSeries = document.getElementById("type").value === "Series";
+    const displayStyle = isSeries ? "inline-block" : "none";
+
     const container = document.getElementById("links-container");
     const div = document.createElement("div");
     div.className = "link-row";
     div.innerHTML = `
       <input type="text" placeholder="Video URL..." class="link-url" value="${url}" style="flex: 1; min-width: 150px;">
-      <input type="number" placeholder="Ep" class="link-ep" style="width: 60px;" min="1" value="${ep}">
-      <select class="link-quality" style="width: 90px;">
+      <input type="number" placeholder="Ep" class="link-ep" style="width: 60px; display: ${displayStyle};" min="1" value="${ep}">
+      <select class="link-quality" style="width: 90px; display: ${displayStyle};">
         <option value="Auto" ${quality==="Auto"?"selected":""}>Auto</option>
         <option value="480p" ${quality==="480p"?"selected":""}>480p</option>
         <option value="720p" ${quality==="720p"?"selected":""}>720p</option>
@@ -235,7 +263,7 @@
     container.appendChild(div);
   }
 
-  // --- TMDB FETCH LOGIC FOR UPGRADING OLD POSTS ---
+  // --- TMDB FETCH LOGIC ---
   async function searchTMDB() {
     const query = document.getElementById("searchInput").value.trim();
     const status = document.getElementById("status");
@@ -292,6 +320,8 @@
 
       document.getElementById("name").value = details.title || details.name;
       document.getElementById("type").value = type === 'tv' ? 'Series' : 'Movie';
+      toggleMediaFields(); // Trigger UI cleanup
+
       document.getElementById("category").value = details.genres ? details.genres.map(g => g.name).join(", ") : "";
       document.getElementById("release_date").value = details.release_date || details.first_air_date || "";
       document.getElementById("rating").value = details.vote_average ? details.vote_average.toFixed(1) : "";
@@ -314,14 +344,16 @@
     btn.innerText = "Saving...";
     btn.disabled = true;
 
+    const isSeries = document.getElementById("type").value === "Series";
     let finalLinks = [];
+
     document.querySelectorAll(".link-row").forEach(row => {
       const url = row.querySelector(".link-url").value.trim();
       if (url) {
         finalLinks.push({
           url: btoa(url),
-          episode: "Ep " + row.querySelector(".link-ep").value,
-          quality: row.querySelector(".link-quality").value,
+          episode: isSeries ? "Ep " + row.querySelector(".link-ep").value : "",
+          quality: isSeries ? row.querySelector(".link-quality").value : "",
           size: row.querySelector(".link-size").value.trim(),
           unit: row.querySelector(".link-unit").value
         });
@@ -330,7 +362,6 @@
 
     if (finalLinks.length === 0) { alert("❌ Must have at least one link!"); btn.innerText = "💾 Save Changes"; btn.disabled = false; return; }
 
-    // Overwrite the specific object in array
     allMovies[currentMovieIndex] = {
       ...allMovies[currentMovieIndex],
       name: document.getElementById("name").value.trim(),
