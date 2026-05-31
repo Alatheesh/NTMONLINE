@@ -39,7 +39,7 @@
     #search { 
       width: 100%; 
       box-sizing: border-box;
-      padding: 12px 20px; /* Default padding, expands when clicked */
+      padding: 12px 20px; 
       border-radius: 25px; 
       border: 1px solid rgba(255,255,255,0.2); 
       outline: none; 
@@ -53,15 +53,15 @@
     #search:focus, .search-container.active #search { 
       border-color: #00bfff; 
       background: rgba(255,255,255,0.15); 
-      padding-right: 50px; /* Make room for the button */
+      padding-right: 50px; 
     }
     
     #searchBtn { 
       position: absolute;
       right: 7px;
       top: 50%;
-      transform: translateY(-50%) scale(0.5); /* Starts small and hidden */
-      background: rgba(0, 191, 255, 0.2); /* Subtle blue background */
+      transform: translateY(-50%) scale(0.5); 
+      background: rgba(0, 191, 255, 0.2); 
       border: none;
       outline: none;
       color: white;
@@ -69,13 +69,13 @@
       font-size: 16px;
       width: 36px;
       height: 36px;
-      border-radius: 50%; /* Perfect Circle */
+      border-radius: 50%; 
       display: flex;
       align-items: center;
       justify-content: center;
-      opacity: 0; /* Invisible by default */
-      pointer-events: none; /* Cannot be clicked when invisible */
-      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Bouncy animation */
+      opacity: 0; 
+      pointer-events: none; 
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
     }
     
     #searchBtn:hover { 
@@ -88,7 +88,7 @@
     .search-container.active #searchBtn {
       opacity: 1;
       pointer-events: auto;
-      transform: translateY(-50%) scale(1); /* Pop in animation */
+      transform: translateY(-50%) scale(1); 
     }
     
     /* Search Bar Light Mode */
@@ -304,9 +304,10 @@
         card.className = "movie-card";
         card.href = "file.html?id=" + (d.customId || d.id);
         
+        // ✨ INJECTED loading="lazy" HERE FOR PERFORMANCE UPGRADE
         card.innerHTML = `
           ${isNew ? '<div class="new-badge">NEW</div>' : ''}
-          <img src="${d.image || 'https://via.placeholder.com/200x300'}" alt="${d.name}">
+          <img loading="lazy" src="${d.image || 'https://via.placeholder.com/200x300'}" alt="${d.name}">
           <div class="movie-info">
             <div class="movie-name">${d.name}</div>
             <div class="movie-meta">${d.type} • ${d.category}</div>
