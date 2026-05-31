@@ -89,9 +89,9 @@
     .binge-header h2 { margin: 0; font-size: 24px; color: #00bfff; text-shadow: 0 0 10px rgba(0,191,255,0.5); }
     .binge-header p { margin: 5px 0 0 0; font-size: 13px; color: #ccc; }
 
-    .stat-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; background: rgba(255,255,255,0.03); padding: 10px 15px; border-radius: 10px; border-left: 3px solid #00bfff; }
+    .stat-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; background: rgba(255,255,255,0.03); padding: 10px 15px; border-radius: 10px; border-left: 3px solid #00bfff; }
     .stat-label { font-size: 13px; color: #aaa; font-weight: bold; }
-    .stat-value { font-size: 15px; font-weight: bold; color: #fff; }
+    .stat-value { font-size: 14px; font-weight: bold; color: #fff; text-align: right; max-width: 60%; }
 
     .progress-bar-bg { width: 100%; background: #333; border-radius: 10px; height: 10px; margin-top: 8px; overflow: hidden; display: flex; }
     .progress-series { background: #00bfff; height: 100%; transition: width 0.5s; }
@@ -172,7 +172,7 @@ function goToApp() {
 }
 
 // ==========================================
-// 🏆 BINGE CARD LOGIC
+// 🏆 BINGE CARD & TASTE VIBE LOGIC
 // ==========================================
 function openBingeCard() {
   const modal = document.getElementById("bingeModal");
@@ -190,23 +190,66 @@ function openBingeCard() {
       </div>`;
   } else {
     let stats = JSON.parse(rawData);
+    let streamsCount = stats.streamsStarted || 0;
     
-    // 1. Calculate Rank
-    let rank = "Popcorn Rookie 🍿";
-    if (stats.streamsStarted >= 50) rank = "Cinema Boss 👑";
-    else if (stats.streamsStarted >= 20) rank = "Cinephile 🎬";
-    else if (stats.streamsStarted >= 5) rank = "Binge Watcher 🛋️";
+    // 1. Calculate Custom Rank Curve
+    let rank = "Grass Toucher 🌱";
+    if (streamsCount >= 1000) rank = "Sage of Six Screens 🌀";
+    else if (streamsCount >= 800) rank = "Chronically Online 🕸️";
+    else if (streamsCount >= 600) rank = "Screen Hokage 👑";
+    else if (streamsCount >= 400) rank = "Creature of the Dark 🦇";
+    else if (streamsCount >= 250) rank = "Remote Dictator 🛋️";
+    else if (streamsCount >= 150) rank = "Binge Ninja 🥷";
+    else if (streamsCount >= 80) rank = "Certified Couch Potato 🥔";
+    else if (streamsCount >= 30) rank = "Popcorn Rookie 🍿";
 
-    // 2. Calculate Top Genre
+    // 2. Calculate Top Genre & Secondary Genre
     let topGenre = "None";
-    let maxVal = 0;
+    let sortedGenres = [];
     if (stats.genres) {
-      for (let g in stats.genres) {
-        if (stats.genres[g] > maxVal) { maxVal = stats.genres[g]; topGenre = g; }
-      }
+      sortedGenres = Object.keys(stats.genres).sort((a, b) => stats.genres[b] - stats.genres[a]);
+      if (sortedGenres.length > 0) topGenre = sortedGenres[0];
     }
 
-    // 3. Calculate Persona
+    // 3. 🎭 The "Taste Vibe" Profiler
+    let tasteVibe = "Cinematic Explorer 🧭"; 
+    
+    if (sortedGenres.length >= 2) {
+      // Sort the top two alphabetically so the combo matches regardless of order
+      let g1 = sortedGenres[0].toLowerCase();
+      let g2 = sortedGenres[1].toLowerCase();
+      let comboKey = (g1 < g2) ? (g1 + "+" + g2) : (g2 + "+" + g1);
+
+      const vibeDictionary = {
+        "action+sci-fi": "Adrenaline Junkie ⚡",
+        "action+animation": "Shonen Protagonist 🗡️",
+        "action+adventure": "Thrill Seeker 🤠",
+        "horror+thriller": "Fearless Investigator 🩸",
+        "comedy+romance": "Rom-Com Royalty 💖",
+        "crime+drama": "True Detective 🕵️",
+        "fantasy+sci-fi": "Reality Escapist 🌌",
+        "animation+fantasy": "Anime Sorcerer 🪄",
+        "comedy+drama": "Emotional Rollercoaster 🎢"
+      };
+
+      if (vibeDictionary[comboKey]) {
+        tasteVibe = vibeDictionary[comboKey];
+      } else {
+        // Fallback vibes if exact combo isn't mapped
+        if (g1 === "action" || g1 === "animation") tasteVibe = "Action Junkie 💥";
+        else if (g1 === "comedy") tasteVibe = "Vibe Checker 😂";
+        else if (g1 === "horror") tasteVibe = "Thrill Chaser 👻";
+        else tasteVibe = "Genre Surfer 🏄";
+      }
+    } else if (sortedGenres.length === 1) {
+      // If they've only watched one genre so far
+      let soleGenre = sortedGenres[0].toLowerCase();
+      if (soleGenre === "action" || soleGenre === "animation") tasteVibe = "Action Junkie 💥";
+      else if (soleGenre === "comedy") tasteVibe = "Vibe Checker 😂";
+      else tasteVibe = "Pure Purist 🍷";
+    }
+
+    // 4. Calculate Persona
     let personaMap = { morning: "Early Bird ☕", afternoon: "Daytime Viewer ☀️", evening: "Prime Time 🍿", night: "Night Owl 🌙" };
     let topTime = "night";
     let timeMax = 0;
@@ -217,7 +260,7 @@ function openBingeCard() {
     }
     let persona = personaMap[topTime];
 
-    // 4. Calculate Preferences
+    // 5. Calculate Preferences
     let totalMedia = (stats.seriesCount || 0) + (stats.moviesCount || 0);
     let sPct = totalMedia === 0 ? 50 : Math.round(((stats.seriesCount || 0) / totalMedia) * 100);
     let mPct = totalMedia === 0 ? 50 : Math.round(((stats.moviesCount || 0) / totalMedia) * 100);
@@ -227,11 +270,11 @@ function openBingeCard() {
     
     content.innerHTML = `
       <div class="stat-row"><span class="stat-label">👑 NTM Rank</span> <span class="stat-value">${rank}</span></div>
+      <div class="stat-row"><span class="stat-label">🎭 Taste Vibe</span> <span class="stat-value">${tasteVibe}</span></div>
       <div class="stat-row"><span class="stat-label">🔥 Hot Streak</span> <span class="stat-value">${stats.streak || 1} Days</span></div>
-      <div class="stat-row"><span class="stat-label">🎬 Streams Started</span> <span class="stat-value">${stats.streamsStarted || 0}</span></div>
+      <div class="stat-row"><span class="stat-label">🎬 Streams</span> <span class="stat-value">${streamsCount}</span></div>
       <div class="stat-row"><span class="stat-label">📊 Top Genre</span> <span class="stat-value">${topGenre}</span></div>
       <div class="stat-row"><span class="stat-label">🦉 Persona</span> <span class="stat-value">${persona}</span></div>
-      <div class="stat-row"><span class="stat-label">📢 Hype Score</span> <span class="stat-value">${stats.hypeScore || 0} Shares</span></div>
       
       <div style="margin-top: 20px;">
         <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: bold; color: #ccc;">
