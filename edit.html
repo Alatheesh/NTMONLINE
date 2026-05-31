@@ -233,7 +233,7 @@
     }
 
     form.style.display = "block";
-    toggleMediaFields(); // Trigger UI cleanup after load
+    toggleMediaFields(); 
   }
 
   function addLinkRow(url = "", ep = "1", quality = "720p", size = "", unit = "MB") {
@@ -263,22 +263,38 @@
     container.appendChild(div);
   }
 
-  // --- TMDB FETCH LOGIC ---
+  // --- TMDB FETCH LOGIC (With Smart Year Detector) ---
   async function searchTMDB() {
-    const query = document.getElementById("searchInput").value.trim();
+    const rawQuery = document.getElementById("searchInput").value.trim();
     const status = document.getElementById("status");
     const dropdown = document.getElementById("searchResults");
 
-    if (!query) return;
+    if (!rawQuery) return;
 
     status.innerText = "⏳ Searching TMDB...";
     status.style.color = "#ffcc00";
     dropdown.style.display = "none";
 
+    let query = rawQuery;
+    let yearFilter = null;
+    const yearMatch = rawQuery.match(/(.*)\s+(\d{4})$/);
+    
+    if (yearMatch) {
+      query = yearMatch[1].trim(); 
+      yearFilter = yearMatch[2];   
+    }
+
     try {
       const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
       const data = await res.json();
-      const media = data.results.filter(m => m.media_type === 'movie' || m.media_type === 'tv');
+      let media = data.results.filter(m => m.media_type === 'movie' || m.media_type === 'tv');
+
+      if (yearFilter) {
+        media = media.filter(item => {
+          const itemYear = item.release_date || item.first_air_date || "";
+          return itemYear.startsWith(yearFilter);
+        });
+      }
 
       if (media.length > 0) {
         status.innerText = `✅ Found ${media.length} results.`;
@@ -305,7 +321,12 @@
           dropdown.appendChild(div);
         });
         dropdown.style.display = "block";
-      } else { status.innerText = "❌ No results found."; status.style.color = "#ff4d4d"; }
+      } else { 
+        status.innerText = yearFilter 
+          ? `❌ No results found for "${query}" in the year ${yearFilter}.` 
+          : "❌ No results found.";
+        status.style.color = "#ff4d4d"; 
+      }
     } catch (e) { status.innerText = "❌ Error connecting to TMDB."; }
   }
 
@@ -320,7 +341,7 @@
 
       document.getElementById("name").value = details.title || details.name;
       document.getElementById("type").value = type === 'tv' ? 'Series' : 'Movie';
-      toggleMediaFields(); // Trigger UI cleanup
+      toggleMediaFields(); 
 
       document.getElementById("category").value = details.genres ? details.genres.map(g => g.name).join(", ") : "";
       document.getElementById("release_date").value = details.release_date || details.first_air_date || "";
