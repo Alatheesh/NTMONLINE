@@ -353,7 +353,7 @@
       }
     };
 
-    // ⚡ FIXED SEARCH LOGIC
+    // ⚡ FIXED SEARCH LOGIC (Instantly clears when empty)
     const searchInput = document.getElementById("search");
     const searchBtn = document.getElementById("searchBtn");
     const searchWrapper = document.getElementById("searchWrapper");
@@ -366,7 +366,7 @@
         filteredMovies = [...allMovies]; 
         searchBtn.innerHTML = "🔍";
         isSearchActive = false;
-        searchWrapper.classList.remove("active"); // Allows button to hide if unfocused
+        searchWrapper.classList.remove("active");
       } else {
         const searchWords = term.split(" ").filter(word => word !== "");
         filteredMovies = allMovies.filter(file => {
@@ -379,18 +379,19 @@
       renderPage(1); 
     }
 
-    // Keeps button visible if there is text in the box (even if user clicks away)
+    // Listens to every single keystroke. If the box becomes empty, reset everything.
     searchInput.addEventListener("input", function(e) {
-      if (e.target.value.trim() !== "") {
-        searchWrapper.classList.add("active");
-      } else {
+      if (e.target.value.trim() === "") {
+        // The box is empty (user deleted text) - instantly clear search and show all movies!
         searchWrapper.classList.remove("active");
-      }
-      
-      // Revert 'X' to '🔍' if user starts modifying a previous search
-      if (isSearchActive && e.target.value.trim() !== "") {
-        searchBtn.innerHTML = "🔍";
-        isSearchActive = false;
+        if (isSearchActive) { executeSearch(); } 
+      } else {
+        // There is text in the box
+        searchWrapper.classList.add("active");
+        if (isSearchActive) {
+          searchBtn.innerHTML = "🔍";
+          isSearchActive = false;
+        }
       }
     });
 
