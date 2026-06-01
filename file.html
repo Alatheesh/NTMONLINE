@@ -4,75 +4,35 @@
   <title>File Details • NTM Stream</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    /* FULL HEIGHT FIX & BASE FONT */
-    html, body {
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-      min-height: 100dvh;
-      background: linear-gradient(180deg, #020202, #0a1128, #020202);
-      color: #ffffff;
-      overflow-x: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* 🌫️ GLOWING FALLING PARTICLES */
-    body::before {
-      content: ""; position: fixed; top: -100vh; left: 0; width: 100vw; height: 300vh;
-      background-image: radial-gradient(circle at 15vw 25vh, rgba(0,191,255,0.8) 0%, transparent 4px), radial-gradient(circle at 75vw 15vh, rgba(141,124,255,0.8) 0%, transparent 5px), radial-gradient(circle at 45vw 65vh, rgba(255,255,255,0.8) 0%, transparent 3px);
-      background-size: 100vw 100vh; z-index: -2; filter: drop-shadow(0 0 10px #00bfff) blur(0.5px); animation: fallDown 12s linear infinite; pointer-events: none;
-    }
+    html, body { margin: 0; padding: 0; font-family: Arial, sans-serif; min-height: 100dvh; background: linear-gradient(180deg, #020202, #0a1128, #020202); color: #ffffff; overflow-x: hidden; display: flex; flex-direction: column; }
+    body::before { content: ""; position: fixed; top: -100vh; left: 0; width: 100vw; height: 300vh; background-image: radial-gradient(circle at 15vw 25vh, rgba(0,191,255,0.8) 0%, transparent 4px), radial-gradient(circle at 75vw 15vh, rgba(141,124,255,0.8) 0%, transparent 5px), radial-gradient(circle at 45vw 65vh, rgba(255,255,255,0.8) 0%, transparent 3px); background-size: 100vw 100vh; z-index: -2; filter: drop-shadow(0 0 10px #00bfff) blur(0.5px); animation: fallDown 12s linear infinite; pointer-events: none; }
     @keyframes fallDown { 0% { transform: translateY(0); } 100% { transform: translateY(100vh); } }
-
-    /* 🛑 WARNING MODAL STYLING */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; z-index: 9999; opacity: 0; transition: opacity 0.3s ease; }
     .modal-overlay.active { display: flex; opacity: 1; }
     .modal-box { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 30px; border-radius: 20px; text-align: center; max-width: 400px; width: 90%; transform: scale(0.8); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
     .modal-overlay.active .modal-box { transform: scale(1); }
     .modal-box h3 { color: #00bfff; font-size: 24px; margin: 0 0 15px 0; }
     .modal-box p { color: #ccc; font-size: 16px; line-height: 1.5; margin-bottom: 15px; }
-    
     .modal-spinner { width: 30px; height: 30px; border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid #00bfff; border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto 0 auto; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-    /* LAYOUT */
     .page { display: flex; justify-content: center; align-items: flex-start; width: 100%; margin-top: 60px; flex: 1; }
     .side-ad { width: 160px; margin: 20px; text-align: center; z-index: 5; display: flex; justify-content: center; }
     .center { max-width: 450px; width: 90%; margin: 0 15px; z-index: 5; }
-    
-    /* 📱 MOBILE RESPONSIVE LAYOUT */
-    @media (max-width: 900px) { 
-      .page { flex-direction: column; align-items: center; }
-      .side-ad { width: 100%; margin: 15px 0; } 
-    }
-
-    /* 💎 PREMIUM GLASSMORPHISM CARD */
+    @media (max-width: 900px) { .page { flex-direction: column; align-items: center; } .side-ad { width: 100%; margin: 15px 0; } }
     .card { background: rgba(255, 255, 255, 0.04); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); padding: 30px; border-radius: 20px; text-align: center; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(255,255,255,0.02); overflow-wrap: break-word; transition: all 0.3s ease-in-out; }
     .card img { width: 100%; max-width: 100%; height: auto; max-height: 400px; object-fit: contain; border-radius: 14px; margin-bottom: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.5); background: rgba(0, 0, 0, 0.2); }
     .card h2 { margin: 10px 0 5px; font-size: 24px; background: linear-gradient(90deg, #fff, #b3e5fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     .card p { color: #ccc; line-height: 1.5; font-size: 14px; }
-
-    /* 🔗 SHARE BUTTON */
     .share-btn { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); padding: 8px 16px; border-radius: 20px; color: white; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; margin: 10px auto; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
     .share-btn:hover { background: rgba(0, 191, 255, 0.2); border-color: #00bfff; transform: scale(1.05); }
-
-    /* 🔘 BUTTONS & 📜 SCROLL BOX */
-    .download-grid { 
-      display: flex; flex-wrap: wrap; gap: 12px; margin-top: 25px; 
-      max-height: 350px; overflow-y: auto; padding-right: 10px;
-    }
-    
+    .download-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 25px; max-height: 350px; overflow-y: auto; padding-right: 10px; }
     .download-grid::-webkit-scrollbar { width: 6px; }
     .download-grid::-webkit-scrollbar-thumb { background: #00bfff; border-radius: 10px; }
     .download-grid::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 10px; }
-
     .download-grid button { flex: 1; min-width: 130px; margin: 0; background: linear-gradient(135deg, #007bff, #00bfff); box-shadow: 0 4px 15px rgba(0, 191, 255, 0.3); padding: 12px 18px; border: none; border-radius: 10px; cursor: pointer; color: white; font-weight: bold; transition: all 0.3s ease; }
     .download-grid button:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 6px 20px rgba(0, 191, 255, 0.5); }
-    
     .back { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); margin: 30px auto; display: block; padding: 12px 25px; color: white; border-radius: 10px; cursor: pointer; }
     .back:hover { background: rgba(255, 255, 255, 0.15); transform: scale(1.05); }
-
     #reportBtn { position: fixed; top: 15px; right: 15px; background: linear-gradient(135deg, #ff4d4d, #cc0000); padding: 10px 16px; border-radius: 10px; z-index: 1000; display: none; box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3); border: none; color: white; cursor: pointer; }
     #reportBtn:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(255, 0, 0, 0.5); }
   </style>
@@ -83,9 +43,7 @@
   <div class="modal-box">
     <h3>🚀 Getting Your Movie Ready!</h3>
     <p>We are moving you to the video player right now.</p>
-    <p style="color: #00bfff; text-shadow: 0 0 10px rgba(0, 191, 255, 0.4); font-weight: bold;">
-      Please wait for the timer to reach zero.
-    </p>
+    <p style="color: #00bfff; text-shadow: 0 0 10px rgba(0, 191, 255, 0.4); font-weight: bold;">Please wait for the timer to reach zero.</p>
     <div class="modal-spinner"></div>
   </div>
 </div>
@@ -94,16 +52,8 @@
 
 <div class="page">
   <div class="side-ad">
-    <script>
-      atOptions = {
-        'key' : '6d18eab8e3174f704484a4e5fb7166a4',
-        'format' : 'iframe',
-        'height' : 300,
-        'width' : 160,
-        'params' : {}
-      };
-    </script>
-    <script src="https://www.highperformanceformat.com/6d18eab8e3174f704484a4e5fb7166a4/invoke.js"></script>
+    <script>atOptions={'key':'6d18eab8e3174f704484a4e5fb7166a4','format':'iframe','height':300,'width':160,'params':{}};</script>
+    <script src="https://www.highperformanceformat.com/6d18eab8e3174f704484a4e5fb7166a4/indigo.js"></script>
   </div>
 
   <div class="center">
@@ -113,31 +63,15 @@
   </div>
 
   <div class="side-ad">
-    <script>
-      atOptions = {
-        'key' : '6d18eab8e3174f704484a4e5fb7166a4',
-        'format' : 'iframe',
-        'height' : 300,
-        'width' : 160,
-        'params' : {}
-      };
-    </script>
-    <script src="https://www.highperformanceformat.com/6d18eab8e3174f704484a4e5fb7166a4/invoke.js"></script>
+    <script>atOptions={'key':'6d18eab8e3174f704484a4e5fb7166a4','format':'iframe','height':300,'width':160,'params':{}};</script>
+    <script src="https://www.highperformanceformat.com/6d18eab8e3174f704484a4e5fb7166a4/indigo.js"></script>
   </div>
 </div>
 
 <button class="back" onclick="history.back()">← Back</button>
 
 <div style="text-align: center; margin: 20px 0; width: 100%; overflow-x: hidden;">
-  <script>
-    atOptions = {
-      'key' : '9d4e234e334f6012b5b60f60507d7877',
-      'format' : 'iframe',
-      'height' : 90,
-      'width' : 728,
-      'params' : {}
-    };
-  </script>
+  <script>atOptions={'key':'9d4e234e334f6012b5b60f60507d7877','format':'iframe','height':90,'width':728,'params':{}};</script>
   <script src="https://www.highperformanceformat.com/9d4e234e334f6012b5b60f60507d7877/invoke.js"></script>
 </div>
 
@@ -149,7 +83,7 @@
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-let currentFile = null; // 🌟 GLOBALLY TRACK THE MOVIE FOR STATS
+let currentFile = null;
 let currentFileId = null;
 let allFileLinks = []; 
 let masterListCache = []; 
@@ -165,13 +99,11 @@ window.addEventListener("DOMContentLoaded", async function () {
 
 async function loadFile() {
   const id = Number(new URLSearchParams(location.search).get("id"));
-
   const cachedData = sessionStorage.getItem("ntm_movie_cache");
   if (cachedData) {
     masterListCache = JSON.parse(cachedData);
   } else {
-    let localFiles = [];
-    let firebaseFiles = [];
+    let localFiles = []; let firebaseFiles = [];
     try { const res = await fetch("files.json"); localFiles = await res.json(); } catch(e) {}
     try {
       const docSnap = await db.collection("movie_database").doc("master_list").get();
@@ -181,20 +113,14 @@ async function loadFile() {
   }
   
   const file = masterListCache.find(f => Number(f.id || f.customId) === id);
+  if (!file) { document.getElementById("fileCard").innerHTML = "File not found"; return; }
 
-  if (!file) {
-    document.getElementById("fileCard").innerHTML = "File not found";
-    return;
-  }
-
-  currentFile = file; // 🌟 SAVE FILE DATA FOR TRACKING
+  currentFile = file;
   currentFileId = file.id || file.customId;
 
   if (file.backdrop) {
     document.body.style.backgroundImage = `linear-gradient(180deg, rgba(2,2,2,0.85), rgba(10,17,40,0.9), rgba(2,2,2,0.95)), url('${file.backdrop}')`;
-    document.body.style.backgroundSize = "cover";
-    document.body.style.backgroundPosition = "center top";
-    document.body.style.backgroundAttachment = "fixed";
+    document.body.style.backgroundSize = "cover"; document.body.style.backgroundPosition = "center top"; document.body.style.backgroundAttachment = "fixed";
   }
 
   if (Array.isArray(file.links) && file.links.length > 0) allFileLinks = file.links;
@@ -204,27 +130,14 @@ async function loadFile() {
   if (file.type === "Series") {
     allFileLinks.sort((a, b) => {
       let epA = 0, epB = 0;
-      if (typeof a === "object" && a.episode) {
-        const matchA = a.episode.match(/\d+/);
-        if (matchA) epA = parseInt(matchA[0]);
-      }
-      if (typeof b === "object" && b.episode) {
-        const matchB = b.episode.match(/\d+/);
-        if (matchB) epB = parseInt(matchB[0]);
-      }
+      if (typeof a === "object" && a.episode) { const matchA = a.episode.match(/\d+/); if (matchA) epA = parseInt(matchA[0]); }
+      if (typeof b === "object" && b.episode) { const matchB = b.episode.match(/\d+/); if (matchB) epB = parseInt(matchB[0]); }
       return epA - epB;
     });
   }
 
-  let isSeries = false;
-  let availableQualities = new Set();
-
-  allFileLinks.forEach(l => {
-    if (typeof l === "object" && l.episode) {
-      isSeries = true;
-      if (l.quality) availableQualities.add(l.quality);
-    }
-  });
+  let isSeries = false; let availableQualities = new Set();
+  allFileLinks.forEach(l => { if (typeof l === "object" && l.episode) { isSeries = true; if (l.quality) availableQualities.add(l.quality); } });
 
   let qualityDropdownHTML = "";
   if (isSeries && availableQualities.size > 1) {
@@ -237,42 +150,31 @@ async function loadFile() {
         <select id="qualitySelect" onchange="renderButtons()" style="padding: 6px 12px; border-radius: 5px; background: #0a1128; color: #fff; border: 1px solid #00bfff; font-weight: bold; outline: none; cursor: pointer;">
           ${sortedQualities.map(q => `<option value="${q}" ${q === defaultQ ? "selected" : ""}>${q}</option>`).join("")}
         </select>
-      </div>
-    `;
+      </div>`;
   }
 
   document.getElementById("fileCard").innerHTML = `
     <img src="${file.image || 'https://via.placeholder.com/400x220?text=No+Image'}">
     <h2>${file.name}</h2>
-    
     <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 12px 0; font-size: 13px; font-weight: bold; color: #ccc;">
       ${file.upload_quality ? `<span style="background: #ffcc00; color: black; padding: 3px 8px; border-radius: 4px;">${file.upload_quality}</span>` : ''}
       ${file.rating ? `<span style="color: #ffcc00;">⭐ ${file.rating}/10</span>` : ''}
       ${file.release_date ? `<span>📅 ${file.release_date.split('-')[0]}</span>` : ''}
       ${file.runtime ? `<span>⏳ ${file.runtime}</span>` : ''}
     </div>
-
     <p style="margin-top: 5px;"><strong>${file.type || 'Movie'}</strong> • ${file.category || 'Uncategorized'}</p>
     <p style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; border-left: 3px solid #00bfff; font-size: 14px; text-align: left;">${file.description || 'No description provided.'}</p>
-    
     <button class="share-btn" id="shareBtn" onclick="shareMovie()">📤 Share</button>
-    
     ${qualityDropdownHTML}
-    <div id="dynamic-button-container"></div>
-  `;
-
+    <div id="dynamic-button-container"></div>`;
   renderButtons();
 }
 
 function renderButtons() {
   const container = document.getElementById("dynamic-button-container");
   const qualitySelect = document.getElementById("qualitySelect");
-  
   let linksToRender = allFileLinks;
-  if (qualitySelect) {
-    const selectedQuality = qualitySelect.value;
-    linksToRender = allFileLinks.filter(l => typeof l === "object" && l.quality === selectedQuality);
-  }
+  if (qualitySelect) { const selectedQuality = qualitySelect.value; linksToRender = allFileLinks.filter(l => typeof l === "object" && l.quality === selectedQuality); }
 
   let downloadHTML = "";
   if (linksToRender.length > 0) {
@@ -288,88 +190,44 @@ function renderButtons() {
       downloadHTML += `<button onclick="openWatch(${absoluteIndex})">${label}</button>`;
     });
     downloadHTML += `</div>`;
-  } else {
-    downloadHTML = `<p style='opacity:0.7;'>No episodes available for this quality.</p>`;
-  }
-
+  } else { downloadHTML = `<p style='opacity:0.7;'>No episodes available for this quality.</p>`; }
   container.innerHTML = downloadHTML;
 }
 
-// 🧠 INVISIBLE DATA TRACKER (BINGE CARD ENGINE)
 function trackBingeStats(file) {
   if (!file) return;
-
-  // 1. Get current stats or create a brand new profile
-  let stats = JSON.parse(localStorage.getItem("ntm_user_stats")) || {
-    firstTicket: new Date().toLocaleString('default', { month: 'short', year: 'numeric' }),
-    lastVisit: "",
-    streak: 0,
-    streamsStarted: 0,
-    moviesCount: 0,
-    seriesCount: 0,
-    genres: {},
-    timeOfDay: { morning: 0, afternoon: 0, evening: 0, night: 0 },
-    hypeScore: 0
-  };
-
-  // 2. STREAK LOGIC
+  let stats = JSON.parse(localStorage.getItem("ntm_user_stats")) || { firstTicket: new Date().toLocaleString('default', { month: 'short', year: 'numeric' }), lastVisit: "", streak: 0, streamsStarted: 0, moviesCount: 0, seriesCount: 0, genres: {}, timeOfDay: { morning: 0, afternoon: 0, evening: 0, night: 0 }, hypeScore: 0 };
   const today = new Date().toISOString().split('T')[0]; 
   if (stats.lastVisit !== today) {
-    let yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yestStr = yesterday.toISOString().split('T')[0];
-
-    if (stats.lastVisit === yestStr) stats.streak += 1; // Played yesterday! Keep streak alive.
-    else stats.streak = 1; // Missed a day. Reset streak to 1.
-    
+    let yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1); const yestStr = yesterday.toISOString().split('T')[0];
+    if (stats.lastVisit === yestStr) stats.streak += 1; else stats.streak = 1;
     stats.lastVisit = today;
   }
-
-  // 3. STREAMS STARTED
   stats.streamsStarted += 1;
-
-  // 4. FORMAT PREFERENCE
-  if (file.type === "Series") stats.seriesCount += 1;
-  else stats.moviesCount += 1;
-
-  // 5. GENRE TALLY
-  if (file.category) {
-    const fileGenres = file.category.split(",").map(g => g.trim());
-    fileGenres.forEach(g => {
-      if (!stats.genres[g]) stats.genres[g] = 0;
-      stats.genres[g] += 1;
-    });
-  }
-
-  // 6. PERSONA (TIME OF DAY)
+  if (file.type === "Series") stats.seriesCount += 1; else stats.moviesCount += 1;
+  if (file.category) { const fileGenres = file.category.split(",").map(g => g.trim()); fileGenres.forEach(g => { if (!stats.genres[g]) stats.genres[g] = 0; stats.genres[g] += 1; }); }
   const hour = new Date().getHours();
-  if (hour >= 5 && hour < 12) stats.timeOfDay.morning += 1;
-  else if (hour >= 12 && hour < 17) stats.timeOfDay.afternoon += 1;
-  else if (hour >= 17 && hour < 22) stats.timeOfDay.evening += 1;
-  else stats.timeOfDay.night += 1;
-
-  // 7. SAVE SECRETY TO BROWSER
+  if (hour >= 5 && hour < 12) stats.timeOfDay.morning += 1; else if (hour >= 12 && hour < 17) stats.timeOfDay.afternoon += 1; else if (hour >= 17 && hour < 22) stats.timeOfDay.evening += 1; else stats.timeOfDay.night += 1;
   localStorage.setItem("ntm_user_stats", JSON.stringify(stats));
 }
 
+// 👑 FIXED PAYLOAD TRANSITION WITH DATABASE UNIQUE ID BINDING
 function openWatch(clickedIndex) {
   const modal = document.getElementById('warningModal');
   modal.style.display = 'flex';
   setTimeout(() => { modal.classList.add('active'); }, 10);
 
-  // 🚀 FIRE THE INVISIBLE TRACKER RIGHT BEFORE THEY WATCH
   trackBingeStats(currentFile);
 
   let currentPlaylist = allFileLinks;
   const qualitySelect = document.getElementById("qualitySelect");
-  if (qualitySelect) {
-    currentPlaylist = allFileLinks.filter(l => typeof l === "object" && l.quality === qualitySelect.value);
-  }
+  if (qualitySelect) { currentPlaylist = allFileLinks.filter(l => typeof l === "object" && l.quality === qualitySelect.value); }
 
   const activeLink = allFileLinks[clickedIndex];
   const playlistIndex = currentPlaylist.indexOf(activeLink);
 
-  const bingeData = { currentIndex: playlistIndex, playlist: currentPlaylist };
+  // Injected 'id: currentFileId' into the stream block payload context
+  const bingeData = { id: currentFileId, currentIndex: playlistIndex, playlist: currentPlaylist };
 
   let scrambledPayload = "";
   try { scrambledPayload = btoa(JSON.stringify(bingeData)); } 
@@ -381,47 +239,21 @@ function openWatch(clickedIndex) {
   setTimeout(() => { window.location.href = finalDestination; }, 3500);
 }
 
-// 🚀 NATIVE SHARE LOGIC
 function shareMovie() {
-  const url = window.location.href;
-  const movieTitle = document.querySelector('h2') ? document.querySelector('h2').innerText : "this movie";
-
-  // 🚀 TRACK HYPE SCORE
+  const url = window.location.href; const movieTitle = document.querySelector('h2') ? document.querySelector('h2').innerText : "this movie";
   let stats = JSON.parse(localStorage.getItem("ntm_user_stats"));
-  if (stats) {
-    stats.hypeScore = (stats.hypeScore || 0) + 1;
-    localStorage.setItem("ntm_user_stats", JSON.stringify(stats));
-  }
-
-  if (navigator.share) {
-    navigator.share({
-      title: 'NTM Watch Hub',
-      text: `Check out ${movieTitle} on NTM Stream! 🍿`,
-      url: url
-    }).catch((error) => console.log('Error sharing:', error));
-  } else {
-    navigator.clipboard.writeText(url).then(() => alert("✅ Link copied to clipboard!"))
-    .catch(err => prompt("Copy this link to share:", url));
-  }
+  if (stats) { stats.hypeScore = (stats.hypeScore || 0) + 1; localStorage.setItem("ntm_user_stats", JSON.stringify(stats)); }
+  if (navigator.share) { navigator.share({ title: 'NTM Watch Hub', text: `Check out ${movieTitle} on NTM Stream! 🍿`, url: url }).catch((e) => {}); } 
+  else { navigator.clipboard.writeText(url).then(() => alert("✅ Link copied!")) .catch(err => prompt("Copy link to share:", url)); }
 }
 
 function reportIssue() {
-  const msg = prompt("Describe the issue:");
-  if (!msg || msg.trim() === "") return;
-  if (!currentFileId) return;
-
-  db.collection("reports").add({ fileId: currentFileId, message: msg.trim(), time: new Date() })
-  .then(() => { alert("Report submitted successfully 👍"); })
-  .catch((error) => { alert("Failed to submit report ❌"); });
+  const msg = prompt("Describe the issue:"); if (!msg || msg.trim() === "") return; if (!currentFileId) return;
+  db.collection("reports").add({ fileId: currentFileId, message: msg.trim(), time: new Date() }).then(() => { alert("Report submitted successfully 👍"); }).catch((error) => { alert("Failed to submit report ❌"); });
 }
 
-window.addEventListener('pageshow', function (event) {
-  const modal = document.getElementById('warningModal');
-  if (modal) { modal.classList.remove('active'); modal.style.display = 'none'; }
-});
-
+window.addEventListener('pageshow', function (event) { const modal = document.getElementById('warningModal'); if (modal) { modal.classList.remove('active'); modal.style.display = 'none'; } });
 loadFile();
 </script>
-
 </body>
 </html>
