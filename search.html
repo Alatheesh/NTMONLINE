@@ -28,6 +28,34 @@
     body.light-mode .movie-meta { color: #555; }
     body.light-mode .page-info { color: #333; }
 
+    /* 🌟 HIGH VISIBILITY NAV BUTTONS */
+    .nav-action-btn {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #00bfff;
+      font-size: 18px;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      padding: 0;
+    }
+    .nav-action-btn:hover {
+      background: rgba(0, 191, 255, 0.15);
+      border-color: #00bfff;
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 6px 20px rgba(0, 191, 255, 0.4);
+    }
+    
+    body.light-mode .nav-action-btn { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.2); color: #111; }
+    body.light-mode .nav-action-btn:hover { background: rgba(0, 140, 186, 0.2); border-color: #008cba; }
+
     /* 🔍 UNIFIED SEARCH BAR (ANIMATED) */
     .search-container { 
       position: relative;
@@ -49,7 +77,6 @@
       transition: all 0.3s ease;
     }
     
-    /* When clicked (focused) or active with text */
     #search:focus, .search-container.active #search { 
       border-color: #00bfff; 
       background: rgba(255,255,255,0.15); 
@@ -83,7 +110,6 @@
       color: black; 
     }
     
-    /* Reveal the button ONLY when clicking the search bar or typing */
     .search-container:focus-within #searchBtn,
     .search-container.active #searchBtn {
       opacity: 1;
@@ -91,7 +117,6 @@
       transform: translateY(-50%) scale(1); 
     }
     
-    /* Search Bar Light Mode */
     body.light-mode #search { background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.2); color: #111; }
     body.light-mode #search:focus, body.light-mode .search-container.active #search { border-color: #008cba; }
     body.light-mode #searchBtn { background: rgba(0, 140, 186, 0.2); color: #111; }
@@ -144,8 +169,10 @@
     <div class="top-bar">
       <h1 id="secret-title" style="user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; cursor: default;">🎬 NTM Watch Hub 🍿</h1>
       <div style="display:flex;gap:12px;align-items:center;">
-        <button id="themeToggle">🌙</button>
-        <button id="bookmarkToggle" style="position:relative;">🔖<span id="bookmarkCount" style="position:absolute;top:-8px;right:-8px;background:red;color:white;border-radius:50%;width:18px;height:18px;font-size:11px;display:flex;align-items:center;justify-content:center;">0</span></button>
+        <button id="themeToggle" class="nav-action-btn">🌙</button>
+        <button id="bookmarkToggle" class="nav-action-btn" style="position:relative;">🔖
+          <span id="bookmarkCount" style="position:absolute; top:-3px; right:-3px; background:#e50914; color:white; border-radius:50%; width:18px; height:18px; font-size:10px; display:flex; align-items:center; justify-content:center; border:2px solid #020202;">0</span>
+        </button>
       </div>
     </div>
 
@@ -247,13 +274,20 @@
       
       toggleBtn.addEventListener("click", function () {
         document.body.classList.toggle("light-mode");
-        if (document.body.classList.contains("light-mode")) { localStorage.setItem("theme", "light"); toggleBtn.textContent = "🌙"; } 
-        else { localStorage.setItem("theme", "dark"); toggleBtn.textContent = "☀️"; }
+        if (document.body.classList.contains("light-mode")) { 
+          localStorage.setItem("theme", "light"); 
+          toggleBtn.textContent = "🌙"; 
+          document.getElementById('bookmarkCount').style.borderColor = "#ffffff";
+        } else { 
+          localStorage.setItem("theme", "dark"); 
+          toggleBtn.textContent = "☀️"; 
+          document.getElementById('bookmarkCount').style.borderColor = "#020202";
+        }
       });
     }
 
     // ==========================================
-    // 3. 1-READ FIREBASE + PAGINATION LOGIC
+    // 3. READ FIREBASE + PAGINATION LOGIC
     // ==========================================
     let allMovies = []; 
     let filteredMovies = [];
@@ -284,7 +318,6 @@
       renderPage(1);
     }
 
-    // 📄 RENDERS ONLY 10 MOVIES AT A TIME
     function renderPage(page) {
       currentPage = page;
       const grid = document.getElementById("movie-grid");
@@ -307,7 +340,6 @@
         card.className = "movie-card";
         card.href = "file.html?id=" + (d.customId || d.id);
         
-        // ✨ INJECTED loading="lazy" HERE FOR PERFORMANCE UPGRADE
         card.innerHTML = `
           ${isNew ? '<div class="new-badge">NEW</div>' : ''}
           <img loading="lazy" src="${d.image || 'https://via.placeholder.com/200x300'}" alt="${d.name}">
@@ -322,7 +354,6 @@
       renderPagination();
     }
 
-    // 🔘 DRAWS THE NEXT/PREV BUTTONS
     function renderPagination() {
       const totalPages = Math.ceil(filteredMovies.length / itemsPerPage);
       const startItem = (currentPage - 1) * itemsPerPage + 1;
@@ -351,12 +382,9 @@
 
     window.goToPage = function(page) {
       const totalPages = Math.ceil(filteredMovies.length / itemsPerPage);
-      if (page >= 1 && page <= totalPages) {
-        renderPage(page);
-      }
+      if (page >= 1 && page <= totalPages) { renderPage(page); }
     };
 
-    // ⚡ FIXED SEARCH LOGIC (Instantly clears when empty)
     const searchInput = document.getElementById("search");
     const searchBtn = document.getElementById("searchBtn");
     const searchWrapper = document.getElementById("searchWrapper");
@@ -364,7 +392,6 @@
 
     function executeSearch() {
       const term = searchInput.value.toLowerCase().trim();
-      
       if (!term) { 
         filteredMovies = [...allMovies]; 
         searchBtn.innerHTML = "🔍";
@@ -382,14 +409,11 @@
       renderPage(1); 
     }
 
-    // Listens to every single keystroke. If the box becomes empty, reset everything.
     searchInput.addEventListener("input", function(e) {
       if (e.target.value.trim() === "") {
-        // The box is empty (user deleted text) - instantly clear search and show all movies!
         searchWrapper.classList.remove("active");
         if (isSearchActive) { executeSearch(); } 
       } else {
-        // There is text in the box
         searchWrapper.classList.add("active");
         if (isSearchActive) {
           searchBtn.innerHTML = "🔍";
@@ -403,65 +427,82 @@
         searchInput.value = "";
         searchWrapper.classList.remove("active");
         executeSearch(); 
-      } else {
-        executeSearch();
-      }
+      } else { executeSearch(); }
     });
 
     searchInput.addEventListener("keypress", function(e) {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        executeSearch();
-      }
+      if (e.key === "Enter") { e.preventDefault(); executeSearch(); }
     });
 
     function goHome() { window.location.href = "index.html"; }
 
     loadDatabase();
 
-function getBookmarks(){return JSON.parse(localStorage.getItem("ntmBookmarks")||"[]");}
-function updateBookmarkCount(){const e=document.getElementById("bookmarkCount");if(e)e.textContent=getBookmarks().length;}
-function openBookmarks(){
- const ids=getBookmarks();
- const grid=document.getElementById("bookmarkGrid");
- grid.innerHTML="";
- const items=allMovies.filter(m=>ids.includes(String(m.id||m.customId)));
- if(!items.length){grid.innerHTML="<p style='color:white;'>No bookmarks yet.</p>";}
- items.forEach(movie=>{
-  grid.innerHTML+=`<a class="movie-card" href="file.html?id=${movie.id||movie.customId}"><img src="${movie.image||''}"><div class="movie-info"><div class="movie-name">${movie.name}</div></div></a>`;
- });
- document.getElementById("bookmarkModal").style.display="block";
-}
-function closeBookmarks(){document.getElementById("bookmarkModal").style.display="none";}
-setTimeout(()=>{
- const b=document.getElementById("bookmarkToggle");
- if(b)b.addEventListener("click",openBookmarks);
- updateBookmarkCount();
-},500);
+    // ==========================================
+    // 4. BOOKMARK STORAGE SYNC FIX 
+    // ==========================================
+    // Fixed storage key to match file.html ("ntm_bookmarks")
+    function getBookmarks() {
+      return JSON.parse(localStorage.getItem("ntm_bookmarks") || "[]");
+    }
+
+    function updateBookmarkCount() {
+      const e = document.getElementById("bookmarkCount");
+      if (e) e.textContent = getBookmarks().length;
+    }
+
+    function openBookmarks() {
+      const savedItems = getBookmarks(); // Now returns the full objects saved by file.html
+      const grid = document.getElementById("bookmarkGrid");
+      grid.innerHTML = "";
+      
+      if (!savedItems.length) {
+        grid.innerHTML = "<p style='color:white; grid-column: span 3; text-align: center;'>No bookmarks yet.</p>";
+      } else {
+        savedItems.forEach(movie => {
+          grid.innerHTML += `
+            <a class="movie-card" href="file.html?id=${movie.id}">
+              <img src="${movie.image || 'https://via.placeholder.com/200x300'}">
+              <div class="movie-info">
+                <div class="movie-name">${movie.name}</div>
+              </div>
+            </a>`;
+        });
+      }
+      document.getElementById("bookmarkModal").style.display = "block";
+    }
+
+    function closeBookmarks() { document.getElementById("bookmarkModal").style.display = "none"; }
+    
+    setTimeout(() => {
+      const b = document.getElementById("bookmarkToggle");
+      if (b) b.addEventListener("click", openBookmarks);
+      updateBookmarkCount();
+    }, 500);
 
   </script>
 
-<div id="bookmarkModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:99999;overflow:auto;">
-<div style="max-width:1000px;margin:40px auto;padding:20px;">
+  <div id="bookmarkModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:99999;overflow:auto;">
+    <div style="max-width:1000px;margin:40px auto;padding:20px;">
+      
+      <h2 style="text-align:center;color:white;margin-bottom:20px;">🔖 Bookmarks</h2>
+      
+      <div id="bookmarkGrid" class="movie-grid"></div>
+      
+      <div style="margin-top:25px;padding:15px;border-radius:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);text-align:center;color:#d0d0d0;font-size:14px;line-height:1.7;">
+        🔖 Your bookmarks are stored locally on this device.
+        <br><br>
+        ⚠️ Clearing browser data, cache, app storage, or reinstalling the app will permanently remove your saved bookmarks.
+      </div>
+      
+      <div style="text-align:center;margin-top:20px;">
+        <button onclick="closeBookmarks()" style="padding:10px 20px;border:none;border-radius:10px;background:#00bfff;color:white;cursor:pointer;font-weight:bold;">
+          Close
+        </button>
+      </div>
 
-<h2 style="text-align:center;color:white;margin-bottom:20px;">🔖 Bookmarks</h2>
-
-<div id="bookmarkGrid" class="movie-grid"></div>
-
-<div style="margin-top:25px;padding:15px;border-radius:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);text-align:center;color:#d0d0d0;font-size:14px;line-height:1.7;">
-🔖 Your bookmarks are stored locally on this device.
-<br><br>
-⚠️ Clearing browser data, cache, app storage, or reinstalling the app will permanently remove your saved bookmarks.
-</div>
-
-<div style="text-align:center;margin-top:20px;">
-<button onclick="closeBookmarks()" style="padding:10px 20px;border:none;border-radius:10px;background:#00bfff;color:white;cursor:pointer;font-weight:bold;">
-Close
-</button>
-</div>
-
-</div>
-</div>
+    </div>
+  </div>
 
 </body>
 </html>
