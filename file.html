@@ -23,8 +23,34 @@
     .card img { width: 100%; max-width: 100%; height: auto; max-height: 400px; object-fit: contain; border-radius: 14px; margin-bottom: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.5); background: rgba(0, 0, 0, 0.2); }
     .card h2 { margin: 10px 0 5px; font-size: 24px; background: linear-gradient(90deg, #fff, #b3e5fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     .card p { color: #ccc; line-height: 1.5; font-size: 14px; }
-    .share-btn { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); padding: 8px 16px; border-radius: 20px; color: white; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; margin: 10px auto; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
-    .share-btn:hover { background: rgba(0, 191, 255, 0.2); border-color: #00bfff; transform: scale(1.05); }
+    
+    /* NEW ACTION BUTTONS CSS (Replaces .share-btn) */
+    .action-btn { 
+      background: rgba(255, 255, 255, 0.08); 
+      border: 1px solid rgba(255, 255, 255, 0.15); 
+      padding: 10px 20px; 
+      border-radius: 20px; 
+      color: white; 
+      font-size: 14px; 
+      font-weight: bold;
+      cursor: pointer; 
+      display: inline-flex; 
+      align-items: center; 
+      gap: 8px; 
+      transition: all 0.3s ease; 
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+    }
+    .action-btn:hover { 
+      background: rgba(0, 191, 255, 0.15); 
+      border-color: #00bfff; 
+      transform: translateY(-2px); 
+    }
+    .action-btn.saved {
+      background: rgba(0, 191, 255, 0.2);
+      border-color: #00bfff;
+      color: #00bfff;
+    }
+
     .download-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 25px; max-height: 350px; overflow-y: auto; padding-right: 10px; }
     .download-grid::-webkit-scrollbar { width: 6px; }
     .download-grid::-webkit-scrollbar-thumb { background: #00bfff; border-radius: 10px; }
@@ -38,55 +64,21 @@
   </style>
 </head>
 <body>
-
-<div id="warningModal" class="modal-overlay">
-  <div class="modal-box">
-    <h3>🚀 Getting Your Movie Ready!</h3>
-    <p>We are moving you to the video player right now.</p>
-    <p style="color: #00bfff; text-shadow: 0 0 10px rgba(0, 191, 255, 0.4); font-weight: bold;">Please wait for the timer to reach zero.</p>
-    <div class="modal-spinner"></div>
-  </div>
-</div>
-
+<div id="warningModal" class="modal-overlay"><div class="modal-box"><h3>🚀 Getting Your Movie Ready!</h3><p>We are moving you to the video player right now.</p><div class="modal-spinner"></div></div></div>
 <button id="reportBtn" onclick="reportIssue()">⚠ Report</button>
-
 <div class="page">
-  <div class="side-ad">
-    <script>atOptions={'key':'6d18eab8e3174f704484a4e5fb7166a4','format':'iframe','height':300,'width':160,'params':{}};</script>
-    <script src="https://www.highperformanceformat.com/6d18eab8e3174f704484a4e5fb7166a4/indigo.js"></script>
-  </div>
-
-  <div class="center">
-    <div class="card" id="fileCard">
-      <p style="opacity:0.7;">Loading Premium Details...</p>
-    </div>
-  </div>
-
-  <div class="side-ad">
-    <script>atOptions={'key':'6d18eab8e3174f704484a4e5fb7166a4','format':'iframe','height':300,'width':160,'params':{}};</script>
-    <script src="https://www.highperformanceformat.com/6d18eab8e3174f704484a4e5fb7166a4/indigo.js"></script>
-  </div>
+  <div class="side-ad"><script>atOptions={'key':'6d18eab8e3174f704484a4e5fb7166a4','format':'iframe','height':300,'width':160,'params':{}};</script><script src="https://www.highperformanceformat.com/6d18eab8e3174f704484a4e5fb7166a4/indigo.js"></script></div>
+  <div class="center"><div class="card" id="fileCard"><p style="opacity:0.7;">Loading Premium Details...</p></div></div>
+  <div class="side-ad"><script>atOptions={'key':'6d18eab8e3174f704484a4e5fb7166a4','format':'iframe','height':300,'width':160,'params':{}};</script><script src="https://www.highperformanceformat.com/6d18eab8e3174f704484a4e5fb7166a4/indigo.js"></script></div>
 </div>
-
 <button class="back" onclick="history.back()">← Back</button>
-
-<div style="text-align: center; margin: 20px 0; width: 100%; overflow-x: hidden;">
-  <script>atOptions={'key':'9d4e234e334f6012b5b60f60507d7877','format':'iframe','height':90,'width':728,'params':{}};</script>
-  <script src="https://www.highperformanceformat.com/9d4e234e334f6012b5b60f60507d7877/invoke.js"></script>
-</div>
-
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="firebase-config.js"></script>
-
 <script>
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-
-let currentFile = null;
-let currentFileId = null;
-let allFileLinks = []; 
-let masterListCache = []; 
+let currentFile = null; let currentFileId = null; let allFileLinks = []; let masterListCache = []; 
 
 window.addEventListener("DOMContentLoaded", async function () {
   try {
@@ -100,9 +92,8 @@ window.addEventListener("DOMContentLoaded", async function () {
 async function loadFile() {
   const id = Number(new URLSearchParams(location.search).get("id"));
   const cachedData = sessionStorage.getItem("ntm_movie_cache");
-  if (cachedData) {
-    masterListCache = JSON.parse(cachedData);
-  } else {
+  if (cachedData) { masterListCache = JSON.parse(cachedData); } 
+  else {
     let localFiles = []; let firebaseFiles = [];
     try { const res = await fetch("files.json"); localFiles = await res.json(); } catch(e) {}
     try {
@@ -111,31 +102,15 @@ async function loadFile() {
     } catch(e) {}
     masterListCache = [...localFiles, ...firebaseFiles].filter(m => m && m.name && m.name !== "undefined");
   }
-  
   const file = masterListCache.find(f => Number(f.id || f.customId) === id);
   if (!file) { document.getElementById("fileCard").innerHTML = "File not found"; return; }
-
-  currentFile = file;
-  currentFileId = file.id || file.customId;
-
-  if (file.backdrop) {
-    document.body.style.backgroundImage = `linear-gradient(180deg, rgba(2,2,2,0.85), rgba(10,17,40,0.9), rgba(2,2,2,0.95)), url('${file.backdrop}')`;
-    document.body.style.backgroundSize = "cover"; document.body.style.backgroundPosition = "center top"; document.body.style.backgroundAttachment = "fixed";
-  }
-
+  currentFile = file; currentFileId = file.id || file.customId;
+  if (file.backdrop) { document.body.style.backgroundImage = `linear-gradient(180deg, rgba(2,2,2,0.85), rgba(10,17,40,0.9), rgba(2,2,2,0.95)), url('${file.backdrop}')`; document.body.style.backgroundSize = "cover"; }
   if (Array.isArray(file.links) && file.links.length > 0) allFileLinks = file.links;
   else if (Array.isArray(file.downloads) && file.downloads.length > 0) allFileLinks = file.downloads;
   else if (file.link) allFileLinks = [file.link];
-
-  if (file.type === "Series") {
-    allFileLinks.sort((a, b) => {
-      let epA = 0, epB = 0;
-      if (typeof a === "object" && a.episode) { const matchA = a.episode.match(/\d+/); if (matchA) epA = parseInt(matchA[0]); }
-      if (typeof b === "object" && b.episode) { const matchB = b.episode.match(/\d+/); if (matchB) epB = parseInt(matchB[0]); }
-      return epA - epB;
-    });
-  }
-
+  if (file.type === "Series") { allFileLinks.sort((a, b) => { let epA = 0, epB = 0; if (typeof a === "object" && a.episode) { const matchA = a.episode.match(/\d+/); if (matchA) epA = parseInt(matchA[0]); } if (typeof b === "object" && b.episode) { const matchB = b.episode.match(/\d+/); if (matchB) epB = parseInt(matchB[0]); } return epA - epB; }); }
+  
   let isSeries = false; let availableQualities = new Set();
   allFileLinks.forEach(l => { if (typeof l === "object" && l.episode) { isSeries = true; if (l.quality) availableQualities.add(l.quality); } });
 
@@ -164,10 +139,54 @@ async function loadFile() {
     </div>
     <p style="margin-top: 5px;"><strong>${file.type || 'Movie'}</strong> • ${file.category || 'Uncategorized'}</p>
     <p style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; border-left: 3px solid #00bfff; font-size: 14px; text-align: left;">${file.description || 'No description provided.'}</p>
-    <button class="share-btn" id="shareBtn" onclick="shareMovie()">📤 Share</button>
+    
+    <div style="display: flex; gap: 15px; justify-content: center; margin: 15px 0;">
+      <button class="action-btn" id="shareBtn" onclick="shareMovie()">📤 Share</button>
+      <button class="action-btn" id="bookmarkBtn" onclick="toggleBookmark()">🔖 Save</button>
+    </div>
+
     ${qualityDropdownHTML}
     <div id="dynamic-button-container"></div>`;
+    
+  checkBookmarkState();
   renderButtons();
+}
+
+// --- BOOKMARK LOGIC ---
+function toggleBookmark() {
+  if (!currentFile) return;
+  let bookmarks = JSON.parse(localStorage.getItem("ntm_bookmarks")) || [];
+  const existsIndex = bookmarks.findIndex(b => b.id === currentFileId);
+  const btn = document.getElementById("bookmarkBtn");
+
+  if (existsIndex > -1) {
+    bookmarks.splice(existsIndex, 1);
+    btn.innerHTML = "🔖 Save";
+    btn.classList.remove("saved");
+    alert("Removed from Bookmarks");
+  } else {
+    bookmarks.push({
+      id: currentFileId,
+      name: currentFile.name,
+      image: currentFile.image,
+      type: currentFile.type
+    });
+    btn.innerHTML = "✅ Saved";
+    btn.classList.add("saved");
+    alert("Added to Bookmarks!");
+  }
+  localStorage.setItem("ntm_bookmarks", JSON.stringify(bookmarks));
+}
+
+function checkBookmarkState() {
+  let bookmarks = JSON.parse(localStorage.getItem("ntm_bookmarks")) || [];
+  if (bookmarks.find(b => b.id === currentFileId)) {
+    const btn = document.getElementById("bookmarkBtn");
+    if (btn) {
+      btn.innerHTML = "✅ Saved";
+      btn.classList.add("saved");
+    }
+  }
 }
 
 function renderButtons() {
@@ -211,31 +230,22 @@ function trackBingeStats(file) {
   localStorage.setItem("ntm_user_stats", JSON.stringify(stats));
 }
 
-// 👑 FIXED PAYLOAD TRANSITION WITH DATABASE UNIQUE ID BINDING
 function openWatch(clickedIndex) {
   const modal = document.getElementById('warningModal');
   modal.style.display = 'flex';
   setTimeout(() => { modal.classList.add('active'); }, 10);
-
   trackBingeStats(currentFile);
-
   let currentPlaylist = allFileLinks;
   const qualitySelect = document.getElementById("qualitySelect");
   if (qualitySelect) { currentPlaylist = allFileLinks.filter(l => typeof l === "object" && l.quality === qualitySelect.value); }
-
   const activeLink = allFileLinks[clickedIndex];
   const playlistIndex = currentPlaylist.indexOf(activeLink);
-
-  // Injected 'id: currentFileId' into the stream block payload context
   const bingeData = { id: currentFileId, currentIndex: playlistIndex, playlist: currentPlaylist };
-
   let scrambledPayload = "";
   try { scrambledPayload = btoa(JSON.stringify(bingeData)); } 
   catch(e) { scrambledPayload = JSON.stringify(bingeData); }
-
   const netlifyUrl = "https://ntmonline.netlify.app/watch.html?data=" + encodeURIComponent(scrambledPayload);
   const finalDestination = "redirect.html?dest=" + encodeURIComponent(netlifyUrl);
-  
   setTimeout(() => { window.location.href = finalDestination; }, 3500);
 }
 
