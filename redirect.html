@@ -21,9 +21,9 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 60vh;
+      min-height: 80vh;
       width: 100%;
-      max-width: 500px;
+      max-width: 600px;
       margin: 0 auto;
     }
 
@@ -50,28 +50,25 @@
     }
     body.light-mode .massive-timer { color: #0284c7; text-shadow: none; }
 
-    /* 🔧 FIXED: Invisible horizontal spacing removes the dark square illusion */
     .odometer-box {
       display: inline-block;
       overflow: hidden;
       height: 1.2em;
       line-height: 1.2em;
-      padding: 0 25px; /* Huge invisible space left and right so glow doesn't hit the wall */
-      margin: 0 -25px; /* Pulls the "..." back in so the layout stays tight */
+      padding: 0 25px;
+      margin: 0 -25px;
       min-width: 1.2ch; 
       text-align: center;
       vertical-align: middle;
     }
 
-    /* 🎨 NEW COLOR: Blends perfectly with the rest of the text */
     .odo-digit {
       display: block;
-      color: #00bfff; /* Exact cyan color */
-      text-shadow: 0 0 15px rgba(0, 191, 255, 0.6); /* Exact cyan glow */
+      color: #00bfff;
+      text-shadow: 0 0 15px rgba(0, 191, 255, 0.6);
       animation: rollUp 0.35s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
     }
 
-    /* Mechanical rolling animation */
     @keyframes rollUp {
       0% { transform: translateY(100%); opacity: 0; }
       100% { transform: translateY(0); opacity: 1; }
@@ -89,17 +86,23 @@
       box-shadow: 0 0 15px rgba(0, 191, 255, 0.4);
     }
     body.light-mode .spinner { border: 4px solid rgba(0, 0, 0, 0.1); border-top: 4px solid #0284c7; }
-
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    /* 💰 ADSTERRA CONTAINERS */
+    /* 💰 AD CONTAINERS */
     .ad-slot {
       width: 100%;
       display: flex;
       justify-content: center;
       align-items: center;
-      margin: 15px auto;
+      margin: 25px auto;
       overflow: hidden;
+    }
+    
+    .desktop-only { display: block; }
+    .mobile-only { display: none; }
+    @media (max-width: 900px) {
+        .desktop-only { display: none; }
+        .mobile-only { display: block; }
     }
   </style>
 </head>
@@ -108,6 +111,7 @@
   <div class="container">
     <div class="file redirect-box">
       
+      <!-- AD 1: Top Adsterra -->
       <div class="ad-slot" style="min-height: 60px;">
         <script async="async" data-cfasync="false" src="https://pl29306825.effectivecpmnetwork.com/29298f7fb07bda835a6b524bbf123616/invoke.js"></script>
         <div id="container-29298f7fb07bda835a6b524bbf123616"></div>
@@ -124,6 +128,23 @@
         REDIRECT IN&nbsp;&nbsp;<span class="odometer-box" id="timerNumber"></span>...
       </div>
 
+      <!-- AD 2: New A-Ads Units (Your requested placement) -->
+      <div class="ad-slot" style="min-height: 90px;">
+        <!-- Laptop Ad -->
+        <div class="desktop-only">
+          <div id="frame" style="width: 100%; margin: auto; position: relative; z-index: 99998;">
+            <iframe data-aa='2440774' src='//acceptable.a-ads.com/2440774/?size=Adaptive' style='border:0; padding:0; width:70%; height:auto; overflow:hidden; display:block; margin:auto;'></iframe>
+          </div>
+        </div>
+        <!-- Mobile Ad -->
+        <div class="mobile-only">
+          <div id="frame" style="width: 100%; margin: auto; position: relative; z-index: 99998;">
+            <iframe data-aa='2440773' src='//acceptable.a-ads.com/2440773/?size=Adaptive' style='border:0; padding:0; width:70%; height:auto; overflow:hidden; display:block; margin:auto;'></iframe>
+          </div>
+        </div>
+      </div>
+
+      <!-- AD 3: Bottom Adsterra Square -->
       <div class="ad-slot" style="min-height: 250px;">
         <script>
           atOptions = {
@@ -147,8 +168,6 @@
 
     // --- AUTOMATIC RANDOMIZED ODOMETER REDIRECT ---
     window.addEventListener("DOMContentLoaded", () => {
-      
-      // 🎲 Randomly picks a number between 5 and 10 seconds!
       const possibleTimes = [5, 6, 7, 8, 9, 10];
       let secondsLeft = possibleTimes[Math.floor(Math.random() * possibleTimes.length)];
       
@@ -156,22 +175,17 @@
       const urlParams = new URLSearchParams(window.location.search);
       const destination = urlParams.get('dest');
 
-      // Inject the very first number immediately
       timerNumber.innerHTML = `<span class="odo-digit">${secondsLeft}</span>`;
 
       const countdownInterval = setInterval(() => {
         secondsLeft--;
-        
-        // Injects a brand new span every second, triggering the CSS roll animation
         timerNumber.innerHTML = `<span class="odo-digit">${secondsLeft}</span>`;
 
         if (secondsLeft <= 0) {
           clearInterval(countdownInterval);
           if (destination) {
-            // 🚀 FIXED: Using replace() so the browser forgets this ad page in history
             window.location.replace(decodeURIComponent(destination));
           } else {
-            // 🚀 FIXED: Using replace() here too
             window.location.replace("index.html");
           }
         }
