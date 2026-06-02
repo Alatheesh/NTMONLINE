@@ -7,6 +7,7 @@
     html, body { margin: 0; padding: 0; font-family: Arial, sans-serif; min-height: 100dvh; background: linear-gradient(180deg, #020202, #0a1128, #020202); color: #ffffff; overflow-x: hidden; display: flex; flex-direction: column; }
     body::before { content: ""; position: fixed; top: -100vh; left: 0; width: 100vw; height: 300vh; background-image: radial-gradient(circle at 15vw 25vh, rgba(0,191,255,0.8) 0%, transparent 4px), radial-gradient(circle at 75vw 15vh, rgba(141,124,255,0.8) 0%, transparent 5px), radial-gradient(circle at 45vw 65vh, rgba(255,255,255,0.8) 0%, transparent 3px); background-size: 100vw 100vh; z-index: -2; filter: drop-shadow(0 0 10px #00bfff) blur(0.5px); animation: fallDown 12s linear infinite; pointer-events: none; }
     @keyframes fallDown { 0% { transform: translateY(0); } 100% { transform: translateY(100vh); } }
+    
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; z-index: 9999; opacity: 0; transition: opacity 0.3s ease; }
     .modal-overlay.active { display: flex; opacity: 1; }
     .modal-box { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 30px; border-radius: 20px; text-align: center; max-width: 400px; width: 90%; transform: scale(0.8); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
@@ -15,62 +16,69 @@
     .modal-box p { color: #ccc; font-size: 16px; line-height: 1.5; margin-bottom: 15px; }
     .modal-spinner { width: 30px; height: 30px; border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid #00bfff; border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto 0 auto; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    
+    /* Layout */
     .page { display: flex; justify-content: center; align-items: flex-start; width: 100%; margin-top: 60px; flex: 1; }
-    .side-ad { width: 160px; margin: 20px; text-align: center; z-index: 5; display: flex; justify-content: center; }
     .center { max-width: 450px; width: 90%; margin: 0 15px; z-index: 5; }
-    @media (max-width: 900px) { .page { flex-direction: column; align-items: center; } .side-ad { width: 100%; margin: 15px 0; } }
+    
     .card { background: rgba(255, 255, 255, 0.04); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); padding: 30px; border-radius: 20px; text-align: center; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(255,255,255,0.02); overflow-wrap: break-word; transition: all 0.3s ease-in-out; }
     .card img { width: 100%; max-width: 100%; height: auto; max-height: 400px; object-fit: contain; border-radius: 14px; margin-bottom: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.5); background: rgba(0, 0, 0, 0.2); }
     .card h2 { margin: 10px 0 5px; font-size: 24px; background: linear-gradient(90deg, #fff, #b3e5fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     .card p { color: #ccc; line-height: 1.5; font-size: 14px; }
     
-    /* NEW ACTION BUTTONS CSS (Replaces .share-btn) */
-    .action-btn { 
-      background: rgba(255, 255, 255, 0.08); 
-      border: 1px solid rgba(255, 255, 255, 0.15); 
-      padding: 10px 20px; 
-      border-radius: 20px; 
-      color: white; 
-      font-size: 14px; 
-      font-weight: bold;
-      cursor: pointer; 
-      display: inline-flex; 
-      align-items: center; 
-      gap: 8px; 
-      transition: all 0.3s ease; 
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+    /* Ad Visibility CSS */
+    .ad-wrapper { margin: 20px 0; text-align: center; }
+    .desktop-only { display: block; }
+    .mobile-only { display: none; }
+    @media (max-width: 900px) {
+        .desktop-only { display: none; }
+        .mobile-only { display: block; }
     }
-    .action-btn:hover { 
-      background: rgba(0, 191, 255, 0.15); 
-      border-color: #00bfff; 
-      transform: translateY(-2px); 
-    }
-    .action-btn.saved {
-      background: rgba(0, 191, 255, 0.2);
-      border-color: #00bfff;
-      color: #00bfff;
-    }
+
+    .action-btn { background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); padding: 10px 20px; border-radius: 20px; color: white; font-size: 14px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+    .action-btn:hover { background: rgba(0, 191, 255, 0.15); border-color: #00bfff; transform: translateY(-2px); }
+    .action-btn.saved { background: rgba(0, 191, 255, 0.2); border-color: #00bfff; color: #00bfff; }
 
     .download-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 25px; max-height: 350px; overflow-y: auto; padding-right: 10px; }
     .download-grid::-webkit-scrollbar { width: 6px; }
     .download-grid::-webkit-scrollbar-thumb { background: #00bfff; border-radius: 10px; }
-    .download-grid::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 10px; }
     .download-grid button { flex: 1; min-width: 130px; margin: 0; background: linear-gradient(135deg, #007bff, #00bfff); box-shadow: 0 4px 15px rgba(0, 191, 255, 0.3); padding: 12px 18px; border: none; border-radius: 10px; cursor: pointer; color: white; font-weight: bold; transition: all 0.3s ease; }
     .download-grid button:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 6px 20px rgba(0, 191, 255, 0.5); }
+    
     .back { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); margin: 30px auto; display: block; padding: 12px 25px; color: white; border-radius: 10px; cursor: pointer; }
-    .back:hover { background: rgba(255, 255, 255, 0.15); transform: scale(1.05); }
     #reportBtn { position: fixed; top: 15px; right: 15px; background: linear-gradient(135deg, #ff4d4d, #cc0000); padding: 10px 16px; border-radius: 10px; z-index: 1000; display: none; box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3); border: none; color: white; cursor: pointer; }
-    #reportBtn:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(255, 0, 0, 0.5); }
   </style>
 </head>
 <body>
 <div id="warningModal" class="modal-overlay"><div class="modal-box"><h3>🚀 Getting Your Movie Ready!</h3><p>We are moving you to the video player right now.</p><div class="modal-spinner"></div></div></div>
 <button id="reportBtn" onclick="reportIssue()">⚠ Report</button>
+
 <div class="page">
-  <div class="side-ad"><script>atOptions={'key':'6d18eab8e3174f704484a4e5fb7166a4','format':'iframe','height':300,'width':160,'params':{}};</script><script src="https://www.highperformanceformat.com/6d18eab8e3174f704484a4e5fb7166a4/indigo.js"></script></div>
-  <div class="center"><div class="card" id="fileCard"><p style="opacity:0.7;">Loading Premium Details...</p></div></div>
-  <div class="side-ad"><script>atOptions={'key':'6d18eab8e3174f704484a4e5fb7166a4','format':'iframe','height':300,'width':160,'params':{}};</script><script src="https://www.highperformanceformat.com/6d18eab8e3174f704484a4e5fb7166a4/indigo.js"></script></div>
+  <div class="center">
+    
+    <div class="ad-wrapper">
+      <div class="desktop-only">
+        <iframe data-aa='2440767' src='//acceptable.a-ads.com/2440767/?size=Adaptive' style='border:0; padding:0; width:100%; height:auto; overflow:hidden;'></iframe>
+      </div>
+      <div class="mobile-only">
+        <iframe data-aa='2440765' src='//acceptable.a-ads.com/2440765/?size=Adaptive' style='border:0; padding:0; width:100%; height:auto; overflow:hidden;'></iframe>
+      </div>
+    </div>
+
+    <div class="card" id="fileCard"><p style="opacity:0.7;">Loading Premium Details...</p></div>
+
+    <div class="ad-wrapper">
+      <div class="desktop-only">
+        <iframe data-aa='2440767' src='//acceptable.a-ads.com/2440767/?size=Adaptive' style='border:0; padding:0; width:100%; height:auto; overflow:hidden;'></iframe>
+      </div>
+      <div class="mobile-only">
+        <iframe data-aa='2440765' src='//acceptable.a-ads.com/2440765/?size=Adaptive' style='border:0; padding:0; width:100%; height:auto; overflow:hidden;'></iframe>
+      </div>
+    </div>
+
+  </div>
 </div>
+
 <button class="back" onclick="history.back()">← Back</button>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -152,7 +160,6 @@ async function loadFile() {
   renderButtons();
 }
 
-// --- BOOKMARK LOGIC ---
 function toggleBookmark() {
   if (!currentFile) return;
   let bookmarks = JSON.parse(localStorage.getItem("ntm_bookmarks")) || [];
@@ -252,31 +259,14 @@ function openWatch(clickedIndex) {
 function shareMovie() {
   const url = window.location.href;
   const movieTitle = document.querySelector('h2') ? document.querySelector('h2').innerText : "this movie";
-  
-  // Fancy, engaging text template
-  const shareText = `
-🎬 *You HAVE to check this out!* 🍿
+  const shareText = `\n🎬 *You HAVE to check this out!* 🍿\n\nI just found this movie on NTM Online and the quality is insane. ⚡\n\n🎥 Title: ${movieTitle}\n🚀 Watch here: ${url}\n\nIt's the fastest streaming experience I've used. See for yourself! 👇`;
 
-I just found this movie on NTM Online and the quality is insane. ⚡
-
-🎥 Title: ${movieTitle}
-🚀 Watch here: ${url}
-
-It's the fastest streaming experience I've used. See for yourself! 👇`;
-
-  // Track the hype (your existing logic)
   let stats = JSON.parse(localStorage.getItem("ntm_user_stats"));
   if (stats) { stats.hypeScore = (stats.hypeScore || 0) + 1; localStorage.setItem("ntm_user_stats", JSON.stringify(stats)); }
 
-  // Execute native share if available
   if (navigator.share) {
-    navigator.share({
-      title: 'NTM Watch Hub',
-      text: shareText,
-      url: url
-    }).catch((e) => console.log("Share cancelled"));
+    navigator.share({ title: 'NTM Watch Hub', text: shareText, url: url }).catch((e) => console.log("Share cancelled"));
   } else {
-    // Fallback for browsers that don't support native share
     navigator.clipboard.writeText(shareText).then(() => {
       alert("✅ Fancy link copied! Paste it to your friends.");
     }).catch(err => {
