@@ -143,7 +143,10 @@
 
     <div class="top-bar">
       <h1 id="secret-title" style="user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; cursor: default;">🎬 NTM Watch Hub 🍿</h1>
-      <button id="themeToggle">🌙</button>
+      <div style="display:flex;gap:12px;align-items:center;">
+        <button id="themeToggle">🌙</button>
+        <button id="bookmarkToggle" style="position:relative;">🔖<span id="bookmarkCount" style="position:absolute;top:-8px;right:-8px;background:red;color:white;border-radius:50%;width:18px;height:18px;font-size:11px;display:flex;align-items:center;justify-content:center;">0</span></button>
+      </div>
     </div>
 
     <div class="search-container" id="searchWrapper">
@@ -415,6 +418,50 @@
     function goHome() { window.location.href = "index.html"; }
 
     loadDatabase();
+
+function getBookmarks(){return JSON.parse(localStorage.getItem("ntmBookmarks")||"[]");}
+function updateBookmarkCount(){const e=document.getElementById("bookmarkCount");if(e)e.textContent=getBookmarks().length;}
+function openBookmarks(){
+ const ids=getBookmarks();
+ const grid=document.getElementById("bookmarkGrid");
+ grid.innerHTML="";
+ const items=allMovies.filter(m=>ids.includes(String(m.id||m.customId)));
+ if(!items.length){grid.innerHTML="<p style='color:white;'>No bookmarks yet.</p>";}
+ items.forEach(movie=>{
+  grid.innerHTML+=`<a class="movie-card" href="file.html?id=${movie.id||movie.customId}"><img src="${movie.image||''}"><div class="movie-info"><div class="movie-name">${movie.name}</div></div></a>`;
+ });
+ document.getElementById("bookmarkModal").style.display="block";
+}
+function closeBookmarks(){document.getElementById("bookmarkModal").style.display="none";}
+setTimeout(()=>{
+ const b=document.getElementById("bookmarkToggle");
+ if(b)b.addEventListener("click",openBookmarks);
+ updateBookmarkCount();
+},500);
+
   </script>
+
+<div id="bookmarkModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:99999;overflow:auto;">
+<div style="max-width:1000px;margin:40px auto;padding:20px;">
+
+<h2 style="text-align:center;color:white;margin-bottom:20px;">🔖 Bookmarks</h2>
+
+<div id="bookmarkGrid" class="movie-grid"></div>
+
+<div style="margin-top:25px;padding:15px;border-radius:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);text-align:center;color:#d0d0d0;font-size:14px;line-height:1.7;">
+🔖 Your bookmarks are stored locally on this device.
+<br><br>
+⚠️ Clearing browser data, cache, app storage, or reinstalling the app will permanently remove your saved bookmarks.
+</div>
+
+<div style="text-align:center;margin-top:20px;">
+<button onclick="closeBookmarks()" style="padding:10px 20px;border:none;border-radius:10px;background:#00bfff;color:white;cursor:pointer;font-weight:bold;">
+Close
+</button>
+</div>
+
+</div>
+</div>
+
 </body>
 </html>
