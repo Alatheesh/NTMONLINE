@@ -18,16 +18,15 @@
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     
     /* Layout */
-    .page { display: flex; justify-content: center; align-items: flex-start; width: 100%; margin-top: 60px; flex: 1; padding: 0 10px; }
+    .page { display: flex; flex-direction: column; align-items: center; width: 100%; margin-top: 60px; flex: 1; padding: 0 10px; }
     .center { max-width: 450px; width: 100%; z-index: 5; }
     
     .card { background: rgba(255, 255, 255, 0.04); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); padding: 30px; border-radius: 20px; text-align: center; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4); overflow-wrap: break-word; transition: all 0.3s ease-in-out; }
     .card img { width: 100%; max-width: 100%; height: auto; max-height: 400px; object-fit: contain; border-radius: 14px; margin-bottom: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.5); background: rgba(0, 0, 0, 0.2); }
     .card h2 { margin: 10px 0 5px; font-size: 24px; background: linear-gradient(90deg, #fff, #b3e5fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     
-    /* Ad Containers - Fixed to be spacious */
-    .ad-wrapper { margin: 20px 0; text-align: center; width: 100%; overflow: hidden; }
-    .adsterra-wrapper { margin: 30px 0; text-align: center; width: 100%; overflow: hidden; }
+    /* Full-Width Ad Wrapper (Unrestricted) */
+    .ad-container { width: 100%; max-width: 800px; margin: 20px auto; text-align: center; display: block; overflow: hidden; }
     
     .desktop-only { display: block; }
     .mobile-only { display: none; }
@@ -52,16 +51,17 @@
 <button id="reportBtn" onclick="reportIssue()">⚠ Report</button>
 
 <div class="page">
-  <div class="center">
     
-    <div class="ad-wrapper">
+    <div class="ad-container">
       <div class="desktop-only"><iframe data-aa='2440767' src='//acceptable.a-ads.com/2440767/?size=Adaptive' style='border:0; padding:0; width:100%; height:auto; overflow:hidden;'></iframe></div>
       <div class="mobile-only"><iframe data-aa='2440765' src='//acceptable.a-ads.com/2440765/?size=Adaptive' style='border:0; padding:0; width:100%; height:auto; overflow:hidden;'></iframe></div>
     </div>
 
+  <div class="center">
     <div class="card" id="fileCard"><p style="opacity:0.7;">Loading Premium Details...</p></div>
+  </div>
 
-    <div class="adsterra-wrapper">
+    <div class="ad-container">
       <script type="text/javascript">
         atOptions = {
           'key' : '9d4e234e334f6012b5b60f60507d7877',
@@ -74,12 +74,11 @@
       <script type="text/javascript" src="https://www.highperformanceformat.com/9d4e234e334f6012b5b60f60507d7877/invoke.js"></script>
     </div>
 
-    <div class="ad-wrapper">
+    <div class="ad-container">
       <div class="desktop-only"><iframe data-aa='2440767' src='//acceptable.a-ads.com/2440767/?size=Adaptive' style='border:0; padding:0; width:100%; height:auto; overflow:hidden;'></iframe></div>
       <div class="mobile-only"><iframe data-aa='2440765' src='//acceptable.a-ads.com/2440765/?size=Adaptive' style='border:0; padding:0; width:100%; height:auto; overflow:hidden;'></iframe></div>
     </div>
 
-  </div>
 </div>
 
 <button class="back" onclick="history.back()">← Back</button>
