@@ -25,9 +25,9 @@
     .card img { width: 100%; max-width: 100%; height: auto; max-height: 400px; object-fit: contain; border-radius: 14px; margin-bottom: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.5); background: rgba(0, 0, 0, 0.2); }
     .card h2 { margin: 10px 0 5px; font-size: 24px; background: linear-gradient(90deg, #fff, #b3e5fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     
-    /* Ad Containers */
-    .ad-wrapper { margin: 20px 0; text-align: center; }
-    .bottom-ads-container { margin: 20px 0; text-align: center; }
+    /* Ad Formatting */
+    .ad-wrapper { margin: 30px 0; text-align: center; }
+    .adsterra-wrapper { margin: 40px 0; text-align: center; overflow-x: auto; padding: 10px; border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; }
     
     .desktop-only { display: block; }
     .mobile-only { display: none; }
@@ -61,16 +61,22 @@
 
     <div class="card" id="fileCard"><p style="opacity:0.7;">Loading Premium Details...</p></div>
 
-    <div class="bottom-ads-container">
-        
-        <div class="ad-wrapper">
-           <script type="text/javascript" src="https://www.highperformanceformat.com/6d18eab8e3174f704484a4e5fb7166a4/indigo.js"></script>
-        </div>
+    <div class="adsterra-wrapper">
+      <script type="text/javascript">
+        atOptions = {
+          'key' : '9d4e234e334f6012b5b60f60507d7877',
+          'format' : 'iframe',
+          'height' : 90,
+          'width' : 728,
+          'params' : {}
+        };
+      </script>
+      <script type="text/javascript" src="https://www.highperformanceformat.com/9d4e234e334f6012b5b60f60507d7877/invoke.js"></script>
+    </div>
 
-        <div class="ad-wrapper">
-          <div class="desktop-only"><iframe data-aa='2440767' src='//acceptable.a-ads.com/2440767/?size=Adaptive' style='border:0; padding:0; width:100%; height:auto; overflow:hidden;'></iframe></div>
-          <div class="mobile-only"><iframe data-aa='2440765' src='//acceptable.a-ads.com/2440765/?size=Adaptive' style='border:0; padding:0; width:100%; height:auto; overflow:hidden;'></iframe></div>
-        </div>
+    <div class="ad-wrapper">
+      <div class="desktop-only"><iframe data-aa='2440767' src='//acceptable.a-ads.com/2440767/?size=Adaptive' style='border:0; padding:0; width:100%; height:auto; overflow:hidden;'></iframe></div>
+      <div class="mobile-only"><iframe data-aa='2440765' src='//acceptable.a-ads.com/2440765/?size=Adaptive' style='border:0; padding:0; width:100%; height:auto; overflow:hidden;'></iframe></div>
     </div>
 
   </div>
