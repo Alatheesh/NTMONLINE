@@ -250,11 +250,39 @@ function openWatch(clickedIndex) {
 }
 
 function shareMovie() {
-  const url = window.location.href; const movieTitle = document.querySelector('h2') ? document.querySelector('h2').innerText : "this movie";
+  const url = window.location.href;
+  const movieTitle = document.querySelector('h2') ? document.querySelector('h2').innerText : "this movie";
+  
+  // Fancy, engaging text template
+  const shareText = `
+🎬 *You HAVE to check this out!* 🍿
+
+I just found this movie on NTM Online and the quality is insane. ⚡
+
+🎥 Title: ${movieTitle}
+🚀 Watch here: ${url}
+
+It's the fastest streaming experience I've used. See for yourself! 👇`;
+
+  // Track the hype (your existing logic)
   let stats = JSON.parse(localStorage.getItem("ntm_user_stats"));
   if (stats) { stats.hypeScore = (stats.hypeScore || 0) + 1; localStorage.setItem("ntm_user_stats", JSON.stringify(stats)); }
-  if (navigator.share) { navigator.share({ title: 'NTM Watch Hub', text: `Check out ${movieTitle} on NTM Stream! 🍿`, url: url }).catch((e) => {}); } 
-  else { navigator.clipboard.writeText(url).then(() => alert("✅ Link copied!")) .catch(err => prompt("Copy link to share:", url)); }
+
+  // Execute native share if available
+  if (navigator.share) {
+    navigator.share({
+      title: 'NTM Watch Hub',
+      text: shareText,
+      url: url
+    }).catch((e) => console.log("Share cancelled"));
+  } else {
+    // Fallback for browsers that don't support native share
+    navigator.clipboard.writeText(shareText).then(() => {
+      alert("✅ Fancy link copied! Paste it to your friends.");
+    }).catch(err => {
+      prompt("Copy this to share:", shareText);
+    });
+  }
 }
 
 function reportIssue() {
