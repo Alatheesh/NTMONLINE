@@ -18,16 +18,17 @@
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     
     /* Layout */
-    .page { display: flex; justify-content: center; align-items: flex-start; width: 100%; margin-top: 60px; flex: 1; }
-    .center { max-width: 450px; width: 90%; margin: 0 15px; z-index: 5; }
+    .page { display: flex; justify-content: center; align-items: flex-start; width: 100%; margin-top: 60px; flex: 1; padding: 0 10px; }
+    .center { max-width: 450px; width: 100%; z-index: 5; }
     
     .card { background: rgba(255, 255, 255, 0.04); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); padding: 30px; border-radius: 20px; text-align: center; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(255,255,255,0.02); overflow-wrap: break-word; transition: all 0.3s ease-in-out; }
     .card img { width: 100%; max-width: 100%; height: auto; max-height: 400px; object-fit: contain; border-radius: 14px; margin-bottom: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.5); background: rgba(0, 0, 0, 0.2); }
     .card h2 { margin: 10px 0 5px; font-size: 24px; background: linear-gradient(90deg, #fff, #b3e5fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .card p { color: #ccc; line-height: 1.5; font-size: 14px; }
     
-    /* Ad Visibility CSS */
+    /* Ad Visibility & Layout */
     .ad-wrapper { margin: 20px 0; text-align: center; }
+    .bottom-ad-container { width: 100%; margin: 30px auto; text-align: center; padding: 15px 0; border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; background: rgba(0,0,0,0.2); }
+    
     .desktop-only { display: block; }
     .mobile-only { display: none; }
     @media (max-width: 900px) {
@@ -40,10 +41,7 @@
     .action-btn.saved { background: rgba(0, 191, 255, 0.2); border-color: #00bfff; color: #00bfff; }
 
     .download-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 25px; max-height: 350px; overflow-y: auto; padding-right: 10px; }
-    .download-grid::-webkit-scrollbar { width: 6px; }
-    .download-grid::-webkit-scrollbar-thumb { background: #00bfff; border-radius: 10px; }
-    .download-grid button { flex: 1; min-width: 130px; margin: 0; background: linear-gradient(135deg, #007bff, #00bfff); box-shadow: 0 4px 15px rgba(0, 191, 255, 0.3); padding: 12px 18px; border: none; border-radius: 10px; cursor: pointer; color: white; font-weight: bold; transition: all 0.3s ease; }
-    .download-grid button:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 6px 20px rgba(0, 191, 255, 0.5); }
+    .download-grid button { flex: 1; min-width: 130px; margin: 0; background: linear-gradient(135deg, #007bff, #00bfff); box-shadow: 0 4px 15px rgba(0, 191, 255, 0.3); padding: 12px 18px; border: none; border-radius: 10px; cursor: pointer; color: white; font-weight: bold; }
     
     .back { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); margin: 30px auto; display: block; padding: 12px 25px; color: white; border-radius: 10px; cursor: pointer; }
     #reportBtn { position: fixed; top: 15px; right: 15px; background: linear-gradient(135deg, #ff4d4d, #cc0000); padding: 10px 16px; border-radius: 10px; z-index: 1000; display: none; box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3); border: none; color: white; cursor: pointer; }
@@ -56,24 +54,18 @@
 <div class="page">
   <div class="center">
     
+    <!-- TOP AD SLOT -->
     <div class="ad-wrapper">
-      <div class="desktop-only">
-        <iframe data-aa='2440767' src='//acceptable.a-ads.com/2440767/?size=Adaptive' style='border:0; padding:0; width:100%; height:auto; overflow:hidden;'></iframe>
-      </div>
-      <div class="mobile-only">
-        <iframe data-aa='2440765' src='//acceptable.a-ads.com/2440765/?size=Adaptive' style='border:0; padding:0; width:100%; height:auto; overflow:hidden;'></iframe>
-      </div>
+      <div class="desktop-only"><iframe data-aa='2440767' src='//acceptable.a-ads.com/2440767/?size=Adaptive' style='border:0; padding:0; width:100%; height:auto; overflow:hidden;'></iframe></div>
+      <div class="mobile-only"><iframe data-aa='2440765' src='//acceptable.a-ads.com/2440765/?size=Adaptive' style='border:0; padding:0; width:100%; height:auto; overflow:hidden;'></iframe></div>
     </div>
 
     <div class="card" id="fileCard"><p style="opacity:0.7;">Loading Premium Details...</p></div>
 
-    <div class="ad-wrapper">
-      <div class="desktop-only">
-        <iframe data-aa='2440767' src='//acceptable.a-ads.com/2440767/?size=Adaptive' style='border:0; padding:0; width:100%; height:auto; overflow:hidden;'></iframe>
-      </div>
-      <div class="mobile-only">
-        <iframe data-aa='2440765' src='//acceptable.a-ads.com/2440765/?size=Adaptive' style='border:0; padding:0; width:100%; height:auto; overflow:hidden;'></iframe>
-      </div>
+    <!-- LARGE BOTTOM AD SLOT -->
+    <div class="bottom-ad-container">
+      <div class="desktop-only"><iframe data-aa='2440767' src='//acceptable.a-ads.com/2440767/?size=Adaptive' style='border:0; padding:0; width:100%; height:300px; overflow:hidden;'></iframe></div>
+      <div class="mobile-only"><iframe data-aa='2440765' src='//acceptable.a-ads.com/2440765/?size=Adaptive' style='border:0; padding:0; width:100%; height:250px; overflow:hidden;'></iframe></div>
     </div>
 
   </div>
