@@ -18,15 +18,16 @@
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     
     /* Layout */
-    .page { display: flex; flex-direction: column; align-items: center; width: 100%; margin-top: 60px; flex: 1; padding: 0 10px; }
+    .page { display: flex; justify-content: center; align-items: flex-start; width: 100%; margin-top: 60px; flex: 1; padding: 0 10px; }
     .center { max-width: 450px; width: 100%; z-index: 5; }
     
     .card { background: rgba(255, 255, 255, 0.04); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); padding: 30px; border-radius: 20px; text-align: center; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4); overflow-wrap: break-word; transition: all 0.3s ease-in-out; }
     .card img { width: 100%; max-width: 100%; height: auto; max-height: 400px; object-fit: contain; border-radius: 14px; margin-bottom: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.5); background: rgba(0, 0, 0, 0.2); }
     .card h2 { margin: 10px 0 5px; font-size: 24px; background: linear-gradient(90deg, #fff, #b3e5fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     
-    /* Full-Width Ad Wrapper (Unrestricted) */
-    .ad-container { width: 100%; max-width: 800px; margin: 20px auto; text-align: center; display: block; overflow: hidden; }
+    /* Ad Containers */
+    .ad-wrapper { margin: 20px 0; text-align: center; width: 100%; overflow: hidden; }
+    .adsterra-wrapper { margin: 30px 0; text-align: center; width: 100%; overflow: hidden; }
     
     .desktop-only { display: block; }
     .mobile-only { display: none; }
@@ -42,7 +43,7 @@
     .download-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 25px; max-height: 350px; overflow-y: auto; padding-right: 10px; }
     .download-grid button { flex: 1; min-width: 130px; margin: 0; background: linear-gradient(135deg, #007bff, #00bfff); box-shadow: 0 4px 15px rgba(0, 191, 255, 0.3); padding: 12px 18px; border: none; border-radius: 10px; cursor: pointer; color: white; font-weight: bold; }
     
-    .back { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); margin: 30px auto; display: block; padding: 12px 25px; color: white; border-radius: 10px; cursor: pointer; }
+    .back { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); margin: 30px auto; display: block; padding: 12px 25px; color: white; border-radius: 10px; cursor: pointer; width: 100%; max-width: 200px; text-align: center; }
     #reportBtn { position: fixed; top: 15px; right: 15px; background: linear-gradient(135deg, #ff4d4d, #cc0000); padding: 10px 16px; border-radius: 10px; z-index: 1000; display: none; box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3); border: none; color: white; cursor: pointer; }
   </style>
 </head>
@@ -51,37 +52,41 @@
 <button id="reportBtn" onclick="reportIssue()">⚠ Report</button>
 
 <div class="page">
-    
-    <div class="ad-container">
-      <div class="desktop-only"><iframe data-aa='2440767' src='//acceptable.a-ads.com/2440767/?size=Adaptive' style='border:0; padding:0; width:100%; height:auto; overflow:hidden;'></iframe></div>
-      <div class="mobile-only"><iframe data-aa='2440765' src='//acceptable.a-ads.com/2440765/?size=Adaptive' style='border:0; padding:0; width:100%; height:auto; overflow:hidden;'></iframe></div>
-    </div>
-
   <div class="center">
-    <div class="card" id="fileCard"><p style="opacity:0.7;">Loading Premium Details...</p></div>
-  </div>
-
-    <div class="ad-container">
-      <script type="text/javascript">
-        atOptions = {
-          'key' : '9d4e234e334f6012b5b60f60507d7877',
-          'format' : 'iframe',
-          'height' : 90,
-          'width' : 728,
-          'params' : {}
-        };
-      </script>
-      <script type="text/javascript" src="https://www.highperformanceformat.com/9d4e234e334f6012b5b60f60507d7877/invoke.js"></script>
-    </div>
-
-    <div class="ad-container">
+    
+    <div class="ad-wrapper">
       <div class="desktop-only"><iframe data-aa='2440767' src='//acceptable.a-ads.com/2440767/?size=Adaptive' style='border:0; padding:0; width:100%; height:auto; overflow:hidden;'></iframe></div>
       <div class="mobile-only"><iframe data-aa='2440765' src='//acceptable.a-ads.com/2440765/?size=Adaptive' style='border:0; padding:0; width:100%; height:auto; overflow:hidden;'></iframe></div>
     </div>
 
+    <div class="card" id="fileCard"><p style="opacity:0.7;">Loading Premium Details...</p></div>
+
+    <button class="back" onclick="history.back()">← Back</button>
+
+    <div class="bottom-ads-container">
+        
+        <div class="adsterra-wrapper">
+          <script type="text/javascript">
+            atOptions = {
+              'key' : '9d4e234e334f6012b5b60f60507d7877',
+              'format' : 'iframe',
+              'height' : 90,
+              'width' : 728,
+              'params' : {}
+            };
+          </script>
+          <script type="text/javascript" src="https://www.highperformanceformat.com/9d4e234e334f6012b5b60f60507d7877/invoke.js"></script>
+        </div>
+
+        <div class="ad-wrapper">
+          <div class="desktop-only"><iframe data-aa='2440767' src='//acceptable.a-ads.com/2440767/?size=Adaptive' style='border:0; padding:0; width:100%; height:auto; overflow:hidden;'></iframe></div>
+          <div class="mobile-only"><iframe data-aa='2440765' src='//acceptable.a-ads.com/2440765/?size=Adaptive' style='border:0; padding:0; width:100%; height:auto; overflow:hidden;'></iframe></div>
+        </div>
+    </div>
+
+  </div>
 </div>
 
-<button class="back" onclick="history.back()">← Back</button>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="firebase-config.js"></script>
