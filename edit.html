@@ -1,320 +1,419 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
+  <title>Edit Content • Admin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Edit Movie • NTM Admin</title>
   <style>
-    /* 💎 PROFESSIONAL ADMIN CSS */
-    body { 
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-      background: linear-gradient(135deg, #050a19 0%, #0a1128 100%); 
-      color: white; 
-      margin: 0; 
-      padding: 20px; 
-      display: flex; 
-      flex-direction: column; 
-      align-items: center; 
-      min-height: 100vh;
-    }
-
-    .container { 
-      background: rgba(255, 255, 255, 0.03); 
-      padding: 30px; 
-      border-radius: 15px; 
-      border: 1px solid rgba(255, 255, 255, 0.05); 
-      width: 100%; 
-      max-width: 800px; 
-      box-shadow: 0 10px 40px rgba(0,0,0,0.6); 
-      box-sizing: border-box;
-    }
-
-    h2 { color: #00bfff; margin-top: 0; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; }
-
-    .back-btn { 
-      background: rgba(255, 255, 255, 0.1); 
-      color: white; 
-      padding: 10px 20px; 
-      margin-bottom: 20px; 
-      border: 1px solid rgba(255,255,255,0.2); 
-      border-radius: 8px; 
-      cursor: pointer; 
-      font-weight: bold;
-      transition: 0.3s;
-      align-self: flex-start;
-    }
-    .back-btn:hover { background: rgba(255, 255, 255, 0.2); }
-
-    /* FORM STYLES */
-    .form-group { margin-bottom: 15px; }
-    .form-group label { display: block; font-size: 13px; color: #aaa; margin-bottom: 5px; font-weight: bold; }
+    /* 💎 UNIVERSAL ADMIN CSS */
+    body { font-family: Arial, sans-serif; background: #0a1128; color: white; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
+    h2 { color: #00bfff; margin-bottom: 20px; text-align: center; }
+    .container { background: rgba(255, 255, 255, 0.05); padding: 30px; border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1); width: 100%; max-width: 700px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
     
-    input[type="text"], input[type="number"], select, textarea {
-      width: 100%; 
-      padding: 12px; 
-      border-radius: 8px; 
-      border: 1px solid rgba(255,255,255,0.15); 
-      background: rgba(0,0,0,0.3); 
-      color: white; 
-      box-sizing: border-box;
-      font-family: inherit;
-    }
-    input:focus, select:focus, textarea:focus { outline: none; border-color: #00bfff; }
+    label.field-label { display: block; margin-bottom: 5px; font-size: 13px; color: #00bfff; font-weight: bold; }
+    input, select, textarea { width: 100%; box-sizing: border-box; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.2); color: white; outline: none; }
+    input:focus, select:focus, textarea:focus { border-color: #00bfff; background: rgba(255,255,255,0.05); }
+    select option { background-color: #0a1128; color: white; }
     
-    textarea { resize: vertical; height: 100px; }
+    button { width: 100%; padding: 12px; margin-bottom: 12px; border: none; border-radius: 8px; background: #00bfff; color: black; font-weight: bold; cursor: pointer; transition: 0.3s; }
+    button:hover { background: #008cba; transform: scale(1.02); }
+    
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+    
+    .link-row { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); flex-wrap: wrap;}
+    .link-row input, .link-row select, .link-row button { margin-bottom: 0; padding: 10px; }
+    .btn-danger { background: #ff4d4d; color: white; width: auto; font-size: 14px; }
 
-    /* DYNAMIC LINKS SECTION */
-    .links-section {
-      background: rgba(0,0,0,0.2);
-      border: 1px solid rgba(255,255,255,0.05);
-      border-radius: 10px;
-      padding: 15px;
-      margin-top: 20px;
-    }
-
-    .links-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-    .links-header h3 { margin: 0; color: #00ffcc; font-size: 16px; }
-
-    .link-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr 1fr 3fr auto;
-      gap: 10px;
-      background: rgba(255,255,255,0.03);
-      padding: 10px;
-      border-radius: 8px;
-      margin-bottom: 10px;
-      align-items: center;
-      border: 1px solid rgba(255,255,255,0.05);
-    }
-
-    @media (max-width: 600px) {
-      .link-row { grid-template-columns: 1fr 1fr; }
-      .link-url-wrapper { grid-column: span 2; }
-    }
-
-    /* BUTTONS */
-    .btn-add { background: rgba(0, 255, 204, 0.2); color: #00ffcc; border: 1px solid #00ffcc; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: bold; transition: 0.3s; }
-    .btn-add:hover { background: #00ffcc; color: black; }
-
-    .btn-remove { background: #ff4d4d; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; font-weight: bold; height: 100%; transition: 0.3s;}
-    .btn-remove:hover { background: #cc0000; }
-
-    .btn-save { 
-      background: #00bfff; 
-      color: black; 
-      width: 100%; 
-      padding: 15px; 
-      font-size: 16px; 
-      font-weight: bold; 
-      border: none; 
-      border-radius: 8px; 
-      margin-top: 20px; 
-      cursor: pointer; 
-      transition: 0.3s; 
-    }
-    .btn-save:hover { background: #008cba; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,191,255,0.3); }
-
-    /* LOADING OVERLAY */
-    #loader { display: none; text-align: center; color: #00bfff; padding: 20px; font-weight: bold; }
+    /* 🔎 SEARCH DROPDOWN UI */
+    .search-wrapper { position: relative; margin-bottom: 15px; }
+    #searchResults { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #0f1938; border: 1px solid #00bfff; border-radius: 8px; max-height: 250px; overflow-y: auto; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+    .search-item { padding: 10px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; }
+    .search-item:hover { background: rgba(0, 191, 255, 0.2); }
+    .search-thumb { width: 40px; height: 60px; object-fit: cover; border-radius: 4px; background: #333; }
+    .search-info { display: flex; flex-direction: column; }
+    .search-title { font-weight: bold; font-size: 14px; color: white; }
+    .search-meta { font-size: 12px; color: #aaa; }
   </style>
 </head>
 <body>
 
-  <button class="back-btn" onclick="window.location.href='admin.html'">← Back to Admin Panel</button>
+<button onclick="window.location.href='admin.html'" style="width:auto; background:rgba(255,255,255,0.1); color:white; margin-bottom:20px;">← Back to Dashboard</button>
 
-  <div class="container">
-    <h2>✏️ Edit Entry</h2>
+<div class="container">
+  <h2>✏️ Edit Premium Content</h2>
+
+  <label class="field-label">Select File to Edit</label>
+  <select id="movieSelect" onchange="loadMovieDetails()">
+    <option value="">-- Loading Database... --</option>
+  </select>
+
+  <div id="editForm" style="display: none; margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
     
-    <div id="loader">⏳ Loading Data from Firebase...</div>
-
-    <div id="editorForm" style="display: none;">
-      <div class="form-group">
-        <label>Title</label>
-        <input type="text" id="m_name" placeholder="Movie / Series Name">
+    <label class="field-label" style="color: #ffcc00;">🔄 Upgrade Old Post (Search TMDB)</label>
+    <div class="search-wrapper">
+      <div style="display: flex; gap: 10px;">
+        <input type="text" id="searchInput" placeholder="Search to overwrite fields..." style="margin-bottom:0; flex: 1;" onkeypress="if(event.key === 'Enter') searchTMDB()">
+        <button onclick="searchTMDB()" style="width: auto; padding: 0 20px; background: #333; color: white;">🔍 Search</button>
       </div>
-      
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-        <div class="form-group">
-          <label>Type</label>
-          <select id="m_type">
-            <option value="Movie">Movie</option>
-            <option value="Series">Series</option>
-            <option value="TELUGU">TELUGU</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Category</label>
-          <input type="text" id="m_category" placeholder="Action, Drama, HD...">
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label>Image URL</label>
-        <input type="text" id="m_image" placeholder="https://image.tmdb.org/...">
-      </div>
-
-      <div class="form-group">
-        <label>Description</label>
-        <textarea id="m_desc" placeholder="Plot summary..."></textarea>
-      </div>
-
-      <!-- LINKS SECTION -->
-      <div class="links-section">
-        <div class="links-header">
-          <h3>🔗 Downloads / Links</h3>
-          <button class="btn-add" onclick="addLinkRow()">+ Add Link</button>
-        </div>
-        <div id="linksWrapper">
-          <!-- Link rows will be injected here -->
-        </div>
-      </div>
-
-      <button class="btn-save" id="saveBtn" onclick="saveData()">💾 Update Database</button>
+      <div id="searchResults"></div>
     </div>
+    <p id="status" style="text-align: center; font-size: 13px; margin-top: -5px; margin-bottom: 15px;"></p>
+
+    <label class="field-label">File Name</label>
+    <input type="text" id="name">
+
+    <div class="grid-3">
+      <div>
+        <label class="field-label">Upload Type</label>
+        <select id="type" onchange="toggleMediaFields()">
+          <option value="Movie">🎬 Movie</option>
+          <option value="Series">📺 Series</option>
+        </select>
+      </div>
+      <div>
+        <label class="field-label">Quality Tag</label>
+        <input type="text" id="upload_quality" placeholder="HD, CAM, WEB-DL">
+      </div>
+      <div>
+        <label class="field-label">Release Date</label>
+        <input type="text" id="release_date" placeholder="YYYY-MM-DD">
+      </div>
+    </div>
+
+    <div class="grid-3">
+      <div>
+        <label class="field-label">Category / Genres</label>
+        <input type="text" id="category" placeholder="Action, Sci-Fi...">
+      </div>
+      <div>
+        <label class="field-label">Rating</label>
+        <input type="text" id="rating" placeholder="8.5">
+      </div>
+      <div>
+        <label class="field-label">Runtime</label>
+        <input type="text" id="runtime" placeholder="120 mins">
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div>
+        <label class="field-label">Cover Image (Vertical)</label>
+        <input type="text" id="image">
+      </div>
+      <div>
+        <label class="field-label">Backdrop (Horizontal)</label>
+        <input type="text" id="backdrop">
+      </div>
+    </div>
+
+    <label class="field-label">Description / Plot</label>
+    <textarea id="description" rows="3"></textarea>
+
+    <label class="field-label" style="margin-top: 10px;">Media Links</label>
+    <div id="links-container"></div>
+    <button onclick="addLinkRow()" style="background: rgba(255,255,255,0.1); color: white; border: 1px dashed rgba(255,255,255,0.3);">➕ Add Media Link</button>
+
+    <button onclick="saveChanges()" style="margin-top: 25px; font-size: 16px; padding: 15px;">💾 Save Changes</button>
   </div>
+</div>
 
-  <!-- Firebase Dependencies -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="firebase-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="firebase-config.js"></script>
 
-  <script>
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const auth = firebase.auth();
+<script>
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  const auth = firebase.auth();
+
+  const API_KEY = "e262bd07ebfb205acaed257bb4227ea6"; 
+
+  // 🔒 SECURITY CHECK
+  auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+  if (!localStorage.getItem("ntm_admin_session")) { window.location.href = "admin.html"; }
+
+  let allMovies = [];
+  let currentMovieIndex = -1;
+
+  auth.onAuthStateChanged(user => {
+    if (user) { fetchMovies(); } 
+    else { window.location.href = "admin.html"; }
+  });
+
+  // --- HIDE SEARCH DROPDOWN LOGIC ---
+  document.addEventListener("click", function(event) {
+    const wrapper = document.querySelector(".search-wrapper");
+    if (wrapper && !wrapper.contains(event.target)) {
+      document.getElementById("searchResults").style.display = "none";
+    }
+  });
+
+  document.getElementById("searchInput").addEventListener("input", function(e) {
+    if(e.target.value.trim() === "") {
+      document.getElementById("searchResults").style.display = "none";
+      document.getElementById("status").innerText = "";
+    }
+  });
+
+  // --- TOGGLE MEDIA FIELDS LOGIC ---
+  function toggleMediaFields() {
+    const isSeries = document.getElementById("type").value === "Series";
+    const displayStyle = isSeries ? "inline-block" : "none";
     
-    // Security check
-    auth.onAuthStateChanged(user => {
-      if (!user) window.location.href = "admin.html";
-      else initEditor();
+    document.querySelectorAll(".link-ep").forEach(el => el.style.display = displayStyle);
+    document.querySelectorAll(".link-quality").forEach(el => el.style.display = displayStyle);
+  }
+
+  async function fetchMovies() {
+    try {
+      const docSnap = await db.collection("movie_database").doc("master_list").get();
+      if (docSnap.exists && docSnap.data().movies) {
+        allMovies = docSnap.data().movies;
+        populateDropdown();
+      }
+    } catch (e) { alert("Error loading database."); }
+  }
+
+  function populateDropdown() {
+    const select = document.getElementById("movieSelect");
+    select.innerHTML = '<option value="">-- Select a file to edit --</option>'; 
+    allMovies.forEach((movie, index) => {
+      const option = document.createElement("option");
+      option.value = index;
+      option.text = movie.name + " (" + (movie.type || "Movie") + ")";
+      select.appendChild(option);
+    });
+  }
+
+  function loadMovieDetails() {
+    const select = document.getElementById("movieSelect");
+    const index = select.value;
+    const form = document.getElementById("editForm");
+
+    if (index === "") { form.style.display = "none"; return; }
+
+    currentMovieIndex = parseInt(index);
+    const movie = allMovies[currentMovieIndex];
+
+    document.getElementById("name").value = movie.name || "";
+    document.getElementById("type").value = movie.type || "Movie";
+    document.getElementById("upload_quality").value = movie.upload_quality || "";
+    document.getElementById("category").value = movie.category || "";
+    document.getElementById("release_date").value = movie.release_date || "";
+    document.getElementById("rating").value = movie.rating || "";
+    document.getElementById("runtime").value = movie.runtime || "";
+    document.getElementById("image").value = movie.image || "";
+    document.getElementById("backdrop").value = movie.backdrop || "";
+    document.getElementById("description").value = movie.description || "";
+    
+    document.getElementById("searchInput").value = movie.name || "";
+    document.getElementById("status").innerText = "";
+
+    const container = document.getElementById("links-container");
+    container.innerHTML = "";
+
+    if (Array.isArray(movie.links) && movie.links.length > 0) {
+      movie.links.forEach(link => {
+        let url = "", ep = "1", quality = "720p", size = "", unit = "MB";
+
+        if (typeof link === "string") {
+          try { url = atob(link); } catch(e) { url = link; }
+        } else {
+          try { url = atob(link.url); } catch(e) { url = link.url; }
+          if (link.episode) ep = link.episode.replace("Ep ", "").trim();
+          quality = link.quality || "720p";
+          size = link.size || "";
+          unit = link.unit || "MB";
+        }
+        addLinkRow(url, ep, quality, size, unit);
+      });
+    } else {
+      addLinkRow(); 
+    }
+
+    form.style.display = "block";
+    toggleMediaFields(); 
+  }
+
+  function addLinkRow(url = "", ep = "1", quality = "720p", size = "", unit = "MB") {
+    const isSeries = document.getElementById("type").value === "Series";
+    const displayStyle = isSeries ? "inline-block" : "none";
+
+    const container = document.getElementById("links-container");
+    const div = document.createElement("div");
+    div.className = "link-row";
+    div.innerHTML = `
+      <input type="text" placeholder="Video URL..." class="link-url" value="${url}" style="flex: 1; min-width: 150px;">
+      <input type="number" placeholder="Ep" class="link-ep" style="width: 60px; display: ${displayStyle};" min="1" value="${ep}">
+      <select class="link-quality" style="width: 90px; display: ${displayStyle};">
+        <option value="Auto" ${quality==="Auto"?"selected":""}>Auto</option>
+        <option value="480p" ${quality==="480p"?"selected":""}>480p</option>
+        <option value="720p" ${quality==="720p"?"selected":""}>720p</option>
+        <option value="1080p" ${quality==="1080p"?"selected":""}>1080p</option>
+        <option value="4K" ${quality==="4K"?"selected":""}>4K</option>
+      </select>
+      <input type="number" placeholder="Size" class="link-size" style="width: 75px;" min="0" step="0.1" value="${size}">
+      <select class="link-unit" style="width: 65px;">
+        <option value="MB" ${unit==="MB"?"selected":""}>MB</option>
+        <option value="GB" ${unit==="GB"?"selected":""}>GB</option>
+      </select>
+      <button class="btn-danger" onclick="this.parentElement.remove()">❌</button>
+    `;
+    container.appendChild(div);
+  }
+
+  // --- TMDB FETCH LOGIC (With Smart Year Detector) ---
+  async function searchTMDB() {
+    const rawQuery = document.getElementById("searchInput").value.trim();
+    const status = document.getElementById("status");
+    const dropdown = document.getElementById("searchResults");
+
+    if (!rawQuery) return;
+
+    status.innerText = "⏳ Searching TMDB...";
+    status.style.color = "#ffcc00";
+    dropdown.style.display = "none";
+
+    let query = rawQuery;
+    let yearFilter = null;
+    const yearMatch = rawQuery.match(/(.*)\s+(\d{4})$/);
+    
+    if (yearMatch) {
+      query = yearMatch[1].trim(); 
+      yearFilter = yearMatch[2];   
+    }
+
+    try {
+      const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
+      const data = await res.json();
+      let media = data.results.filter(m => m.media_type === 'movie' || m.media_type === 'tv');
+
+      if (yearFilter) {
+        media = media.filter(item => {
+          const itemYear = item.release_date || item.first_air_date || "";
+          return itemYear.startsWith(yearFilter);
+        });
+      }
+
+      if (media.length > 0) {
+        status.innerText = `✅ Found ${media.length} results.`;
+        status.style.color = "#00bfff";
+        
+        dropdown.innerHTML = "";
+        media.forEach(item => {
+          const title = item.title || item.name;
+          const yearRaw = item.release_date || item.first_air_date || "";
+          const year = yearRaw ? yearRaw.split("-")[0] : "N/A";
+          const typeLabel = item.media_type === 'tv' ? '📺 Series' : '🎬 Movie';
+          const thumb = item.poster_path ? `https://image.tmdb.org/t/p/w92${item.poster_path}` : 'https://via.placeholder.com/40x60?text=No+Img';
+
+          const div = document.createElement("div");
+          div.className = "search-item";
+          div.onclick = () => fetchDeepDetails(item.id, item.media_type);
+          div.innerHTML = `
+            <img src="${thumb}" class="search-thumb">
+            <div class="search-info">
+              <span class="search-title">${title} (${year})</span>
+              <span class="search-meta">${typeLabel}</span>
+            </div>
+          `;
+          dropdown.appendChild(div);
+        });
+        dropdown.style.display = "block";
+      } else { 
+        status.innerText = yearFilter 
+          ? `❌ No results found for "${query}" in the year ${yearFilter}.` 
+          : "❌ No results found.";
+        status.style.color = "#ff4d4d"; 
+      }
+    } catch (e) { status.innerText = "❌ Error connecting to TMDB."; }
+  }
+
+  async function fetchDeepDetails(id, type) {
+    document.getElementById("searchResults").style.display = "none";
+    const status = document.getElementById("status");
+    status.innerText = "⏳ Overwriting fields...";
+
+    try {
+      const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${API_KEY}`);
+      const details = await res.json();
+
+      document.getElementById("name").value = details.title || details.name;
+      document.getElementById("type").value = type === 'tv' ? 'Series' : 'Movie';
+      toggleMediaFields(); 
+
+      document.getElementById("category").value = details.genres ? details.genres.map(g => g.name).join(", ") : "";
+      document.getElementById("release_date").value = details.release_date || details.first_air_date || "";
+      document.getElementById("rating").value = details.vote_average ? details.vote_average.toFixed(1) : "";
+      document.getElementById("runtime").value = details.runtime ? details.runtime + " mins" : "";
+      document.getElementById("image").value = details.poster_path ? "https://image.tmdb.org/t/p/w780" + details.poster_path : "";
+      document.getElementById("backdrop").value = details.backdrop_path ? "https://image.tmdb.org/t/p/w1280" + details.backdrop_path : "";
+      document.getElementById("description").value = details.overview || "No description available.";
+      
+      status.innerText = "✅ Fields updated! Hit Save Changes below.";
+      status.style.color = "#00ff00";
+    } catch (e) { status.innerText = "❌ Error fetching deep details."; }
+  }
+
+  // --- SAVE LOGIC ---
+  async function saveChanges() {
+    const status = document.getElementById("status");
+    if (currentMovieIndex === -1) return;
+
+    const btn = document.querySelector("button[onclick='saveChanges()']");
+    btn.innerText = "Saving...";
+    btn.disabled = true;
+
+    const isSeries = document.getElementById("type").value === "Series";
+    let finalLinks = [];
+
+    document.querySelectorAll(".link-row").forEach(row => {
+      const url = row.querySelector(".link-url").value.trim();
+      if (url) {
+        finalLinks.push({
+          url: btoa(url),
+          episode: isSeries ? "Ep " + row.querySelector(".link-ep").value : "",
+          quality: isSeries ? row.querySelector(".link-quality").value : "",
+          size: row.querySelector(".link-size").value.trim(),
+          unit: row.querySelector(".link-unit").value
+        });
+      }
     });
 
-    let masterArray = [];
-    let movieIndex = -1;
-    let targetId = new URLSearchParams(window.location.search).get("id");
+    if (finalLinks.length === 0) { alert("❌ Must have at least one link!"); btn.innerText = "💾 Save Changes"; btn.disabled = false; return; }
 
-    async function initEditor() {
-      if (!targetId) {
-        alert("No ID provided to edit!");
-        window.location.href = "admin.html";
-        return;
-      }
+    allMovies[currentMovieIndex] = {
+      ...allMovies[currentMovieIndex],
+      name: document.getElementById("name").value.trim(),
+      type: document.getElementById("type").value,
+      upload_quality: document.getElementById("upload_quality").value.trim(),
+      category: document.getElementById("category").value.trim(),
+      release_date: document.getElementById("release_date").value.trim(),
+      rating: document.getElementById("rating").value.trim(),
+      runtime: document.getElementById("runtime").value.trim(),
+      image: document.getElementById("image").value.trim(),
+      backdrop: document.getElementById("backdrop").value.trim(),
+      description: document.getElementById("description").value.trim(),
+      links: finalLinks
+    };
 
-      document.getElementById("loader").style.display = "block";
-
-      try {
-        const snap = await db.collection("movie_database").doc("master_list").get();
-        if (snap.exists && snap.data().movies) {
-          masterArray = snap.data().movies;
-          
-          // Find the specific movie
-          movieIndex = masterArray.findIndex(m => String(m.id || m.customId) === String(targetId));
-          
-          if (movieIndex > -1) {
-            populateForm(masterArray[movieIndex]);
-            document.getElementById("loader").style.display = "none";
-            document.getElementById("editorForm").style.display = "block";
-          } else {
-            alert("Entry not found in Firebase!");
-            window.location.href = "admin.html";
-          }
-        }
-      } catch (err) {
-        alert("Error fetching database: " + err.message);
-      }
-    }
-
-    function populateForm(data) {
-      document.getElementById("m_name").value = data.name || "";
-      document.getElementById("m_type").value = data.type || "Movie";
-      document.getElementById("m_category").value = data.category || "";
-      document.getElementById("m_image").value = data.image || "";
-      document.getElementById("m_desc").value = data.description || "";
-
-      // 🔍 CRITICAL FIX: Look for 'downloads' OR 'links'
-      const linksArray = data.downloads || data.links || [];
-      const wrapper = document.getElementById("linksWrapper");
-      wrapper.innerHTML = ""; // Clear existing
-
-      if (linksArray.length === 0) {
-        addLinkRow(); // Add an empty row if no links exist
-      } else {
-        linksArray.forEach(linkObj => addLinkRow(linkObj));
-      }
-    }
-
-    function addLinkRow(data = {}) {
-      const wrapper = document.getElementById("linksWrapper");
-      const row = document.createElement("div");
-      row.className = "link-row";
+    try {
+      await db.collection("movie_database").doc("master_list").update({ movies: allMovies });
       
-      row.innerHTML = `
-        <input type="text" class="l-ep" placeholder="Ep 1" value="${data.episode || ''}">
-        <input type="text" class="l-quality" placeholder="720p" value="${data.quality || ''}">
-        <input type="number" class="l-size" placeholder="Size" value="${data.size || ''}">
-        <select class="l-unit">
-          <option value="MB" ${data.unit === 'MB' ? 'selected' : ''}>MB</option>
-          <option value="GB" ${data.unit === 'GB' ? 'selected' : ''}>GB</option>
-        </select>
-        <div class="link-url-wrapper">
-          <input type="text" class="l-url" placeholder="Paste Base64 URL here" value="${data.url || ''}">
-        </div>
-        <button class="btn-remove" onclick="this.parentElement.remove()">X</button>
-      `;
-      wrapper.appendChild(row);
-    }
-
-    async function saveData() {
-      const btn = document.getElementById("saveBtn");
-      btn.innerText = "⏳ Saving...";
-      btn.disabled = true;
-
-      // Gather Links
-      const rows = document.querySelectorAll(".link-row");
-      const updatedLinks = [];
+      status.style.color = "#00ff00";
+      status.innerText = "✅ Movie updated successfully!";
       
-      rows.forEach(row => {
-        const url = row.querySelector(".l-url").value.trim();
-        if (url !== "") { // Only save rows that have a URL
-          updatedLinks.push({
-            episode: row.querySelector(".l-ep").value.trim(),
-            quality: row.querySelector(".l-quality").value.trim(),
-            size: row.querySelector(".l-size").value.trim(),
-            unit: row.querySelector(".l-unit").value,
-            url: url
-          });
-        }
-      });
-
-      // Construct Updated Object
-      const updatedMovie = {
-        id: Number(targetId),
-        customId: Number(targetId), // Keep legacy support
-        name: document.getElementById("m_name").value.trim(),
-        type: document.getElementById("m_type").value,
-        category: document.getElementById("m_category").value.trim(),
-        image: document.getElementById("m_image").value.trim(),
-        description: document.getElementById("m_desc").value.trim(),
-        downloads: updatedLinks // Use the new JSON key 'downloads'
-      };
-
-      // Replace the old object in the array with the new one
-      masterArray[movieIndex] = updatedMovie;
-
-      // Push entire array back to Firebase
-      try {
-        await db.collection("movie_database").doc("master_list").set({
-          movies: masterArray
-        });
-        alert("✅ Database Updated Successfully!");
-        window.location.href = "admin.html"; // Go back to dashboard
-      } catch (err) {
-        alert("❌ Error saving: " + err.message);
-        btn.innerText = "💾 Update Database";
-        btn.disabled = false;
-      }
+      const select = document.getElementById("movieSelect");
+      select.options[select.selectedIndex].text = allMovies[currentMovieIndex].name + " (" + allMovies[currentMovieIndex].type + ")";
+    } catch (error) {
+      alert("❌ Error saving: " + error.message);
     }
-  </script>
+
+    btn.innerText = "💾 Save Changes";
+    btn.disabled = false;
+  }
+</script>
+
 </body>
 </html>
