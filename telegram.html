@@ -29,9 +29,14 @@
         /* New Custom UI elements */
         .radio-group { margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 10px; font-size: 14px; }
         .radio-group label { cursor: pointer; display: flex; align-items: center; gap: 5px; }
+        
+        /* Quick Tags UI */
+        .quick-tags-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+        .quick-tag { background: rgba(0, 191, 255, 0.15); border: 1px solid rgba(0, 191, 255, 0.5); color: #00bfff; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: 0.2s; white-space: nowrap; user-select: none; }
+        .quick-tag:hover { background: #00bfff; color: #0a1128; font-weight: bold; }
     </style>
 </head>
-<body>
+<body onload="toggleUI()">
 
     <button class="back-btn" onclick="window.location.href='admin.html'">← Back to Dashboard</button>
 
@@ -65,6 +70,23 @@
 
             <div id="customTextArea" style="display: none;">
                 <h3 style="font-size: 14px; color: #00bfff;">2. Message Details</h3>
+                
+                <div id="quickTagsNew" class="quick-tags-container" style="display: none;">
+                    <span class="quick-tag" onclick="addTag('📹 Quality: CAM Print')">+ CAM Print</span>
+                    <span class="quick-tag" onclick="addTag('📼 Quality: HQ Pre-DVD')">+ HQ Pre-DVD</span>
+                    <span class="quick-tag" onclick="addTag('📺 Quality: WEB-DL')">+ WEB-DL</span>
+                    <span class="quick-tag" onclick="addTag('🎥 Quality: 1080p HD')">+ 1080p HD</span>
+                </div>
+
+                <div id="quickTagsUpdate" class="quick-tags-container" style="display: none;">
+                    <span class="quick-tag" onclick="addTag('🎥 HD Quality Added')">+ HD Added</span>
+                    <span class="quick-tag" onclick="addTag('✨ Updated to HD')">+ Updated to HD</span>
+                    <span class="quick-tag" onclick="addTag('📺 HQ Print Uploaded')">+ HQ Print</span>
+                    <span class="quick-tag" onclick="addTag('🔧 Broken Links Fixed')">+ Links Fixed</span>
+                    <span class="quick-tag" onclick="addTag('🔄 File Size Compressed (Save Data!)')">+ Compressed</span>
+                    <span class="quick-tag" onclick="addTag('🎧 Telugu Audio Added')">+ Telugu Audio</span>
+                </div>
+
                 <textarea id="updateMessage" rows="4" placeholder="Describe the update, new features, or changes here..." style="resize: vertical;"></textarea>
             </div>
 
@@ -102,6 +124,17 @@
             }
         });
 
+        // --- QUICK TAGS LOGIC ---
+        function addTag(text) {
+            const textarea = document.getElementById('updateMessage');
+            // Add a checkmark and a new line if there is already text
+            const prefix = textarea.value.trim() === "" ? "✅ " : "\n✅ ";
+            textarea.value += prefix + text;
+            // Highlight the text area briefly to show it worked
+            textarea.style.borderColor = "#00ff00";
+            setTimeout(() => textarea.style.borderColor = "rgba(255,255,255,0.2)", 500);
+        }
+
         // --- UI TOGGLE LOGIC ---
         function toggleUI() {
             const type = document.querySelector('input[name="bType"]:checked').value;
@@ -111,21 +144,30 @@
 
             if (type === 'new') {
                 movieArea.style.display = 'block';
-                textArea.style.display = 'none';
+                textArea.style.display = 'block'; // Show text box for optional tags
+                document.getElementById('quickTagsNew').style.display = 'flex';
+                document.getElementById('quickTagsUpdate').style.display = 'none';
                 headerInput.value = '🎬 *NOW STREAMING*';
+                document.getElementById('updateMessage').placeholder = "Optional: Click a quality tag above or add notes...";
             } else if (type === 'update') {
                 movieArea.style.display = 'block';
                 textArea.style.display = 'block'; 
+                document.getElementById('quickTagsNew').style.display = 'none';
+                document.getElementById('quickTagsUpdate').style.display = 'flex';
                 headerInput.value = '🔄 *MOVIE UPDATE*';
-                document.getElementById('updateMessage').placeholder = "What changed? (e.g., Audio fixed, 4K quality added...)";
+                document.getElementById('updateMessage').placeholder = "What changed? (Click tags above or type here)";
             } else if (type === 'web') {
                 movieArea.style.display = 'none';
                 textArea.style.display = 'block';
+                document.getElementById('quickTagsNew').style.display = 'none';
+                document.getElementById('quickTagsUpdate').style.display = 'none';
                 headerInput.value = '🛠️ *WEBSITE UPDATE*';
                 document.getElementById('updateMessage').placeholder = "List the new website features or bug fixes...";
             } else if (type === 'custom') {
                 movieArea.style.display = 'none';
                 textArea.style.display = 'block';
+                document.getElementById('quickTagsNew').style.display = 'none';
+                document.getElementById('quickTagsUpdate').style.display = 'none';
                 headerInput.value = '📢 *ANNOUNCEMENT*';
                 document.getElementById('updateMessage').placeholder = "Write your custom announcement here...";
             }
@@ -226,8 +268,8 @@
             const header = document.getElementById('customHeader').value || "🎬 *UPDATE*";
             let message = `${header}%0A%0A`;
 
-            // Add custom text if it's not a standard new upload
-            if (type !== 'new') {
+            // Add custom text / tags if provided
+            if (updateText !== "") {
                 message += `${updateText.replace(/\n/g, '%0A')}%0A%0A`; 
             }
 
