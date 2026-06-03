@@ -55,7 +55,7 @@
     </div>
 
     <h3 style="font-size: 14px; color: #00bfff;">2. Custom Message (Optional Header)</h3>
-    <input type="text" id="customHeader" placeholder="e.g., 🔥 Weekend Mega Drop is here!" value="🔥 New Arrivals on NTM Online!">
+    <input type="text" id="customHeader" placeholder="e.g., 🎬 NOW STREAMING" value="🎬 *NOW STREAMING*">
 
     <button onclick="sendBroadcast()" id="sendBtn" style="font-size: 16px; padding: 15px; background: linear-gradient(135deg, #007bff, #00bfff); color: white; margin-top: 10px;">📤 Send Broadcast to Channel</button>
     <p id="status" style="text-align: center; font-size: 13px; margin-top: 10px;"></p>
@@ -172,23 +172,26 @@
 
     // 2. Build the Message
     // Note: %0A is URL encoding for a line break (Enter key)
-    const header = document.getElementById('customHeader').value || "🎬 *NEW ARRIVALS ON NTM ONLINE* 🍿";
+    const header = document.getElementById('customHeader').value || "🎬 *NOW STREAMING*";
     let message = `${header}%0A%0A`;
 
     checkboxes.forEach(box => {
       const movie = loadedMovies[box.value];
       const movieLink = `https://alatheesh.github.io/file.html?id=${movie.customId}`;
       
-      message += `🔥 *${movie.name}* (${movie.type})%0A`;
-      message += `🎭 ${movie.category}%0A`;
-      message += `👉 [Click here to Watch!](${movieLink})%0A%0A`;
+      message += `🍿 *${movie.name}*%0A`;
+      message += `🏷️ _${movie.category} · ${movie.type}_%0A`;
+      message += `🔗 [Watch on NTM Online](${movieLink})%0A%0A`;
     });
 
-    // 3. Get Secure Credentials
+    // 3. Add the Credits Footer with a one-space gap (%0A%0A)
+    message += `%0A⚡ Powered by @NTMONLINE`;
+
+    // 4. Get Secure Credentials
     const botToken = localStorage.getItem('ntm_bot_token');
     const chatId = localStorage.getItem('ntm_channel_id');
 
-    // 4. Send to Telegram API
+    // 5. Send to Telegram API
     const telegramUrl = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${message}&parse_mode=Markdown&disable_web_page_preview=true`;
 
     try {
