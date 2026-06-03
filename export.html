@@ -1,109 +1,323 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Export Data • Admin</title>
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Database Manager • NTM Admin</title>
+  <link rel="stylesheet" href="home.css">
   <style>
-    /* 💎 UNIVERSAL ADMIN CSS */
-    body { font-family: Arial, sans-serif; background: #0a1128; color: white; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
-    h2 { color: #00bfff; margin-bottom: 20px; text-align: center; }
-    .container { background: rgba(255, 255, 255, 0.05); padding: 30px; border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1); width: 100%; max-width: 700px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-    
-    .back-btn { background: rgba(255, 255, 255, 0.1); color: white; width: auto; padding: 8px 16px; margin-bottom: 20px; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s;}
-    .back-btn:hover { background: rgba(255, 255, 255, 0.2); }
-
-    button { width: 100%; padding: 12px; margin-bottom: 12px; border: none; border-radius: 8px; background: #00bfff; color: black; font-weight: bold; cursor: pointer; transition: 0.3s; }
-    button:hover { background: #008cba; transform: scale(1.02); }
-
-    textarea {
-      width: 100%; height: 350px; box-sizing: border-box; padding: 15px; margin-top: 15px;
-      border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);
-      background: rgba(0,0,0,0.3); color: #00ff00; outline: none; font-family: monospace; font-size: 13px;
+    body {
+      background: linear-gradient(135deg, #050a19 0%, #0a1128 100%);
+      color: white;
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 20px;
     }
+
+    .admin-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+
+    @media (max-width: 768px) {
+      .admin-container { grid-template-columns: 1fr; }
+    }
+
+    .panel {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    h2 {
+      color: #00bfff;
+      font-size: 1.5rem;
+      margin-top: 0;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding-bottom: 10px;
+    }
+
+    p { font-size: 13px; color: #ccc; line-height: 1.5; margin-bottom: 15px; }
+
+    /* CHECKLIST UI */
+    .movie-checklist {
+      max-height: 300px;
+      overflow-y: auto;
+      background: rgba(0,0,0,0.3);
+      border-radius: 8px;
+      padding: 10px;
+      margin: 15px 0;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .check-item {
+      display: flex;
+      align-items: center;
+      padding: 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .check-item:hover { background: rgba(0, 191, 255, 0.1); }
+    .check-item input { margin-right: 12px; cursor: pointer; }
+
+    /* TEXTAREA UI */
+    .json-textarea {
+      width: 100%;
+      height: 300px;
+      background: rgba(0,0,0,0.3);
+      color: #00ffcc;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 15px;
+      box-sizing: border-box;
+      font-family: monospace;
+      font-size: 12px;
+      resize: vertical;
+      margin: 15px 0;
+    }
+    .json-textarea:focus { outline: none; border-color: #00bfff; }
+
+    /* BUTTONS */
+    .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
+    
+    button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .btn-blue { background: #00bfff; color: black; width: 100%; font-size: 14px; padding: 12px; margin-top: 10px;}
+    .btn-blue:hover { background: #008cba; transform: translateY(-2px); }
+    
+    .btn-dark { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); flex: 1;}
+    .btn-dark:hover { background: rgba(255,255,255,0.2); }
+
+    .btn-danger { background: #ff4d4d; color: white; width: 100%; font-size: 14px; padding: 12px;}
+    .btn-danger:hover { background: #cc0000; box-shadow: 0 0 15px rgba(255, 77, 77, 0.5); transform: translateY(-2px);}
+
+    .back-nav {
+      display: inline-block;
+      margin-bottom: 20px;
+      color: #00bfff;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .back-nav:hover { color: white; }
   </style>
 </head>
 <body>
 
-<button class="back-btn" onclick="window.location.href='admin.html'">← Back to Dashboard</button>
+  <a href="admin.html" class="back-nav">← Back to Admin Panel</a>
 
-<div class="container">
-  <h2>💾 Merge & Export Data</h2>
-  <button onclick="mergeData()">1. Fetch & Merge Data</button>
-  <button onclick="copyData()" style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3);">2. Copy JSON to Clipboard</button>
-  
-  <textarea id="output" placeholder="Merged JSON data will appear here..." readonly></textarea>
-</div>
-
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="firebase-config.js"></script>
-
-<script>
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-  const auth = firebase.auth();
-  
-  auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-
-  if (!localStorage.getItem("ntm_admin_session")) { window.location.href = "admin.html"; }
-
-  auth.onAuthStateChanged(user => {
-    if (!user) { window.location.href = "admin.html"; }
-  });
-
-  async function mergeData() {
-    const btn = document.querySelector("button[onclick='mergeData()']");
-    btn.innerText = "Fetching...";
+  <div class="admin-container">
     
-    try {
-      let localFiles = [];
+    <div class="panel">
+      <h2>📥 Selective Merge & Export</h2>
+      <p>Select the movies from <b>Firebase</b> that you want to export. They will be automatically merged with your existing <b>files.json</b> data in the downloaded file.</p>
+      
+      <div class="btn-group">
+        <button class="btn-dark" onclick="toggleAll(true)">Select All</button>
+        <button class="btn-dark" onclick="toggleAll(false)">Deselect All</button>
+      </div>
+
+      <div class="movie-checklist" id="checklist">
+        <div style="text-align: center; padding: 20px; color: #888;">Loading Firebase Database...</div>
+      </div>
+
+      <button class="btn-blue" onclick="exportCustomJson()">Download Merged JSON</button>
+    </div>
+
+    <div class="panel">
+      <h2>⚠️ Bulk Overwrite Firebase</h2>
+      <p>Paste your final, merged JSON code here. This will <b>DELETE</b> the current Firebase movie list and replace it entirely with your new code.</p>
+      
+      <textarea id="jsonInput" class="json-textarea" placeholder='[\n  {\n    "name": "Movie Title",\n    "id": "12345"\n  }\n]'></textarea>
+
+      <button class="btn-danger" onclick="overwriteDatabase()">⚠️ REPLACE FIREBASE DATABASE</button>
+    </div>
+
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="firebase-config.js"></script>
+
+  <script>
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+
+    // Secure Admin Check
+    auth.onAuthStateChanged(user => {
+      if (!user) {
+        window.location.href = "admin.html"; // Kick out if not logged in
+      } else {
+        initData(); // Load data only if authenticated
+      }
+    });
+
+    let localFilesData = [];
+    let firebaseData = [];
+
+    // Load both databases
+    async function initData() {
+      // 1. Fetch Local files.json (The base static data)
       try {
         const res = await fetch("files.json");
-        localFiles = await res.json();
-      } catch(e) {}
-
-      const docSnap = await db.collection("movie_database").doc("master_list").get();
-      const firebaseFiles = [];
-
-      if (docSnap.exists && docSnap.data().movies) {
-          const movies = docSnap.data().movies;
-          movies.forEach(d => {
-              firebaseFiles.push({
-                  id: d.customId,
-                  name: d.name,
-                  type: d.type,
-                  category: d.category,
-                  description: d.description || "",
-                  image: d.image || "",
-                  downloads: d.links || []
-              });
-          });
+        if (res.ok) {
+          localFilesData = await res.json();
+        }
+      } catch (err) {
+        console.warn("Could not load local files.json (it might be empty or missing).");
       }
 
-      const merged = [...localFiles, ...firebaseFiles];
-
-      const uniqueMap = {};
-      merged.forEach(item => { uniqueMap[item.id] = item; });
-      const finalData = Object.values(uniqueMap);
-
-      finalData.sort((a, b) => b.id - a.id);
-      document.getElementById("output").value = JSON.stringify(finalData, null, 2);
-
-    } catch (err) {
-      alert("Error: " + err.message);
+      // 2. Fetch Firebase Master List (The dynamic data)
+      try {
+        const snap = await db.collection("movie_database").doc("master_list").get();
+        if (snap.exists && snap.data().movies) {
+          firebaseData = snap.data().movies;
+        }
+        renderChecklist();
+      } catch (err) {
+        document.getElementById("checklist").innerHTML = `<div style="color:#ff4d4d; padding:10px;">Error loading Firebase data. Check connection.</div>`;
+      }
     }
-    btn.innerText = "1. Fetch & Merge Data";
-  }
 
-  function copyData() {
-    const textarea = document.getElementById("output");
-    if (!textarea.value) { alert("Nothing to copy! Fetch data first."); return; }
-    textarea.select();
-    document.execCommand("copy");
-    alert("✅ Copied to clipboard!");
-  }
-</script>
+    // Render checkboxes for Firebase items
+    function renderChecklist() {
+      const listDiv = document.getElementById("checklist");
+      listDiv.innerHTML = "";
+      
+      if(firebaseData.length === 0) {
+        listDiv.innerHTML = `<div style="padding:10px; color:#888; text-align: center;">Firebase database is currently empty.</div>`;
+        return;
+      }
 
+      // Sort newest first for easier selection
+      const sorted = [...firebaseData].sort((a,b) => (b.customId || b.id) - (a.customId || a.id));
+
+      sorted.forEach(movie => {
+        const uid = movie.customId || movie.id;
+        const label = document.createElement("label");
+        label.className = "check-item";
+        label.innerHTML = `
+          <input type="checkbox" class="movie-cb" value="${uid}" checked>
+          <span>${movie.name} <small style="color:#00bfff; margin-left: 5px;">[${movie.type}]</small></span>
+        `;
+        listDiv.appendChild(label);
+      });
+    }
+
+    // Select/Deselect All Buttons
+    function toggleAll(state) {
+      document.querySelectorAll('.movie-cb').forEach(cb => cb.checked = state);
+    }
+
+    // Merging & Exporting Logic
+    function exportCustomJson() {
+      // 1. Get all checked Firebase IDs
+      const checkedBoxes = document.querySelectorAll('.movie-cb:checked');
+      const selectedIds = Array.from(checkedBoxes).map(cb => cb.value);
+
+      // 2. Filter firebase data to only include checked movies
+      const selectedFirebaseMovies = firebaseData.filter(m => {
+        const uid = String(m.customId || m.id);
+        return selectedIds.includes(uid);
+      });
+
+      // 3. Merge files.json with selected Firebase movies
+      const mergedDatabase = [...localFilesData, ...selectedFirebaseMovies];
+
+      // 4. Remove duplicate entries (just in case) by ID
+      const uniqueMap = new Map();
+      mergedDatabase.forEach(item => {
+        uniqueMap.set(String(item.customId || item.id), item);
+      });
+      const finalCleanDatabase = Array.from(uniqueMap.values());
+
+      // 5. Trigger Download
+      const dataStr = JSON.stringify(finalCleanDatabase, null, 2);
+      const blob = new Blob([dataStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "ntm_master_merged.json";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // Overwrite Logic (REPLACING FIREBASE)
+    async function overwriteDatabase() {
+      const inputStr = document.getElementById("jsonInput").value.trim();
+      
+      if (!inputStr) {
+        alert("⚠️ Please paste your JSON data into the text box first.");
+        return;
+      }
+
+      let parsedData;
+      try {
+        parsedData = JSON.parse(inputStr);
+        if (!Array.isArray(parsedData)) {
+          throw new Error("Data must be a JSON Array [ {...}, {...} ]");
+        }
+      } catch (err) {
+        alert("❌ Invalid JSON Format! Please check your code.\n\nError: " + err.message);
+        return;
+      }
+
+      // Final Warning Prompt
+      const confirmWarning = confirm(
+        "🚨 STOP! 🚨\n\n" +
+        "You are about to DELETE your current Firebase database and replace it completely with the " + parsedData.length + " movies you pasted.\n\n" +
+        "Are you absolutely sure you want to do this?"
+      );
+
+      if (confirmWarning) {
+        try {
+          const btn = document.querySelector(".btn-danger");
+          btn.innerText = "⏳ Uploading & Replacing Server Data...";
+          btn.style.background = "#555";
+          btn.disabled = true;
+
+          // Write to Firebase (Overwrites the entire document)
+          await db.collection("movie_database").doc("master_list").set({
+            movies: parsedData
+          });
+
+          alert("✅ SUCCESS! The Firebase database has been completely replaced with your new data.");
+          
+          // Clear textarea and refresh page
+          document.getElementById("jsonInput").value = "";
+          window.location.reload();
+
+        } catch (error) {
+          console.error("Upload Error:", error);
+          alert("❌ Failed to overwrite database. Please try again.");
+          const btn = document.querySelector(".btn-danger");
+          btn.innerText = "⚠️ REPLACE FIREBASE DATABASE";
+          btn.style.background = "#ff4d4d";
+          btn.disabled = false;
+        }
+      }
+    }
+  </script>
 </body>
 </html>
