@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Telegram Broadcaster • Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    /* 💎 UNIVERSAL ADMIN CSS */
+    body { font-family: Arial, sans-serif; background: #0a1128; color: white; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
+    h2 { color: #00bfff; margin-bottom: 20px; text-align: center; }
+    .container { background: rgba(255, 255, 255, 0.05); padding: 30px; border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1); width: 100%; max-width: 600px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    
+    .back-btn { background: rgba(255, 255, 255, 0.1); color: white; width: auto; padding: 8px 16px; margin-bottom: 20px; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s;}
+    .back-btn:hover { background: rgba(255, 255, 255, 0.2); }
+
+    input[type="text"], input[type="password"] { width: 100%; box-sizing: border-box; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.2); color: white; outline: none; }
+    input:focus { border-color: #00bfff; }
+    
+    button { width: 100%; padding: 12px; margin-bottom: 12px; border: none; border-radius: 8px; background: #00bfff; color: black; font-weight: bold; cursor: pointer; transition: 0.3s; }
+    button:hover { background: #008cba; transform: scale(1.02); }
+    .btn-danger { background: transparent; border: 1px solid #ff4d4d; color: #ff4d4d; margin-top: 10px; }
+
+    /* Security Panel */
+    .security-panel { background: rgba(255, 77, 77, 0.1); border: 1px solid #ff4d4d; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+    
+    /* Movie List UI */
+    .movie-list-container { max-height: 300px; overflow-y: auto; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px; margin-bottom: 20px; }
+    .movie-item { display: flex; align-items: center; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .movie-item:last-child { border-bottom: none; }
+    .movie-item input[type="checkbox"] { width: 20px; height: 20px; margin-right: 15px; cursor: pointer; accent-color: #00bfff; }
+    .movie-info { display: flex; flex-direction: column; }
+    .movie-title { font-weight: bold; font-size: 15px; color: white; }
+    .movie-meta { font-size: 12px; color: #aaa; }
+  </style>
+</head>
+<body>
+
+<button class="back-btn" onclick="window.location.href='admin.html'">← Back to Dashboard</button>
+
+<div class="container">
+  <h2>📢 Telegram Broadcaster</h2>
+
+  <div id="securitySetup" class="security-panel" style="display: none;">
+    <h3 style="color: #ff4d4d; margin-top: 0; font-size: 14px;">🔒 Security Setup Required</h3>
+    <p style="font-size: 12px; color: #ccc; margin-bottom: 15px;">Your token will be saved safely in this browser's local storage.</p>
+    <input type="password" id="botTokenInput" placeholder="Enter Telegram Bot Token">
+    <input type="text" id="channelIdInput" placeholder="Enter Channel ID (e.g., @ntm_online)">
+    <button onclick="saveCredentials()">Save Credentials</button>
+  </div>
+
+  <div id="broadcastForm" style="display: none;">
+    
+    <h3 style="font-size: 14px; color: #00bfff; margin-top: 0;">1. Select Movies to Announce</h3>
+    <div class="movie-list-container" id="movieList">
+      <p style="text-align: center; color: #aaa;">Loading database...</p>
+    </div>
+
+    <h3 style="font-size: 14px; color: #00bfff;">2. Custom Message (Optional Header)</h3>
+    <input type="text" id="customHeader" placeholder="e.g., 🔥 Weekend Mega Drop is here!" value="🔥 New Arrivals on NTM Online!">
+
+    <button onclick="sendBroadcast()" id="sendBtn" style="font-size: 16px; padding: 15px; background: linear-gradient(135deg, #007bff, #00bfff); color: white; margin-top: 10px;">📤 Send Broadcast to Channel</button>
+    <p id="status" style="text-align: center; font-size: 13px; margin-top: 10px;"></p>
+
+    <button class="btn-danger" onclick="clearCredentials()">Clear Saved Token (Logout)</button>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="firebase-config.js"></script>
+
+<script>
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  const auth = firebase.auth();
+
+  // 🔒 SECURE ADMIN CHECK
+  auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+  if (!localStorage.getItem("ntm_admin_session")) { window.location.href = "admin.html"; }
+
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      checkCredentials();
+    } else {
+      window.location.href = "admin.html";
+    }
+  });
+
+  // --- CREDENTIAL MANAGEMENT ---
+  function checkCredentials() {
+    const savedToken = localStorage.getItem('ntm_bot_token');
+    const savedChannel = localStorage.getItem('ntm_channel_id');
+    
+    if (savedToken && savedChannel) {
+      document.getElementById('securitySetup').style.display = 'none';
+      document.getElementById('broadcastForm').style.display = 'block';
+      loadMovies(); // Only load movies if we are ready
+    } else {
+      document.getElementById('securitySetup').style.display = 'block';
+      document.getElementById('broadcastForm').style.display = 'none';
+    }
+  }
+
+  function saveCredentials() {
+    const token = document.getElementById('botTokenInput').value.trim();
+    const channel = document.getElementById('channelIdInput').value.trim();
+    if(token && channel) {
+      localStorage.setItem('ntm_bot_token', token);
+      localStorage.setItem('ntm_channel_id', channel);
+      checkCredentials();
+    } else {
+      alert("⚠️ Please enter both the Token and the Channel ID.");
+    }
+  }
+
+  function clearCredentials() {
+    localStorage.removeItem('ntm_bot_token');
+    localStorage.removeItem('ntm_channel_id');
+    checkCredentials();
+  }
+
+  // --- LOAD MOVIES FOR SELECTION ---
+  let loadedMovies = [];
+
+  async function loadMovies() {
+    const container = document.getElementById("movieList");
+    try {
+      const docSnap = await db.collection("movie_database").doc("master_list").get();
+      if (docSnap.exists && docSnap.data().movies) {
+        loadedMovies = docSnap.data().movies;
+        
+        // Sort newest first
+        loadedMovies.sort((a, b) => b.customId - a.customId);
+        
+        container.innerHTML = "";
+        
+        loadedMovies.forEach((movie, index) => {
+          container.innerHTML += `
+            <div class="movie-item">
+              <input type="checkbox" id="movie_${index}" value="${index}">
+              <label for="movie_${index}" class="movie-info">
+                <span class="movie-title">${movie.name}</span>
+                <span class="movie-meta">${movie.type} • ${movie.category}</span>
+              </label>
+            </div>
+          `;
+        });
+      } else {
+        container.innerHTML = "<p style='text-align:center;'>No movies found in database.</p>";
+      }
+    } catch (e) {
+      container.innerHTML = "<p style='color:#ff4d4d; text-align:center;'>Error loading database.</p>";
+    }
+  }
+
+  // --- SEND TELEGRAM BROADCAST ---
+  async function sendBroadcast() {
+    const statusText = document.getElementById('status');
+    const btn = document.getElementById('sendBtn');
+    
+    // 1. Gather all checked movies
+    const checkboxes = document.querySelectorAll('.movie-item input[type="checkbox"]:checked');
+    if (checkboxes.length === 0) {
+      statusText.innerText = "⚠️ Please select at least one movie!";
+      statusText.style.color = "#ffcc00";
+      return;
+    }
+
+    btn.innerText = "Sending Broadcast...";
+    btn.disabled = true;
+    statusText.innerText = "";
+
+    // 2. Build the Message
+    // Note: %0A is URL encoding for a line break (Enter key)
+    const header = document.getElementById('customHeader').value || "🎬 *NEW ARRIVALS ON NTM ONLINE* 🍿";
+    let message = `${header}%0A%0A`;
+
+    checkboxes.forEach(box => {
+      const movie = loadedMovies[box.value];
+      const movieLink = `https://alatheesh.github.io/file.html?id=${movie.customId}`;
+      
+      message += `🔥 *${movie.name}* (${movie.type})%0A`;
+      message += `🎭 ${movie.category}%0A`;
+      message += `👉 [Click here to Watch!](${movieLink})%0A%0A`;
+    });
+
+    // 3. Get Secure Credentials
+    const botToken = localStorage.getItem('ntm_bot_token');
+    const chatId = localStorage.getItem('ntm_channel_id');
+
+    // 4. Send to Telegram API
+    const telegramUrl = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${message}&parse_mode=Markdown&disable_web_page_preview=true`;
+
+    try {
+      const response = await fetch(telegramUrl);
+      const data = await response.json();
+
+      if (data.ok) {
+        statusText.innerText = `✅ Successfully broadcasted ${checkboxes.length} movies!`;
+        statusText.style.color = "#00ff00";
+        // Uncheck all boxes after sending
+        checkboxes.forEach(box => box.checked = false);
+      } else {
+        statusText.innerText = "❌ Telegram Error: " + data.description;
+        statusText.style.color = "#ff4d4d";
+      }
+    } catch (error) {
+      statusText.innerText = "❌ Network Error connecting to Telegram.";
+      statusText.style.color = "#ff4d4d";
+    }
+
+    btn.innerText = "📤 Send Broadcast to Channel";
+    btn.disabled = false;
+  }
+</script>
+
+</body>
+</html>
