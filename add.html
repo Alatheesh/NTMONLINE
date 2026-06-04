@@ -33,11 +33,6 @@
     .search-info { display: flex; flex-direction: column; }
     .search-title { font-weight: bold; font-size: 14px; color: white; }
     .search-meta { font-size: 12px; color: #aaa; }
-
-    /* 🎛️ MULTI-VERSION TOGGLE WORKSPACE */
-    .version-toggle-container { display: flex; background: rgba(0, 0, 0, 0.4); padding: 6px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 25px; box-sizing: border-box; }
-    .toggle-btn { flex: 1; padding: 12px; background: transparent; color: #aaa; border: none; font-weight: bold; cursor: pointer; border-radius: 6px; transition: 0.3s; margin-bottom: 0; font-size: 14px; }
-    .toggle-btn.active { background: #00bfff; color: black; }
   </style>
 </head>
 <body>
@@ -47,92 +42,80 @@
 <div class="container">
   <h2>➕ Add Premium Content</h2>
 
-  <div class="version-toggle-container">
-    <button type="button" id="btnV1" class="toggle-btn active" onclick="switchVersion(1)">Version 1: Manual Input</button>
-    <button type="button" id="btnV2" class="toggle-btn" onclick="switchVersion(2)">Version 2: Telegram Fetcher</button>
+  <label class="field-label">Search TMDB (Name or Name + Year)</label>
+  <div class="search-wrapper">
+    <div style="display: flex; gap: 10px;">
+      <input type="text" id="searchInput" placeholder="e.g. Spider-Man 2002..." style="margin-bottom:0; flex: 1;" onkeypress="if(event.key === 'Enter') searchTMDB()">
+      <button onclick="searchTMDB()" style="width: auto; padding: 0 20px; background: #333; color: white;">🔍 Search</button>
+    </div>
+    <div id="searchResults"></div>
+  </div>
+  <p id="status" style="text-align: center; font-size: 13px; margin-top: -5px; margin-bottom: 15px;"></p>
+
+  <hr style="border-color: rgba(255,255,255,0.1); margin-bottom: 20px;">
+
+  <label class="field-label">File Name</label>
+  <input type="text" id="name">
+
+  <div class="grid-3">
+    <div>
+      <label class="field-label">Upload Type</label>
+      <select id="type" onchange="toggleMediaFields()">
+        <option value="Movie">🎬 Movie</option>
+        <option value="Series">📺 Series</option>
+      </select>
+    </div>
+    <div>
+      <label class="field-label">Quality Tag</label>
+      <input type="text" id="upload_quality" placeholder="HD, CAM, WEB-DL">
+    </div>
+    <div>
+      <label class="field-label">Release Date</label>
+      <input type="text" id="release_date" placeholder="YYYY-MM-DD">
+    </div>
   </div>
 
-  <div id="manualFormWrapper">
-    <label class="field-label">Search TMDB (Name or Name + Year)</label>
-    <div class="search-wrapper">
-      <div style="display: flex; gap: 10px;">
-        <input type="text" id="searchInput" placeholder="e.g. Spider-Man 2002..." style="margin-bottom:0; flex: 1;" onkeypress="if(event.key === 'Enter') searchTMDB()">
-        <button onclick="searchTMDB()" style="width: auto; padding: 0 20px; background: #333; color: white; margin-bottom: 0;">🔍 Search</button>
-      </div>
-      <div id="searchResults"></div>
+  <div class="grid-3">
+    <div style="grid-column: span 2;">
+      <label class="field-label">Category / Genres</label>
+      <input type="text" id="category" placeholder="Action, Sci-Fi...">
     </div>
-    <p id="status" style="text-align: center; font-size: 13px; margin-top: -5px; margin-bottom: 15px;"></p>
-
-    <hr style="border-color: rgba(255,255,255,0.1); margin-bottom: 20px;">
-
-    <label class="field-label">File Name</label>
-    <input type="text" id="name">
-
-    <div class="grid-3">
-      <div>
-        <label class="field-label">Upload Type</label>
-        <select id="type" onchange="toggleMediaFields()">
-          <option value="Movie">🎬 Movie</option>
-          <option value="Series">📺 Series</option>
-        </select>
-      </div>
-      <div>
-        <label class="field-label">Quality Tag</label>
-        <input type="text" id="upload_quality" placeholder="HD, CAM, WEB-DL">
-      </div>
-      <div>
-        <label class="field-label">Release Date</label>
-        <input type="text" id="release_date" placeholder="YYYY-MM-DD">
-      </div>
+    <div>
+      <label class="field-label">Rating</label>
+      <input type="text" id="rating" placeholder="8.5">
     </div>
-
-    <div class="grid-3">
-      <div style="grid-column: span 2;">
-        <label class="field-label">Category / Genres</label>
-        <input type="text" id="category" placeholder="Action, Sci-Fi...">
-      </div>
-      <div>
-        <label class="field-label">Rating</label>
-        <input type="text" id="rating" placeholder="8.5">
-      </div>
-    </div>
-
-    <div class="grid-2">
-      <div>
-        <label class="field-label">Cover Image (Vertical)</label>
-        <input type="text" id="image">
-      </div>
-      <div>
-        <label class="field-label">Backdrop (Horizontal)</label>
-        <input type="text" id="backdrop">
-      </div>
-    </div>
-
-    <div style="margin-top: -5px; margin-bottom: 15px;">
-        <label class="field-label">Runtime</label>
-        <input type="text" id="runtime" placeholder="120 mins">
-    </div>
-
-    <label class="field-label">Description / Plot</label>
-    <textarea id="description" rows="3"></textarea>
-
-    <label class="field-label" style="margin-top: 10px;">Media Links</label>
-    <div id="links-container"></div>
-    <button onclick="addLinkRow()" style="background: rgba(255,255,255,0.1); color: white; border: 1px dashed rgba(255,255,255,0.3);">➕ Add Media Link</button>
-
-    <button onclick="saveMovie()" style="margin-top: 25px; font-size: 16px; padding: 15px;">💾 Save to Database</button>
   </div>
 
-  <div id="automatedModuleWrapper" style="display: none;"></div>
+  <div class="grid-2">
+    <div>
+      <label class="field-label">Cover Image (Vertical)</label>
+      <input type="text" id="image">
+    </div>
+    <div>
+      <label class="field-label">Backdrop (Horizontal)</label>
+      <input type="text" id="backdrop">
+    </div>
+  </div>
+
+  <div style="margin-top: -5px; margin-bottom: 15px;">
+      <label class="field-label">Runtime</label>
+      <input type="text" id="runtime" placeholder="120 mins">
+  </div>
+
+  <label class="field-label">Description / Plot</label>
+  <textarea id="description" rows="3"></textarea>
+
+  <label class="field-label" style="margin-top: 10px;">Media Links</label>
+  <div id="links-container"></div>
+  <button onclick="addLinkRow()" style="background: rgba(255,255,255,0.1); color: white; border: 1px dashed rgba(255,255,255,0.3);">➕ Add Media Link</button>
+
+  <button onclick="saveMovie()" style="margin-top: 25px; font-size: 16px; padding: 15px;">💾 Save to Database</button>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="firebase-config.js"></script>
-
-<script src="telegram.js"></script>
-<script src="tg-module.js"></script>
 
 <script>
   firebase.initializeApp(firebaseConfig);
@@ -146,273 +129,7 @@
 
   const API_KEY = "e262bd07ebfb205acaed257bb4227ea6"; 
 
-  window.onload = () => {
-    addLinkRow();
-    
-    // ⚙️ INITIALIZE DETACHED VERSION 2 MODULE SYSTEM AND INJECT SMARTER SCANNING LOGIC
-    if (typeof TelegramModule !== "undefined") {
-      
-      // --- 🚀 ADVANCED BULK OVERRIDE FOR TELEGRAM MODULE SCANNING ---
-      TelegramModule.executeScan = function() {
-        const query = document.getElementById("tgModSearchQuery").value.trim();
-        const status = document.getElementById("tgModStatusStatus");
-        const verificationArea = document.getElementById("tgModVerificationWrapper");
-        const grid = document.getElementById("tgModResultsGrid");
-
-        this.discoveredItems = [];
-        grid.innerHTML = "";
-        verificationArea.style.display = "none";
-
-        if (typeof telegram === "undefined") {
-            return alert("Critical Error: telegram.js file script dependency missing from header paths.");
-        }
-
-        const apiId = parseInt(localStorage.getItem("ntm_api_id"));
-        const apiHash = localStorage.getItem("ntm_api_hash");
-        const savedSession = localStorage.getItem("ntm_bot_session_str");
-        const channelId = localStorage.getItem("ntm_channel_id");
-
-        if (!apiId || !apiHash || !savedSession || !channelId) {
-            status.innerHTML = "❌ Configuration profile incomplete. Check credential data blocks above.";
-            this.toggleConfig();
-            return;
-        }
-        if (!query) return alert("Please clarify standard media title before initializing scan routing operations.");
-
-        status.innerHTML = "⏳ Direct link connection routing initialization process active...";
-
-        (async () => {
-            try {
-                const { TelegramClient } = telegram;
-                const { StringSession } = telegram.sessions;
-
-                const client = new TelegramClient(new StringSession(savedSession), apiId, apiHash, { connectionRetries: 3 });
-                await client.start({});
-
-                status.innerHTML = `🔍 Connected as Account User! Pulling catalog matching "${query}"...`;
-
-                const messages = await client.getMessages(channelId, { search: query, limit: 30 });
-                let autoDetectedSeries = false;
-
-                for (const msg of messages) {
-                    let fileInfo = null;
-
-                    if (msg.media && msg.media.document) {
-                        let doc = msg.media.document;
-                        let sizeText = doc.size > 1073741824 
-                            ? (doc.size / 1073741824).toFixed(2) + " GB" 
-                            : (doc.size / 1048576).toFixed(2) + " MB";
-
-                        let fileName = "Stream_Target_Component.mp4";
-                        let durationText = "N/A";
-
-                        for (const attr of doc.attributes) {
-                            if (attr.className === "DocumentAttributeFilename") fileName = attr.fileName;
-                            if (attr.className === "DocumentAttributeVideo") {
-                                durationText = Math.floor((attr.duration || 0) / 60) + " mins";
-                            }
-                        }
-
-                        // 🔥 REFINED REGEX MECHANISM: Successfully tracks patterns like spider_noir_s01_ep1, s1_e1, ep05 with full underscore compatibility
-                        let episodeMatch = fileName.match(/(?:s\d+[-_\s]*)?(?:e|ep|episode)[-_\s]*0*(\d+)/i);
-                        let detectedEpisode = null;
-                        
-                        if (episodeMatch) {
-                            detectedEpisode = parseInt(episodeMatch[1]);
-                            autoDetectedSeries = true;
-                        } else {
-                            // Secondary fallback looking for isolated numbers sandwiched by symbols near the end
-                            let genericNumMatch = fileName.match(/[-_]0*(\d+)(?=[-_\s\.]|$)/);
-                            if (genericNumMatch) {
-                                detectedEpisode = parseInt(genericNumMatch[1]);
-                                autoDetectedSeries = true;
-                            }
-                        }
-
-                        // Smart structural Quality parser from name
-                        let qualityTag = "720p";
-                        if (/4k|2160p/i.test(fileName)) qualityTag = "4K";
-                        else if (/1080p/i.test(fileName)) qualityTag = "1080p";
-                        else if (/480p/i.test(fileName)) qualityTag = "480p";
-
-                        fileInfo = { name: fileName, size: sizeText, duration: durationText, episode: detectedEpisode, quality: qualityTag };
-                    }
-
-                    // 🛠️ USEFUL ADDITION 1: Parse plaintext download URLs directly from message caption texts
-                    if (msg.message) {
-                        let urlRegex = /(https?:\/\/[^\s]+)/g;
-                        let textUrlsFound = msg.message.match(urlRegex);
-                        if (textUrlsFound) {
-                            textUrlsFound.forEach(linkUrl => {
-                                if (!linkUrl.includes("t.me/") && !linkUrl.includes("telegram.me")) {
-                                    // Make sure it doesn't duplicate if already extracted by buttons
-                                    let exists = this.discoveredItems.some(i => i.url === linkUrl);
-                                    if (!exists) {
-                                        this.discoveredItems.push({
-                                            id: msg.id,
-                                            label: "Text Body Download Link",
-                                            url: linkUrl,
-                                            file: fileInfo
-                                        });
-                                    }
-                                }
-                            });
-                        }
-                    }
-
-                    // Parse standard inline application buttons seamlessly
-                    if (msg.replyMarkup && msg.replyMarkup.rows) {
-                        msg.replyMarkup.rows.forEach(row => {
-                            row.buttons.forEach(btn => {
-                                const btnTextNormalized = btn.text.toLowerCase();
-                                // 🔥 CAPTURE FIX: If it's a Series, open filters to allow text patterns like 'Ep', 'Drive', 'Link' or any external download paths
-                                const isSeriesKeyword = btnTextNormalized.includes("ep") || btnTextNormalized.includes("episode") || btnTextNormalized.includes("link") || btnTextNormalized.includes("drive");
-                                const isDownloadKeyword = btnTextNormalized.includes("download");
-
-                                if (btn.url && (isDownloadKeyword || isSeriesKeyword) && !btn.url.includes("t.me/")) {
-                                    let exists = this.discoveredItems.some(i => i.url === btn.url);
-                                    if (!exists) {
-                                        this.discoveredItems.push({
-                                            id: msg.id,
-                                            label: btn.text,
-                                            url: btn.url,
-                                            file: fileInfo
-                                        });
-                                    }
-                                }
-                            });
-                        });
-                    }
-                }
-
-                if (this.discoveredItems.length === 0) {
-                    status.innerHTML = `❌ Search execution halted: 0 valid records matching text "${query}" detected.`;
-                    await client.disconnect();
-                    return;
-                }
-
-                // 🛠️ USEFUL ADDITION 2: Auto-select 'Series' upload type input if database elements stream patterns match episodes
-                if (autoDetectedSeries) {
-                    document.getElementById("type").value = "Series";
-                    toggleMediaFields();
-                }
-
-                status.innerHTML = `✅ Parsed <b>${this.discoveredItems.length}</b> matches safely. Choose data inputs to retain:`;
-
-                // 🛠️ USEFUL ADDITION 3: Mass check/uncheck master button control logic
-                grid.innerHTML = `
-                    <div style="background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size:12px; color:#aaa;">Bulk Actions:</span>
-                        <button type="button" onclick="window.TelegramModule.bulkToggleCheckboxes()" style="width:auto; margin-bottom:0; padding:4px 10px; font-size:11px; background:#ffdf00;">Toggle Select All</button>
-                    </div>
-                `;
-
-                this.discoveredItems.forEach((item, index) => {
-                    let titleMeta = item.file ? item.file.name : `Link Text Stream Resource [Post ID: ${item.id}]`;
-                    let badgeHtml = item.file && item.file.episode ? `<span style="background:#ff4500; color:#fff; padding:2px 6px; border-radius:3px; font-size:11px; margin-right:5px; font-weight:bold;">Episode ${item.file.episode}</span>` : "";
-                    let qualityBadge = item.file && item.file.quality ? `<span style="background:#00bfff; color:#000; padding:2px 6px; border-radius:3px; font-size:11px; margin-right:5px; font-weight:bold;">${item.file.quality}</span>` : "";
-                    let fileDataHtml = item.file ? `<div style="color:#aaa; font-size:12px; margin-top:2px;">💾 Size: ${item.file.size} | ⏳ Length: ${item.file.duration}</div>` : "";
-
-                    grid.innerHTML += `
-                        <div style="background: #111a36; border: 1px solid #223366; padding: 12px; border-radius: 6px; display: flex; align-items: center; gap: 12px;">
-                            <input type="checkbox" class="tg-mod-checkbox" id="tgModChk_${index}" checked style="transform: scale(1.3); cursor:pointer;">
-                            <div style="flex-grow: 1;">
-                                <div style="color:#fff; font-weight:bold; font-size:13px; word-break:break-all;">${badgeHtml}${qualityBadge}${titleMeta}</div>
-                                ${fileDataHtml}
-                                <div style="font-size:11px; color:#00bfff; margin-top:2px; opacity:0.8;">🏷️ Label: "${item.label}" | 🔗 link: ${item.url.substring(0, 45)}...</div>
-                            </div>
-                        </div>
-                    `;
-                });
-
-                verificationArea.style.display = "block";
-                await client.disconnect();
-
-            } catch (err) {
-                console.error(err);
-                status.innerHTML = `❌ System operational crash: ${err.message}`;
-            }
-        })();
-      };
-
-      // Create tracking flag logic for bulk operations dynamically
-      TelegramModule.bulkToggleCheckboxes = function() {
-         const checkboxes = document.querySelectorAll(".tg-mod-checkbox");
-         if (checkboxes.length === 0) return;
-         const allChecked = Array.from(checkboxes).every(c => c.checked);
-         checkboxes.forEach(c => c.checked = !allChecked);
-      };
-
-      // Override compiler execution function blocks to output clean plain textual tracking indicators
-      TelegramModule.compilePayloadAndImport = function() {
-        let selectedPayloadList = [];
-
-        this.discoveredItems.forEach((item, index) => {
-            const checkbox = document.getElementById(`tgModChk_${index}`);
-            if (checkbox && checkbox.checked) {
-                selectedPayloadList.push({
-                    // Send clear raw URL parameter strings so manual addPopulatedLinkRow displays text beautifully
-                    url: item.url, 
-                    episode: item.file && item.file.episode ? item.file.episode : (index + 1),
-                    quality: item.file && item.file.quality ? item.file.quality : "720p",
-                    size: item.file ? item.file.size.split(" ")[0] : "",
-                    unit: item.file && item.file.size.includes("GB") ? "GB" : "MB"
-                });
-            }
-        });
-
-        if (selectedPayloadList.length === 0) return alert("Please retain at least one checklist field parameters.");
-
-        if (typeof this.onImportCallback === "function") {
-            this.onImportCallback(selectedPayloadList);
-        }
-      };
-
-      // Fire module lifecycle initialization mappings inside container element wrap spaces
-      TelegramModule.init("automatedModuleWrapper", function(incomingLinksPayload) {
-        
-        // Remove placeholder inputs if blank
-        const existingRows = document.querySelectorAll(".link-row");
-        if (existingRows.length === 1) {
-          const firstUrl = existingRows[0].querySelector(".link-url").value.trim();
-          if (!firstUrl) existingRows[0].remove();
-        }
-
-        // Generate database fields matching properties flawlessly
-        incomingLinksPayload.forEach(item => {
-          addPopulatedLinkRow(item.url, item.episode, item.quality, item.size, item.unit);
-        });
-
-        switchVersion(1); // Return seamlessly back to Manual layout forms page
-      });
-    }
-  };
-
-  // 🔄 Swaps visible page layouts dynamically without script state crashes
-  function switchVersion(versionId) {
-    const btnV1 = document.getElementById("btnV1");
-    const btnV2 = document.getElementById("btnV2");
-    const manualForm = document.getElementById("manualFormWrapper");
-    const autoForm = document.getElementById("automatedModuleWrapper");
-
-    if (versionId === 1) {
-      btnV1.className = "toggle-btn active";
-      btnV2.className = "toggle-btn";
-      manualForm.style.display = "block";
-      autoForm.style.display = "none";
-    } else {
-      btnV2.className = "toggle-btn active";
-      btnV1.className = "toggle-btn";
-      manualForm.style.display = "none";
-      autoForm.style.display = "block";
-
-      // Populate text parameters dynamically to save manual input times
-      const typedTitle = document.getElementById("name").value.trim() || document.getElementById("searchInput").value.trim();
-      if (typedTitle && document.getElementById("tgModSearchQuery")) {
-        document.getElementById("tgModSearchQuery").value = typedTitle;
-      }
-    }
-  }
+  window.onload = () => addLinkRow();
 
   // Hide Search Dropdown when clicking outside
   document.addEventListener("click", function(event) {
@@ -564,33 +281,6 @@
       <select class="link-unit" style="width: 65px;">
         <option value="MB">MB</option>
         <option value="GB">GB</option>
-      </select>
-      <button class="btn-danger" onclick="this.parentElement.remove()">❌</button>
-    `;
-    document.getElementById("links-container").appendChild(div);
-  }
-
-  // 📝 Generates populated form fields seamlessly from automated incoming vectors
-  function addPopulatedLinkRow(url, episode, quality, size, unit) {
-    const isSeries = document.getElementById("type").value === "Series";
-    const displayStyle = isSeries ? "inline-block" : "none";
-    
-    const div = document.createElement("div");
-    div.className = "link-row";
-    div.innerHTML = `
-      <input type="text" placeholder="Video URL..." class="link-url" value="${url}" style="flex: 1; min-width: 150px;">
-      <input type="number" placeholder="Ep" class="link-ep" style="width: 60px; display: ${displayStyle};" min="1" value="${episode || 1}">
-      <select class="link-quality" style="width: 90px; display: ${displayStyle};">
-        <option value="Auto" ${quality === 'Auto' ? 'selected' : ''}>Auto</option>
-        <option value="480p" ${quality === '480p' ? 'selected' : ''}>480p</option>
-        <option value="720p" ${quality === '720p' ? 'selected' : ''}>720p</option>
-        <option value="1080p" ${quality === '1080p' ? 'selected' : ''}>1080p</option>
-        <option value="4K" ${quality === '4K' ? 'selected' : ''}>4K</option>
-      </select>
-      <input type="number" placeholder="Size" class="link-size" style="width: 75px;" min="0" step="0.1" value="${size || ''}">
-      <select class="link-unit" style="width: 65px;">
-        <option value="MB" ${unit === 'MB' ? 'selected' : ''}>MB</option>
-        <option value="GB" ${unit === 'GB' ? 'selected' : ''}>GB</option>
       </select>
       <button class="btn-danger" onclick="this.parentElement.remove()">❌</button>
     `;
