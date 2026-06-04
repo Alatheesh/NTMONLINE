@@ -33,6 +33,11 @@
     .search-info { display: flex; flex-direction: column; }
     .search-title { font-weight: bold; font-size: 14px; color: white; }
     .search-meta { font-size: 12px; color: #aaa; }
+
+    /* 🎛️ MULTI-VERSION TOGGLE WORKSPACE */
+    .version-toggle-container { display: flex; background: rgba(0, 0, 0, 0.4); padding: 6px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 25px; box-sizing: border-box; }
+    .toggle-btn { flex: 1; padding: 12px; background: transparent; color: #aaa; border: none; font-weight: bold; cursor: pointer; border-radius: 6px; transition: 0.3s; margin-bottom: 0; font-size: 14px; }
+    .toggle-btn.active { background: #00bfff; color: black; }
   </style>
 </head>
 <body>
@@ -42,80 +47,92 @@
 <div class="container">
   <h2>➕ Add Premium Content</h2>
 
-  <label class="field-label">Search TMDB (Name or Name + Year)</label>
-  <div class="search-wrapper">
-    <div style="display: flex; gap: 10px;">
-      <input type="text" id="searchInput" placeholder="e.g. Spider-Man 2002..." style="margin-bottom:0; flex: 1;" onkeypress="if(event.key === 'Enter') searchTMDB()">
-      <button onclick="searchTMDB()" style="width: auto; padding: 0 20px; background: #333; color: white;">🔍 Search</button>
-    </div>
-    <div id="searchResults"></div>
-  </div>
-  <p id="status" style="text-align: center; font-size: 13px; margin-top: -5px; margin-bottom: 15px;"></p>
-
-  <hr style="border-color: rgba(255,255,255,0.1); margin-bottom: 20px;">
-
-  <label class="field-label">File Name</label>
-  <input type="text" id="name">
-
-  <div class="grid-3">
-    <div>
-      <label class="field-label">Upload Type</label>
-      <select id="type" onchange="toggleMediaFields()">
-        <option value="Movie">🎬 Movie</option>
-        <option value="Series">📺 Series</option>
-      </select>
-    </div>
-    <div>
-      <label class="field-label">Quality Tag</label>
-      <input type="text" id="upload_quality" placeholder="HD, CAM, WEB-DL">
-    </div>
-    <div>
-      <label class="field-label">Release Date</label>
-      <input type="text" id="release_date" placeholder="YYYY-MM-DD">
-    </div>
+  <div class="version-toggle-container">
+    <button type="button" id="btnV1" class="toggle-btn active" onclick="switchVersion(1)">Version 1: Manual Input</button>
+    <button type="button" id="btnV2" class="toggle-btn" onclick="switchVersion(2)">Version 2: Telegram Fetcher</button>
   </div>
 
-  <div class="grid-3">
-    <div style="grid-column: span 2;">
-      <label class="field-label">Category / Genres</label>
-      <input type="text" id="category" placeholder="Action, Sci-Fi...">
+  <div id="manualFormWrapper">
+    <label class="field-label">Search TMDB (Name or Name + Year)</label>
+    <div class="search-wrapper">
+      <div style="display: flex; gap: 10px;">
+        <input type="text" id="searchInput" placeholder="e.g. Spider-Man 2002..." style="margin-bottom:0; flex: 1;" onkeypress="if(event.key === 'Enter') searchTMDB()">
+        <button onclick="searchTMDB()" style="width: auto; padding: 0 20px; background: #333; color: white; margin-bottom: 0;">🔍 Search</button>
+      </div>
+      <div id="searchResults"></div>
     </div>
-    <div>
-      <label class="field-label">Rating</label>
-      <input type="text" id="rating" placeholder="8.5">
+    <p id="status" style="text-align: center; font-size: 13px; margin-top: -5px; margin-bottom: 15px;"></p>
+
+    <hr style="border-color: rgba(255,255,255,0.1); margin-bottom: 20px;">
+
+    <label class="field-label">File Name</label>
+    <input type="text" id="name">
+
+    <div class="grid-3">
+      <div>
+        <label class="field-label">Upload Type</label>
+        <select id="type" onchange="toggleMediaFields()">
+          <option value="Movie">🎬 Movie</option>
+          <option value="Series">📺 Series</option>
+        </select>
+      </div>
+      <div>
+        <label class="field-label">Quality Tag</label>
+        <input type="text" id="upload_quality" placeholder="HD, CAM, WEB-DL">
+      </div>
+      <div>
+        <label class="field-label">Release Date</label>
+        <input type="text" id="release_date" placeholder="YYYY-MM-DD">
+      </div>
     </div>
+
+    <div class="grid-3">
+      <div style="grid-column: span 2;">
+        <label class="field-label">Category / Genres</label>
+        <input type="text" id="category" placeholder="Action, Sci-Fi...">
+      </div>
+      <div>
+        <label class="field-label">Rating</label>
+        <input type="text" id="rating" placeholder="8.5">
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div>
+        <label class="field-label">Cover Image (Vertical)</label>
+        <input type="text" id="image">
+      </div>
+      <div>
+        <label class="field-label">Backdrop (Horizontal)</label>
+        <input type="text" id="backdrop">
+      </div>
+    </div>
+
+    <div style="margin-top: -5px; margin-bottom: 15px;">
+        <label class="field-label">Runtime</label>
+        <input type="text" id="runtime" placeholder="120 mins">
+    </div>
+
+    <label class="field-label">Description / Plot</label>
+    <textarea id="description" rows="3"></textarea>
+
+    <label class="field-label" style="margin-top: 10px;">Media Links</label>
+    <div id="links-container"></div>
+    <button onclick="addLinkRow()" style="background: rgba(255,255,255,0.1); color: white; border: 1px dashed rgba(255,255,255,0.3);">➕ Add Media Link</button>
+
+    <button onclick="saveMovie()" style="margin-top: 25px; font-size: 16px; padding: 15px;">💾 Save to Database</button>
   </div>
 
-  <div class="grid-2">
-    <div>
-      <label class="field-label">Cover Image (Vertical)</label>
-      <input type="text" id="image">
-    </div>
-    <div>
-      <label class="field-label">Backdrop (Horizontal)</label>
-      <input type="text" id="backdrop">
-    </div>
-  </div>
-
-  <div style="margin-top: -5px; margin-bottom: 15px;">
-      <label class="field-label">Runtime</label>
-      <input type="text" id="runtime" placeholder="120 mins">
-  </div>
-
-  <label class="field-label">Description / Plot</label>
-  <textarea id="description" rows="3"></textarea>
-
-  <label class="field-label" style="margin-top: 10px;">Media Links</label>
-  <div id="links-container"></div>
-  <button onclick="addLinkRow()" style="background: rgba(255,255,255,0.1); color: white; border: 1px dashed rgba(255,255,255,0.3);">➕ Add Media Link</button>
-
-  <button onclick="saveMovie()" style="margin-top: 25px; font-size: 16px; padding: 15px;">💾 Save to Database</button>
+  <div id="automatedModuleWrapper" style="display: none;"></div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="firebase-config.js"></script>
+
+<script src="telegram.js"></script>
+<script src="tg-module.js"></script>
 
 <script>
   firebase.initializeApp(firebaseConfig);
@@ -129,7 +146,56 @@
 
   const API_KEY = "e262bd07ebfb205acaed257bb4227ea6"; 
 
-  window.onload = () => addLinkRow();
+  window.onload = () => {
+    addLinkRow();
+    
+    // ⚙️ INITIALIZE DETACHED VERSION 2 MODULE SYSTEM EXTERNALLY
+    if (typeof TelegramModule !== "undefined") {
+      TelegramModule.init("automatedModuleWrapper", function(incomingLinksPayload) {
+        
+        // Clear any pristine blank link rows before piping automation arrays
+        const existingRows = document.querySelectorAll(".link-row");
+        if (existingRows.length === 1) {
+          const firstUrl = existingRows[0].querySelector(".link-url").value.trim();
+          if (!firstUrl) existingRows[0].remove();
+        }
+
+        // Pipe elements straight down to form row creation algorithms
+        incomingLinksPayload.forEach(item => {
+          addPopulatedLinkRow(item.url, item.episode, item.quality, item.size, item.unit);
+        });
+
+        alert(`🎉 Imported ${incomingLinksPayload.length} link tracking parameters directly into verification slots!`);
+        switchVersion(1); // Turn back to Form Panel instantly for review
+      });
+    }
+  };
+
+  // 🔄 Swaps visible page layouts dynamically without script state crashes
+  function switchVersion(versionId) {
+    const btnV1 = document.getElementById("btnV1");
+    const btnV2 = document.getElementById("btnV2");
+    const manualForm = document.getElementById("manualFormWrapper");
+    const autoForm = document.getElementById("automatedModuleWrapper");
+
+    if (versionId === 1) {
+      btnV1.className = "toggle-btn active";
+      btnV2.className = "toggle-btn";
+      manualForm.style.display = "block";
+      autoForm.style.display = "none";
+    } else {
+      btnV2.className = "toggle-btn active";
+      btnV1.className = "toggle-btn";
+      manualForm.style.display = "none";
+      autoForm.style.display = "block";
+
+      // Pass existing title text directly to automated target field to optimize speed
+      const typedTitle = document.getElementById("name").value.trim() || document.getElementById("searchInput").value.trim();
+      if (typedTitle && document.getElementById("tgModSearchQuery")) {
+        document.getElementById("tgModSearchQuery").value = typedTitle;
+      }
+    }
+  }
 
   // Hide Search Dropdown when clicking outside
   document.addEventListener("click", function(event) {
@@ -287,6 +353,33 @@
     document.getElementById("links-container").appendChild(div);
   }
 
+  // 📝 Generates populated form fields seamlessly from automated incoming vectors
+  function addPopulatedLinkRow(url, episode, quality, size, unit) {
+    const isSeries = document.getElementById("type").value === "Series";
+    const displayStyle = isSeries ? "inline-block" : "none";
+    
+    const div = document.createElement("div");
+    div.className = "link-row";
+    div.innerHTML = `
+      <input type="text" placeholder="Video URL..." class="link-url" value="${url}" style="flex: 1; min-width: 150px;">
+      <input type="number" placeholder="Ep" class="link-ep" style="width: 60px; display: ${displayStyle};" min="1" value="${episode || 1}">
+      <select class="link-quality" style="width: 90px; display: ${displayStyle};">
+        <option value="Auto" ${quality === 'Auto' ? 'selected' : ''}>Auto</option>
+        <option value="480p" ${quality === '480p' ? 'selected' : ''}>480p</option>
+        <option value="720p" ${quality === '720p' ? 'selected' : ''}>720p</option>
+        <option value="1080p" ${quality === '1080p' ? 'selected' : ''}>1080p</option>
+        <option value="4K" ${quality === '4K' ? 'selected' : ''}>4K</option>
+      </select>
+      <input type="number" placeholder="Size" class="link-size" style="width: 75px;" min="0" step="0.1" value="${size || ''}">
+      <select class="link-unit" style="width: 65px;">
+        <option value="MB" ${unit === 'MB' ? 'selected' : ''}>MB</option>
+        <option value="GB" ${unit === 'GB' ? 'selected' : ''}>GB</option>
+      </select>
+      <button class="btn-danger" onclick="this.parentElement.remove()">❌</button>
+    `;
+    document.getElementById("links-container").appendChild(div);
+  }
+
   async function saveMovie() {
     const btn = document.querySelector("button[onclick='saveMovie()']");
     const name = document.getElementById("name").value.trim();
@@ -302,7 +395,7 @@
       const url = row.querySelector(".link-url").value.trim();
       if (url) {
         finalLinks.push({
-          url: btoa(url),
+          url: btoa(url), // Base64 packaging architecture intact
           episode: isSeries ? "Ep " + row.querySelector(".link-ep").value : "", 
           quality: isSeries ? row.querySelector(".link-quality").value : "",
           size: row.querySelector(".link-size").value.trim(),
