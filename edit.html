@@ -94,11 +94,50 @@
       </div>
   </div>
 
+  <div class="grid-3">
+      <div>
+          <label class="field-label">Release Date</label>
+          <input type="text" id="release_date" placeholder="YYYY-MM-DD">
+      </div>
+      <div style="grid-column: span 2;">
+          <label class="field-label">Category / Genres</label>
+          <input type="text" id="category" placeholder="Action, Sci-Fi...">
+      </div>
+  </div>
+
+  <div class="grid-2">
+      <div>
+          <label class="field-label">Rating</label>
+          <input type="text" id="rating" placeholder="8.5">
+      </div>
+      <div>
+          <label class="field-label">Runtime</label>
+          <input type="text" id="runtime" placeholder="120 mins">
+      </div>
+  </div>
+
+  <div class="grid-2">
+      <div>
+          <label class="field-label">Cover Image (Vertical)</label>
+          <input type="text" id="image">
+      </div>
+      <div>
+          <label class="field-label">Backdrop (Horizontal)</label>
+          <input type="text" id="backdrop">
+      </div>
+  </div>
+
+  <label class="field-label">Description / Plot</label>
+  <textarea id="description" rows="3"></textarea>
+
   <label class="field-label" style="margin-top: 10px;">Media Links</label>
   <div id="links-container"></div>
   <button onclick="addLinkRow()" style="background: rgba(255,255,255,0.1); color: white; border: 1px dashed rgba(255,255,255,0.3);">➕ Add Media Link</button>
 
-  <button id="updateBtn" onclick="updateMovie()" style="margin-top: 25px; font-size: 16px; padding: 15px; background: #ffcc00; color: black;">💾 Update Lightweight Data</button>
+  <div style="display: flex; gap: 15px; margin-top: 25px;">
+      <button id="btnLight" onclick="updateMovie(false)" style="background: #00ff88; color: black; flex: 1;">💾 Update Lightweight (ID Only)</button>
+      <button id="btnCustom" onclick="updateMovie(true)" style="background: #00bfff; color: black; flex: 1;">💾 Save Custom Edits (Heavy)</button>
+  </div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -156,7 +195,7 @@
     }
   };
 
-  function loadSelectedMovie() {
+  async function loadSelectedMovie() {
       const selectedIndex = document.getElementById("movieSelector").value;
       const linksContainer = document.getElementById("links-container");
       linksContainer.innerHTML = ""; // Clear existing links
@@ -170,6 +209,13 @@
           document.getElementById("tmdb_id_hidden").value = "";
           document.getElementById("media_type_hidden").value = "";
           document.getElementById("custom_id_hidden").value = "";
+          document.getElementById("category").value = "";
+          document.getElementById("release_date").value = "";
+          document.getElementById("rating").value = "";
+          document.getElementById("runtime").value = "";
+          document.getElementById("image").value = "";
+          document.getElementById("backdrop").value = "";
+          document.getElementById("description").value = "";
           return;
       }
 
@@ -188,6 +234,32 @@
 
       // Ensure appropriate link fields are visible
       toggleMediaFields();
+
+      // Load Heavy fields if they exist in Firebase (Custom Edit was saved previously)
+      if (movie.description || movie.image || movie.category) {
+          document.getElementById("category").value = movie.category || "";
+          document.getElementById("release_date").value = movie.release_date || "";
+          document.getElementById("rating").value = movie.rating || "";
+          document.getElementById("runtime").value = movie.runtime || "";
+          document.getElementById("image").value = movie.image || "";
+          document.getElementById("backdrop").value = movie.backdrop || "";
+          document.getElementById("description").value = movie.description || "";
+          document.getElementById("status").innerText = "✅ Loaded Custom Saved Data from Firebase.";
+          document.getElementById("status").style.color = "#00ff88";
+      } else if (movie.tmdb_id) {
+          // It's a lightweight save. Fetch from TMDB to display visually!
+          document.getElementById("status").innerText = "⏳ Fetching visual details from TMDB...";
+          document.getElementById("status").style.color = "#ffcc00";
+          await fetchDeepDetails(movie.tmdb_id, movie.media_type || (movie.type === "Series" ? "tv" : "movie"), true);
+      } else {
+          document.getElementById("category").value = "";
+          document.getElementById("release_date").value = "";
+          document.getElementById("rating").value = "";
+          document.getElementById("runtime").value = "";
+          document.getElementById("image").value = "";
+          document.getElementById("backdrop").value = "";
+          document.getElementById("description").value = "";
+      }
 
       // Populate Links
       if (movie.links && movie.links.length > 0) {
@@ -281,7 +353,7 @@
 
           const div = document.createElement("div");
           div.className = "search-item";
-          div.onclick = () => lockTMDBData(item.id, item.media_type, title);
+          div.onclick = () => lockTMDBData(item.id, item.media_type);
           div.innerHTML = `
             <img src="${thumb}" class="search-thumb" onerror="this.src='https://placehold.co/40x60/333/fff?text=N/A'">
             <div class="search-info">
@@ -304,20 +376,46 @@
     }
   }
 
-  function lockTMDBData(id, type, title) {
+  function lockTMDBData(id, type) {
     document.getElementById("searchResults").style.display = "none";
-    const status = document.getElementById("status");
-    
-    document.getElementById("name").value = title;
-    document.getElementById("type").value = type === 'tv' ? 'Series' : 'Movie';
-    document.getElementById("display_tmdb_id").value = id;
-    toggleMediaFields(); 
+    document.getElementById("status").innerText = "⏳ Pulling high-res details...";
+    fetchDeepDetails(id, type, false);
+  }
 
-    document.getElementById("tmdb_id_hidden").value = id;
-    document.getElementById("media_type_hidden").value = type;
-    
-    status.innerText = "✅ TMDB ID Updated!";
-    status.style.color = "#00ff88";
+  async function fetchDeepDetails(id, type, isVisualLoadOnly = false) {
+    const status = document.getElementById("status");
+    try {
+      const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${API_KEY}`);
+      const details = await res.json();
+
+      if (!isVisualLoadOnly) {
+          document.getElementById("name").value = details.title || details.name;
+          document.getElementById("type").value = type === 'tv' ? 'Series' : 'Movie';
+          document.getElementById("display_tmdb_id").value = id;
+          document.getElementById("tmdb_id_hidden").value = id;
+          document.getElementById("media_type_hidden").value = type;
+          toggleMediaFields(); 
+      }
+
+      document.getElementById("category").value = details.genres ? details.genres.map(g => g.name).join(", ") : "";
+      document.getElementById("release_date").value = details.release_date || details.first_air_date || "";
+      document.getElementById("rating").value = details.vote_average ? details.vote_average.toFixed(1) : "";
+      
+      let runtimeText = "";
+      if (details.runtime) runtimeText = details.runtime + " mins";
+      else if (details.episode_run_time && details.episode_run_time.length > 0) runtimeText = details.episode_run_time[0] + " mins/ep";
+      document.getElementById("runtime").value = runtimeText;
+
+      document.getElementById("image").value = details.poster_path ? "https://image.tmdb.org/t/p/w780" + details.poster_path : "";
+      document.getElementById("backdrop").value = details.backdrop_path ? "https://image.tmdb.org/t/p/w1280" + details.backdrop_path : "";
+      document.getElementById("description").value = details.overview || "No description available on TMDB.";
+      
+      status.innerText = isVisualLoadOnly ? "✅ Visual details loaded from TMDB." : "✅ TMDB ID Updated & Details Fetched!";
+      status.style.color = "#00ff88";
+    } catch (e) {
+      status.innerText = "❌ Error fetching TMDB details.";
+      status.style.color = "#ff4d4d";
+    }
   }
 
   function addLinkRow(url = "", ep = 1, quality = "720p", size = "", unit = "MB") {
