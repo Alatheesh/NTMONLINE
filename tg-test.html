@@ -3,85 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitHub Pages Telegram Test</title>
+    <title>GitHub Pages Telegram User Test</title>
     
     <script src="telegram.js"></script>
     
     <style>
         body { font-family: Arial, sans-serif; background: #0a1128; color: #fff; padding: 20px; max-width: 600px; margin: auto; }
         .box { background: #131f42; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #00bfff; }
+        label { font-size: 12px; color: #00bfff; font-weight: bold; }
         input { width: 95%; padding: 10px; margin: 5px 0 15px 0; background: #000; color: #fff; border: 1px solid #444; border-radius: 4px; }
-        button { padding: 10px 20px; background: #00bfff; color: #000; border: none; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; font-size: 16px; }
+        button { padding: 10px 20px; background: #00bfff; color: #000; border: none; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; font-size: 16px; margin-bottom: 10px; }
         .result-item { background: #1b2a4a; padding: 10px; margin-top: 10px; border-radius: 4px; border-left: 4px solid #32cd32; word-break: break-all; }
         .meta { font-size: 12px; color: #aaa; margin: 5px 0; }
         .url { color: #00bfff; font-family: monospace; }
+        .session-box { background: #111; color: #32cd32; padding: 10px; font-family: monospace; font-size: 11px; border: 1px dashed #32cd32; max-height: 80px; overflow-y: auto; margin-bottom: 10px; word-break: break-all; }
     </style>
 </head>
 <body>
 
-    <h2>⚡ GitHub Pages Live Telegram Test</h2>
+    <h2>⚡ GitHub Pages Live Telegram Search</h2>
 
     <div class="box">
-        <label>API ID (Number)</label>
+        <h3>🔑 Step 1: Generate Session String (Do this ONCE)</h3>
+        <p style="font-size: 12px; color: #aaa; margin-top:0;">Since bots can't search, log in as a user once to get an permanent access token.</p>
+        
+        <label>API ID</label>
         <input type="number" id="apiId" placeholder="e.g., 1234567">
         
-        <label>API Hash (String)</label>
+        <label>API Hash</label>
         <input type="text" id="apiHash" placeholder="e.g., a1b2c3d4e5f6...">
         
-        <label>Bot Token</label>
-        <input type="text" id="botToken" placeholder="e.g., 123456:ABC-DEF...">
+        <button onclick="generateSession()" style="background: #32cd32; color: #000;">Generate Permanent Session</button>
+        
+        <div id="sessionResult" style="display:none;">
+            <label style="color:#32cd32;">👉 Copy this entire Session String and paste it in Step 2:</label>
+            <div id="sessionStringText" class="session-box"></div>
+        </div>
+    </div>
+
+    <div class="box">
+        <h3>🎬 Step 2: Instant Movie Search</h3>
+        
+        <label>Saved Session String</label>
+        <input type="text" id="savedSession" placeholder="Paste your generated session string here...">
         
         <label>Private Channel ID</label>
         <input type="text" id="channelId" placeholder="e.g., -1001234567890">
 
-        <hr style="border-color:#223366; margin: 20px 0;">
-
         <label>Movie Name to Search</label>
         <input type="text" id="movieSearch" placeholder="e.g., Major">
-        <button onclick="runTest()">Run Live Fetch Test</button>
+        
+        <button onclick="runSearch()">Search Channel</button>
     </div>
 
     <div id="status" style="margin-top: 10px; color: #ffdf00; font-weight: bold;"></div>
     <div id="results"></div>
 
     <script>
-        async function runTest() {
+        // --- STEP 1: LOGIN & GENERATE STRING SESSION ---
+        async function generateSession() {
+            const apiId = document.getElementById("apiId").value.trim();
+            const apiHash = document.getElementById("apiHash").value.trim();
+            
+            if (!apiId || !apiHash) return alert("Please fill out API ID and API Hash!");
+
+            const { TelegramClient } = telegram;
+            const { StringSession } = telegram.sessions;
+
+            // Start an empty session
+            const client = new TelegramClient(new StringSession(""), parseInt(apiId), apiHash, { connectionRetries: 3 });
+
+            try {
+                await client.start({
+                    phoneNumber: async () => prompt("Enter your phone number connected to Telegram (e.g., +919876543210):"),
+                    password: async () => prompt("Enter 2FA password (leave blank if none):"),
+                    phoneCode: async () => prompt("Enter the login code Telegram sent you:"),
+                    onError: (err) => alert("Login Error: " + err.message)
+                });
+
+                // Export the permanent encrypted login key
+                const sessionString = client.session.save();
+                
+                document.getElementById("sessionStringText").innerText = sessionString;
+                document.getElementById("sessionResult").style.display = "block";
+                alert("Login successful! Session key generated below.");
+                
+                await client.disconnect();
+            } catch (e) {
+                alert("Error: " + e.message);
+            }
+        }
+
+        // --- STEP 2: USE SESSION TO SEARCH UNLIMITED TIMES ---
+        async function runSearch() {
             const status = document.getElementById("status");
             const results = document.getElementById("results");
-            results.innerHTML = ""; 
-
-            if (typeof telegram === "undefined") {
-                status.innerHTML = "❌ The telegram.js file is missing from your GitHub repo! Did you upload it next to this file?";
-                return;
-            }
+            results.innerHTML = "";
 
             const apiId = document.getElementById("apiId").value.trim();
             const apiHash = document.getElementById("apiHash").value.trim();
-            const botToken = document.getElementById("botToken").value.trim();
+            const savedSession = document.getElementById("savedSession").value.trim();
             const channelId = document.getElementById("channelId").value.trim();
             const query = document.getElementById("movieSearch").value.trim();
-            
-            if (!apiId || !apiHash || !botToken || !channelId || !query) {
-                status.innerHTML = "❌ Please fill out all configuration boxes.";
+
+            if (!apiId || !apiHash || !savedSession || !channelId || !query) {
+                status.innerHTML = "❌ Please fill out all fields in Step 2 (including API ID/Hash).";
                 return;
             }
 
-            status.innerHTML = "⏳ Establishing secure connection to Telegram servers...";
+            status.innerHTML = "⏳ Connecting using your secure session string...";
 
             try {
                 const { TelegramClient } = telegram;
                 const { StringSession } = telegram.sessions;
-                
-                const client = new TelegramClient(new StringSession(""), parseInt(apiId), apiHash, { connectionRetries: 3 });
-                await client.start({ botAuthToken: botToken });
 
-                status.innerHTML = `🔍 Connected! Scanning channel for "${query}"...`;
+                // Load your account directly from the session string
+                const client = new TelegramClient(new StringSession(savedSession), parseInt(apiId), apiHash, { connectionRetries: 3 });
+                await client.start({}); // Connects instantly with no prompts!
 
+                status.innerHTML = `🔍 Connected as User! Searching channel history for "${query}"...`;
+
+                // Real user account can use the search query perfectly
                 const messages = await client.getMessages(channelId, { search: query, limit: 15 });
                 let foundLinks = [];
 
                 for (const msg of messages) {
-                    let fileMeta = "No video stream attachment located.";
+                    let fileMeta = "No file attached.";
                     
                     if (msg.media && msg.media.document) {
                         let doc = msg.media.document;
@@ -108,9 +155,9 @@
                 }
 
                 if (foundLinks.length === 0) {
-                    status.innerHTML = `⚠️ Connected, but found NO "Download" buttons matching "${query}".`;
+                    status.innerHTML = `⚠️ Search finished. Found no "Download" buttons matching "${query}".`;
                 } else {
-                    status.innerHTML = `🎉 Success! Extracted ${foundLinks.length} items.`;
+                    status.innerHTML = `🎉 Success! Found ${foundLinks.length} items.`;
                     foundLinks.forEach(link => {
                         results.innerHTML += `
                             <div class="result-item">
@@ -125,11 +172,7 @@
 
             } catch (error) {
                 console.error(error);
-                if (error.message.includes("CHANNEL_PRIVATE")) {
-                    status.innerHTML = `❌ Error: Bot access rejected. Make sure the bot is an Admin in the channel.`;
-                } else {
-                    status.innerHTML = `❌ Error: ${error.message}`;
-                }
+                status.innerHTML = `❌ Error: ${error.message}`;
             }
         }
     </script>
