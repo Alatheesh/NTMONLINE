@@ -3,20 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitHub Pages Telegram User Test</title>
+    <title>GitHub Pages Telegram Search Engine</title>
     
     <script src="telegram.js"></script>
     
     <style>
-        body { font-family: Arial, sans-serif; background: #0a1128; color: #fff; padding: 20px; max-width: 600px; margin: auto; }
+        body { font-family: Arial, sans-serif; background: #0a1128; color: #fff; padding: 20px; max-width: 700px; margin: auto; }
         .box { background: #131f42; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #00bfff; }
         label { font-size: 12px; color: #00bfff; font-weight: bold; }
         input { width: 95%; padding: 10px; margin: 5px 0 15px 0; background: #000; color: #fff; border: 1px solid #444; border-radius: 4px; }
         button { padding: 10px 20px; background: #00bfff; color: #000; border: none; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; font-size: 16px; margin-bottom: 10px; }
-        .result-item { background: #1b2a4a; padding: 10px; margin-top: 10px; border-radius: 4px; border-left: 4px solid #32cd32; word-break: break-all; }
+        .result-item { background: #1b2a4a; padding: 12px; margin-top: 10px; border-radius: 4px; border-left: 4px solid #32cd32; word-break: break-all; }
+        .debug-msg-box { background: rgba(255,255,255,0.03); padding: 12px; margin-top: 10px; border-radius: 6px; border: 1px solid #223366; font-size: 13px; }
         .meta { font-size: 12px; color: #aaa; margin: 5px 0; }
-        .url { color: #00bfff; font-family: monospace; }
+        .url { color: #00bfff; font-family: monospace; font-size: 11px; }
         .session-box { background: #111; color: #32cd32; padding: 10px; font-family: monospace; font-size: 11px; border: 1px dashed #32cd32; max-height: 80px; overflow-y: auto; margin-bottom: 10px; word-break: break-all; }
+        .skip-reason { color: #ff6347; font-size: 12px; margin-left: 15px; background: rgba(255,99,71,0.05); padding: 4px; border-radius: 3px; margin-top: 3px; }
     </style>
 </head>
 <body>
@@ -25,7 +27,7 @@
 
     <div class="box">
         <h3>🔑 Step 1: Generate Session String (Do this ONCE)</h3>
-        <p style="font-size: 12px; color: #aaa; margin-top:0;">Since bots can't search, log in as a user once to get an permanent access token.</p>
+        <p style="font-size: 12px; color: #aaa; margin-top:0;">Log in as a user once to generate your permanent authorization token token.</p>
         
         <label>API ID</label>
         <input type="number" id="apiId" placeholder="e.g., 1234567">
@@ -42,7 +44,7 @@
     </div>
 
     <div class="box">
-        <h3>🎬 Step 2: Instant Movie Search</h3>
+        <h3>🎬 Step 2: Instant Movie Search & Inspector</h3>
         
         <label>Saved Session String</label>
         <input type="text" id="savedSession" placeholder="Paste your generated session string here...">
@@ -51,13 +53,13 @@
         <input type="text" id="channelId" placeholder="e.g., -1001234567890">
 
         <label>Movie Name to Search</label>
-        <input type="text" id="movieSearch" placeholder="e.g., Major">
+        <input type="text" id="movieSearch" placeholder="e.g., Spider">
         
-        <button onclick="runSearch()">Search Channel</button>
+        <button onclick="runSearch()">Inspect & Search Channel</button>
     </div>
 
     <div id="status" style="margin-top: 10px; color: #ffdf00; font-weight: bold;"></div>
-    <div id="results"></div>
+    <div id="results" style="margin-top: 15px;"></div>
 
     <script>
         // --- STEP 1: LOGIN & GENERATE STRING SESSION ---
@@ -70,7 +72,6 @@
             const { TelegramClient } = telegram;
             const { StringSession } = telegram.sessions;
 
-            // Start an empty session
             const client = new TelegramClient(new StringSession(""), parseInt(apiId), apiHash, { connectionRetries: 3 });
 
             try {
@@ -81,9 +82,7 @@
                     onError: (err) => alert("Login Error: " + err.message)
                 });
 
-                // Export the permanent encrypted login key
                 const sessionString = client.session.save();
-                
                 document.getElementById("sessionStringText").innerText = sessionString;
                 document.getElementById("sessionResult").style.display = "block";
                 alert("Login successful! Session key generated below.");
@@ -94,7 +93,7 @@
             }
         }
 
-        // --- STEP 2: USE SESSION TO SEARCH UNLIMITED TIMES ---
+        // --- STEP 2: USE SESSION TO INSPECT AND SEARCH ---
         async function runSearch() {
             const status = document.getElementById("status");
             const results = document.getElementById("results");
@@ -107,30 +106,34 @@
             const query = document.getElementById("movieSearch").value.trim();
 
             if (!apiId || !apiHash || !savedSession || !channelId || !query) {
-                status.innerHTML = "❌ Please fill out all fields in Step 2 (including API ID/Hash).";
+                status.innerHTML = "❌ Please fill out all fields in Step 2.";
                 return;
             }
 
-            status.innerHTML = "⏳ Connecting using your secure session string...";
+            status.innerHTML = "⏳ Connecting using session string...";
 
             try {
                 const { TelegramClient } = telegram;
                 const { StringSession } = telegram.sessions;
 
-                // Load your account directly from the session string
                 const client = new TelegramClient(new StringSession(savedSession), parseInt(apiId), apiHash, { connectionRetries: 3 });
-                await client.start({}); // Connects instantly with no prompts!
+                await client.start({}); 
 
-                status.innerHTML = `🔍 Connected as User! Searching channel history for "${query}"...`;
+                status.innerHTML = `🔍 Connected! Scanning channel history for "${query}"...`;
 
-                // Real user account can use the search query perfectly
+                // Fetch raw message history array matching text query
                 const messages = await client.getMessages(channelId, { search: query, limit: 15 });
                 let foundLinks = [];
 
+                // Display tracking log summary
+                results.innerHTML += `<div style="color: #00bfff; font-weight: bold; margin-bottom: 15px;">📊 Messages found matching query text: ${messages.length}</div>`;
+
                 for (const msg of messages) {
                     let fileMeta = "No file attached.";
+                    let hasFile = false;
                     
                     if (msg.media && msg.media.document) {
+                        hasFile = true;
                         let doc = msg.media.document;
                         let sizeMb = (doc.size / 1048576).toFixed(2);
                         let fName = "Unknown File";
@@ -143,36 +146,70 @@
                         fileMeta = `<b>File:</b> ${fName} | <b>Size:</b> ${sizeMb} MB | <b>Duration:</b> ${fDur}`;
                     }
 
+                    // Create the structural display block for this post message inside the loop
+                    let msgBlockId = `msg_${msg.id}`;
+                    results.innerHTML += `
+                        <div class="debug-msg-box" id="${msgBlockId}">
+                            <div style="border-bottom: 1px solid #223366; padding-bottom: 5px; margin-bottom: 5px; color: #ffdf00;">
+                                🆔 <b>Message ID:</b> ${msg.id}
+                            </div>
+                            <div style="margin-bottom: 5px;">💬 <b>Post Text:</b> "${msg.message || '[Empty Caption/Text]'}"</div>
+                            <div style="margin-bottom: 8px; color: #aaa;">📂 ${fileMeta}</div>
+                            <div id="buttons_container_${msg.id}"></div>
+                        </div>
+                    `;
+
+                    const btnContainer = document.getElementById(`buttons_container_${msg.id}`);
+
                     if (msg.replyMarkup && msg.replyMarkup.rows) {
                         msg.replyMarkup.rows.forEach(row => {
                             row.buttons.forEach(btn => {
-                                if (btn.url && btn.text.toLowerCase().includes("download") && !btn.url.includes("t.me/")) {
+                                console.log("Button Analyzed:", btn);
+
+                                const textMatches = btn.text.toLowerCase().includes("download");
+                                const isExternalUrl = btn.url && !btn.url.includes("t.me/");
+
+                                if (btn.url && textMatches && !btn.url.includes("t.me/")) {
+                                    // Successfully found match
                                     foundLinks.push({ btnText: btn.text, url: btn.url, meta: fileMeta });
+                                    
+                                    btnContainer.innerHTML += `
+                                        <div style="color: #32cd32; font-size: 12px; margin-left: 15px; font-weight: bold; margin-top: 3px;">
+                                            ✅ Matched Button: "${btn.text}" <br>
+                                            <span class="url">🔗 ${btn.url}</span>
+                                        </div>`;
+                                } else {
+                                    // Identify exactly why it failed matching parameter checks
+                                    let reason = "";
+                                    if (!btn.url) reason = "Button has no link URL attached";
+                                    else if (!textMatches) reason = `Button text does not contain the word "download"`;
+                                    else if (btn.url.includes("t.me/")) reason = "This link points inside Telegram (t.me), skipping tracking channel paths";
+
+                                    btnContainer.innerHTML += `
+                                        <div class="skip-reason">
+                                            ❌ Skipped Button: "${btn.text}" <br>
+                                            ℹ️ <b>Reason:</b> ${reason} <br>
+                                            ${btn.url ? `<span style="font-size:10px; color:#aaa;">Link: ${btn.url.substring(0,60)}...</span>` : ''}
+                                        </div>`;
                                 }
                             });
                         });
+                    } else {
+                        btnContainer.innerHTML += `<div style="color: #aaa; font-size: 11px; margin-left: 15px; font-style: italic;">🚫 No inline button elements found on this post message.</div>`;
                     }
                 }
 
+                // Final summary output render logic
                 if (foundLinks.length === 0) {
-                    status.innerHTML = `⚠️ Search finished. Found no "Download" buttons matching "${query}".`;
+                    status.innerHTML = `⚠️ Inspection Complete: Verified channel results, but 0 buttons met the text 'download' criteria. Inspect individual blocks above.`;
                 } else {
-                    status.innerHTML = `🎉 Success! Found ${foundLinks.length} items.`;
-                    foundLinks.forEach(link => {
-                        results.innerHTML += `
-                            <div class="result-item">
-                                <strong>🔘 ${link.btnText}</strong> <br>
-                                <div class="meta">${link.meta}</div>
-                                <div class="url">${link.url}</div>
-                            </div>
-                        `;
-                    });
+                    status.innerHTML = `🎉 Success! Found ${foundLinks.length} valid links matching your criteria.`;
                 }
                 await client.disconnect();
 
             } catch (error) {
                 console.error(error);
-                status.innerHTML = `❌ Error: ${error.message}`;
+                status.innerHTML = `❌ Error during search loop execution: ${error.message}`;
             }
         }
     </script>
