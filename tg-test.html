@@ -4,23 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GitHub Pages Telegram Test</title>
+    
+    <script src="telegram.js"></script>
+    
     <style>
         body { font-family: Arial, sans-serif; background: #0a1128; color: #fff; padding: 20px; max-width: 600px; margin: auto; }
         .box { background: #131f42; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #00bfff; }
         input { width: 95%; padding: 10px; margin: 5px 0 15px 0; background: #000; color: #fff; border: 1px solid #444; border-radius: 4px; }
         button { padding: 10px 20px; background: #00bfff; color: #000; border: none; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; font-size: 16px; }
-        button:disabled { background: #555; color: #888; cursor: not-allowed; }
         .result-item { background: #1b2a4a; padding: 10px; margin-top: 10px; border-radius: 4px; border-left: 4px solid #32cd32; word-break: break-all; }
         .meta { font-size: 12px; color: #aaa; margin: 5px 0; }
         .url { color: #00bfff; font-family: monospace; }
-        #libStatus { padding: 10px; background: #8b0000; color: white; text-align: center; border-radius: 5px; margin-bottom: 15px; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <h2>⚡ GitHub Pages Live Telegram Test</h2>
-
-    <div id="libStatus">⏳ Connecting to Global CDNs... Please wait.</div>
 
     <div class="box">
         <label>API ID (Number)</label>
@@ -39,61 +38,22 @@
 
         <label>Movie Name to Search</label>
         <input type="text" id="movieSearch" placeholder="e.g., Major">
-        <button id="runBtn" onclick="runTest()" disabled>Loading API...</button>
+        <button onclick="runTest()">Run Live Fetch Test</button>
     </div>
 
     <div id="status" style="margin-top: 10px; color: #ffdf00; font-weight: bold;"></div>
     <div id="results"></div>
 
     <script>
-        // The Waterfall Loader: Tries multiple servers until one works
-        const cdns = [
-            "https://cdn.jsdelivr.net/npm/telegram@2.22.2/browser/telegram.js",
-            "https://unpkg.com/telegram@2.22.2/browser/telegram.js",
-            "https://bundle.run/telegram@2.22.2"
-        ];
-        
-        let currentCdnIndex = 0;
-
-        function loadNextCDN() {
-            if (currentCdnIndex >= cdns.length) {
-                document.getElementById("libStatus").innerHTML = "❌ All external servers blocked by your ISP! We need to host the file locally.";
-                return;
-            }
-
-            let script = document.createElement('script');
-            script.src = cdns[currentCdnIndex];
-            
-            script.onload = function() {
-                if (typeof telegram !== "undefined") {
-                    document.getElementById("libStatus").style.background = "green";
-                    document.getElementById("libStatus").innerHTML = "✅ Library Loaded Successfully!";
-                    document.getElementById("runBtn").disabled = false;
-                    document.getElementById("runBtn").innerHTML = "Run Live Fetch Test";
-                } else {
-                    script.onerror(); // Loaded but empty, try next
-                }
-            };
-
-            script.onerror = function() {
-                console.log(`Failed to load from: ${cdns[currentCdnIndex]}. Trying next...`);
-                currentCdnIndex++;
-                loadNextCDN();
-            };
-
-            document.body.appendChild(script);
-        }
-
-        // Start the loading process
-        loadNextCDN();
-
-        // ----------------------------------------------------
-        // The actual Bot logic (runs after library loads)
-        // ----------------------------------------------------
         async function runTest() {
             const status = document.getElementById("status");
             const results = document.getElementById("results");
             results.innerHTML = ""; 
+
+            if (typeof telegram === "undefined") {
+                status.innerHTML = "❌ The telegram.js file is missing from your GitHub repo! Did you upload it next to this file?";
+                return;
+            }
 
             const apiId = document.getElementById("apiId").value.trim();
             const apiHash = document.getElementById("apiHash").value.trim();
