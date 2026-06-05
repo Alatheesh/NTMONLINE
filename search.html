@@ -363,6 +363,27 @@
       renderPage(1);
     }
 
+    // ⚡ THE "ONE READ TRICK" INTERCEPTOR
+    window.goToMovie = function(event, id) {
+      if (event) event.preventDefault(); // Stop normal navigation
+      
+      // Look for the movie in the current loaded array
+      const movieData = allMovies.find(m => String(m.customId || m.id) === String(id));
+      
+      if (movieData) {
+        // Save to browser memory so file.html doesn't need to read the database for UI
+        sessionStorage.setItem('ntm_current_movie', JSON.stringify(movieData));
+      } else {
+        // Fallback: Check if it's a bookmark that isn't loaded yet
+        const bookmarks = getBookmarks();
+        const bData = bookmarks.find(b => String(b.id) === String(id));
+        if (bData) sessionStorage.setItem('ntm_current_movie', JSON.stringify(bData));
+      }
+      
+      // Redirect to the file page
+      window.location.href = `file.html?id=${id}`;
+    };
+
     function renderPage(page) {
       currentPage = page;
       const grid = document.getElementById("movie-grid");
@@ -381,15 +402,16 @@
         const uploadDate = new Date(d.customId || d.id);
         const isNew = (new Date() - uploadDate) < (3 * 24 * 60 * 60 * 1000);
         
-        // 🔍 NEW: Extract preview data securely for the Hover Card
         const rating = d.rating ? `⭐ ${d.rating}` : "⭐ N/A";
         const year = (d.release_date || d.year || "").split("-")[0] || "N/A";
         const desc = d.description ? d.description.replace(/(<([^>]+)>)/gi, "") : "No plot summary available.";
+        const movieId = d.customId || d.id;
 
         const card = document.createElement("a");
         card.className = "movie-card";
-        card.href = "file.html?id=" + (d.customId || d.id);
-        card.setAttribute("ontouchstart", ""); // 📱 MAGIC TRICK: Makes hover work on mobile!
+        card.href = "file.html?id=" + movieId; // Keeps SEO & "Open in new tab" working
+        card.onclick = function(e) { window.goToMovie(e, movieId); }; // Intercepts standard left-click
+        card.setAttribute("ontouchstart", ""); 
         
         card.innerHTML = `
           ${isNew ? '<div class="new-badge">NEW</div>' : ''}
@@ -522,8 +544,9 @@
         grid.innerHTML = "<p style='color:white; grid-column: span 3; text-align: center;'>No bookmarks yet.</p>";
       } else {
         savedItems.forEach(movie => {
+          // Update bookmark grid links to also use the zero-read trick
           grid.innerHTML += `
-            <a class="movie-card" href="file.html?id=${movie.id}">
+            <a class="movie-card" href="file.html?id=${movie.id}" onclick="window.goToMovie(event, '${movie.id}')">
               <img src="${movie.image || 'https://via.placeholder.com/200x300'}">
               <div class="movie-info">
                 <div class="movie-name">${movie.name}</div>
