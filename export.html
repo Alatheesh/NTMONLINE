@@ -1,63 +1,22 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Database Manager • Admin</title>
+  <title>Reports • Admin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     /* 💎 UNIVERSAL ADMIN CSS */
     body { font-family: Arial, sans-serif; background: #0a1128; color: white; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
-    h2 { color: #00bfff; margin-bottom: 5px; text-align: center; }
-    .subtitle { text-align: center; color: #aaa; font-size: 13px; margin-bottom: 25px; }
-    
-    .container { background: rgba(255, 255, 255, 0.05); padding: 30px; border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1); width: 100%; max-width: 750px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    h2 { color: #ff4d4d; margin-bottom: 20px; text-align: center; }
+    .container { background: rgba(255, 255, 255, 0.05); padding: 30px; border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1); width: 100%; max-width: 600px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
     
     .back-btn { background: rgba(255, 255, 255, 0.1); color: white; width: auto; padding: 8px 16px; margin-bottom: 20px; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s;}
     .back-btn:hover { background: rgba(255, 255, 255, 0.2); }
 
-    /* 🧱 SECTIONS TO KEEP UI CLEAN */
-    .section-box {
-      background: rgba(0, 0, 0, 0.2);
-      border: 1px solid rgba(255,255,255,0.05);
-      border-radius: 10px;
-      padding: 20px;
-      margin-bottom: 25px;
-    }
-    .section-title { color: #00bfff; font-size: 16px; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; }
-
-    /* ✅ CHECKLIST UI */
-    .checklist-container {
-      background: rgba(0,0,0,0.4);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 8px;
-      max-height: 200px;
-      overflow-y: auto;
-      padding: 10px;
-      margin-bottom: 15px;
-    }
-    .check-item { display: flex; align-items: center; padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; font-size: 13px; }
-    .check-item:hover { background: rgba(0, 191, 255, 0.1); }
-    .check-item input { margin-right: 12px; cursor: pointer; }
-
-    /* 🔘 BUTTON STYLES */
-    .btn-row { display: flex; gap: 10px; margin-bottom: 15px; }
-    button { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 14px; }
-    
-    .btn-primary { background: #00bfff; color: black; }
-    .btn-primary:hover { background: #008cba; transform: scale(1.02); }
-    
-    .btn-secondary { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3); }
-    .btn-secondary:hover { background: rgba(255,255,255,0.2); transform: scale(1.02); }
-
-    .btn-danger { background: #ff4d4d; color: white; border: 1px solid #cc0000; }
-    .btn-danger:hover { background: #cc0000; box-shadow: 0 0 15px rgba(255,77,77,0.4); transform: scale(1.02); }
-
-    /* 📝 TEXTAREA */
-    textarea {
-      width: 100%; height: 250px; box-sizing: border-box; padding: 15px; margin-bottom: 15px;
-      border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);
-      background: rgba(0,0,0,0.3); color: #00ff00; outline: none; font-family: monospace; font-size: 13px; resize: vertical;
-    }
-    textarea:focus { border-color: #00bfff; }
+    /* ⚠ REPORT BOXES */
+    .report-box { background: rgba(255,0,0,0.1); border: 1px solid rgba(255,77,77,0.3); padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+    .report-box strong { color: #ff4d4d; display: block; margin-bottom: 5px;}
+    .btn-danger { background: #ff4d4d; color: white; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; width: 100%;}
+    .btn-danger:hover { background: #cc0000; }
   </style>
 </head>
 <body>
@@ -65,37 +24,15 @@
 <button class="back-btn" onclick="window.location.href='admin.html'">← Back to Dashboard</button>
 
 <div class="container">
-  <h2>💾 Database Manager</h2>
-  <p class="subtitle">Selectively merge data or overwrite your Firebase server.</p>
+  <h2>⚠ User Reports</h2>
   
-  <div class="section-box">
-    <h3 class="section-title">1. Selective Merge & Download</h3>
-    <p style="font-size: 12px; color: #ccc; margin-top: 0;">Select Firebase movies to merge with your local <b>files.json</b>.</p>
-    
-    <div class="btn-row" style="margin-bottom: 10px;">
-      <button class="btn-secondary" style="padding: 8px; font-size: 12px;" onclick="toggleCheckboxes(true)">Select All</button>
-      <button class="btn-secondary" style="padding: 8px; font-size: 12px;" onclick="toggleCheckboxes(false)">Deselect All</button>
-    </div>
+  <p style="text-align: center; font-size: 13px; color: #aaa; margin-top: -10px; margin-bottom: 25px;">
+    To turn the report button ON or OFF globally, please use the <strong style="color: #00bfff;">Firebase Remote Config</strong> dashboard.
+  </p>
 
-    <div class="checklist-container" id="checklist">
-      <div style="text-align: center; color: #888; padding: 20px;">Fetching Firebase Database...</div>
-    </div>
-
-    <div class="btn-row">
-      <button class="btn-primary" onclick="generateMergedData('copy')">Copy Merged JSON</button>
-      <button class="btn-primary" onclick="generateMergedData('download')">Download .json File</button>
-    </div>
+  <div id="reports">
+    <p style="text-align: center; color: rgba(255,255,255,0.6);">Loading Reports...</p>
   </div>
-
-  <div class="section-box" style="margin-bottom: 0;">
-    <h3 class="section-title" style="color: #ff4d4d;">2. Bulk Overwrite Firebase</h3>
-    <p style="font-size: 12px; color: #ccc; margin-top: 0;">Paste your fully edited JSON here. This updates BOTH the new "movies" collection and legacy master_list.</p>
-    
-    <textarea id="jsonInput" placeholder="Paste your final JSON array [ {...}, {...} ] here..."></textarea>
-    
-    <button class="btn-danger" id="overwriteBtn" onclick="overwriteDatabase()">⚠️ OVERWRITE FIREBASE DATABASE</button>
-  </div>
-
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -104,194 +41,48 @@
 <script src="firebase-config.js"></script>
 
 <script>
-  // Initialize Firebase
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
   const auth = firebase.auth();
-  
-  // Security Check
+
   auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
   if (!localStorage.getItem("ntm_admin_session")) { window.location.href = "admin.html"; }
+
   auth.onAuthStateChanged(user => {
-    if (!user) { window.location.href = "admin.html"; }
-    else { loadDatabases(); }
+    if (user) {
+      loadReports();
+    } else {
+      window.location.href = "admin.html";
+    }
   });
 
-  // Global Data Storage
-  let localFiles = [];
-  let firebaseFiles = [];
+  async function loadReports() {
+    const container = document.getElementById("reports");
+    const snapshot = await db.collection("reports").orderBy("time","desc").get();
+    container.innerHTML = "";
 
-  // ==========================================
-  // 1. LOAD DATA ON PAGE START
-  // ==========================================
-  async function loadDatabases() {
-    const listDiv = document.getElementById("checklist");
-    
-    try {
-      // Fetch Local
-      try {
-        const res = await fetch("files.json");
-        localFiles = await res.json();
-      } catch(e) { console.warn("No local files.json found."); }
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      const date = d.time ? d.time.toDate().toLocaleString() : "Unknown Date";
 
-      // Fetch Firebase (New Collection First)
-      const moviesSnapshot = await db.collection("movies").get();
-      
-      if (!moviesSnapshot.empty) {
-        firebaseFiles = moviesSnapshot.docs.map(doc => {
-            const d = doc.data();
-            return {
-                id: d.customId || d.id || doc.id,
-                name: d.name || d.title,
-                type: d.type || "Movie",
-                category: d.category || "",
-                description: d.description || d.overview || "",
-                image: d.image || d.poster_path || "",
-                links: d.links || d.downloads || []
-            };
-        });
-      } else {
-        // Fallback to Legacy Master List
-        const docSnap = await db.collection("movie_database").doc("master_list").get();
-        if (docSnap.exists && docSnap.data().movies) {
-          firebaseFiles = docSnap.data().movies.map(d => ({
-              id: d.customId || d.id,
-              name: d.name,
-              type: d.type,
-              category: d.category,
-              description: d.description || "",
-              image: d.image || "",
-              links: d.links || d.downloads || []
-          }));
-        }
-      }
-      
-      // Render UI
-      if (firebaseFiles.length > 0) {
-        listDiv.innerHTML = "";
-        firebaseFiles.sort((a,b) => b.id - a.id).forEach(movie => {
-          listDiv.innerHTML += `
-            <label class="check-item">
-              <input type="checkbox" class="movie-cb" value="${movie.id}" checked>
-              <span>${movie.name} <span style="color:#00bfff; font-size:11px;">(${movie.type})</span></span>
-            </label>
-          `;
-        });
-      } else {
-        listDiv.innerHTML = `<div style="text-align: center; color: #888; padding: 20px;">Firebase database is empty.</div>`;
-      }
-    } catch (err) {
-      listDiv.innerHTML = `<div style="color:red; padding:10px;">Error loading data: ${err.message}</div>`;
-    }
+      container.innerHTML += `
+        <div class="report-box">
+          <span style="font-size: 11px; color: #ccc; float: right;">${date}</span>
+          <strong>File ID: ${d.fileId}</strong>
+          <span style="color: white;">"${d.message}"</span><br>
+          <button class="btn-danger" onclick="deleteReport('${doc.id}')">Dismiss Report</button>
+        </div>
+      `;
+    });
+
+    if (container.innerHTML === "") { container.innerHTML = "<p style='text-align:center;'>✅ No broken links reported!</p>"; }
   }
 
-  // ==========================================
-  // 2. CHECKBOX CONTROLS
-  // ==========================================
-  function toggleCheckboxes(state) {
-    document.querySelectorAll('.movie-cb').forEach(cb => cb.checked = state);
-  }
-
-  // ==========================================
-  // 3. GENERATE & MERGE DATA
-  // ==========================================
-  function generateMergedData(actionType) {
-    const checkedBoxes = document.querySelectorAll('.movie-cb:checked');
-    if (checkedBoxes.length === 0 && localFiles.length === 0) {
-      alert("⚠️ No movies selected and local file is empty.");
-      return;
-    }
-    
-    const selectedIds = Array.from(checkedBoxes).map(cb => String(cb.value));
-    const selectedFirebaseMovies = firebaseFiles.filter(m => selectedIds.includes(String(m.id)));
-
-    // Merge & Remove Duplicates
-    const merged = [...localFiles, ...selectedFirebaseMovies];
-    const uniqueMap = {};
-    merged.forEach(item => { uniqueMap[item.id] = item; });
-    const finalData = Object.values(uniqueMap);
-    finalData.sort((a, b) => b.id - a.id);
-
-    const jsonString = JSON.stringify(finalData, null, 2);
-
-    if (actionType === 'copy') {
-      navigator.clipboard.writeText(jsonString).then(() => {
-        alert("✅ Successfully copied merged data to clipboard!");
-      }).catch(err => {
-        alert("❌ Failed to copy. Try downloading instead.");
-      });
-    } 
-    else if (actionType === 'download') {
-      const blob = new Blob([jsonString], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "ntm_merged_database.json";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
-  }
-
-  // ==========================================
-  // 4. OVERWRITE FIREBASE (DUAL-WRITE SYSTEM)
-  // ==========================================
-  async function overwriteDatabase() {
-    const inputStr = document.getElementById("jsonInput").value.trim();
-    const btn = document.getElementById("overwriteBtn");
-
-    if (!inputStr) {
-      alert("⚠️ Please paste your JSON data into the text box first.");
-      return;
-    }
-
-    let parsedData;
-    try {
-      parsedData = JSON.parse(inputStr);
-      if (!Array.isArray(parsedData)) throw new Error("Data must be an Array [ ]");
-    } catch (err) {
-      alert("❌ Invalid JSON Format!\n\nError: " + err.message);
-      return;
-    }
-
-    const confirmWarning = confirm(
-      "🚨 DANGER ZONE 🚨\n\n" +
-      "You are about to overwrite your database with " + parsedData.length + " movies.\n" +
-      "This will update BOTH the new 'movies' collection and the legacy master_list.\n\n" +
-      "Are you 100% sure?"
-    );
-
-    if (confirmWarning) {
-      try {
-        btn.innerText = "⏳ Uploading to Firebase...";
-        btn.style.background = "#555";
-        btn.disabled = true;
-
-        // 1. Write to the new "movies" collection (One Read Trick)
-        const uploadPromises = parsedData.map(movie => {
-          const docId = String(movie.customId || movie.id);
-          return db.collection("movies").doc(docId).set(movie);
-        });
-        await Promise.all(uploadPromises);
-
-        // 2. Write to the legacy master_list array (For Search page compatibility)
-        await db.collection("movie_database").doc("master_list").set({
-          movies: parsedData
-        });
-
-        alert("✅ SUCCESS! Firebase databases overwritten successfully.");
-        document.getElementById("jsonInput").value = "";
-        loadDatabases(); // Reload list
-        
-      } catch (error) {
-        alert("❌ Upload Failed: " + error.message);
-      } finally {
-        btn.innerText = "⚠️ OVERWRITE FIREBASE DATABASE";
-        btn.style.background = "#ff4d4d";
-        btn.disabled = false;
-      }
-    }
+  async function deleteReport(id) {
+    if (!confirm("Dismiss this report?")) return;
+    await db.collection("reports").doc(id).delete();
+    loadReports();
   }
 </script>
 
