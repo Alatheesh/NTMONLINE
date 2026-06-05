@@ -12,16 +12,6 @@
     .back-btn { background: rgba(255, 255, 255, 0.1); color: white; width: auto; padding: 8px 16px; margin-bottom: 20px; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s;}
     .back-btn:hover { background: rgba(255, 255, 255, 0.2); }
 
-    /* 🔘 CUSTOM TOGGLE SWITCH */
-    .switch-container { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 30px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; }
-    .switch { position: relative; display: inline-block; width: 60px; height: 34px; }
-    .switch input { display: none; }
-    .slider { position: absolute; cursor: pointer; background-color: rgba(255,255,255,0.2); border-radius: 34px; top: 0; left: 0; right: 0; bottom: 0; transition: 0.4s; }
-    .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background: white; border-radius: 50%; transition: 0.4s; }
-    input:checked + .slider { background: #00bfff; box-shadow: 0 0 15px rgba(0,191,255,0.5); }
-    input:checked + .slider:before { transform: translateX(26px); }
-    #status { font-weight: bold; font-size: 16px; }
-
     /* ⚠ REPORT BOXES */
     .report-box { background: rgba(255,0,0,0.1); border: 1px solid rgba(255,77,77,0.3); padding: 15px; border-radius: 8px; margin-bottom: 15px; }
     .report-box strong { color: #ff4d4d; display: block; margin-bottom: 5px;}
@@ -35,14 +25,10 @@
 
 <div class="container">
   <h2>⚠ User Reports</h2>
-
-  <div class="switch-container">
-    <label class="switch">
-      <input type="checkbox" id="toggle" onchange="toggleReports(this)">
-      <span class="slider"></span>
-    </label>
-    <span id="status">Checking Status...</span>
-  </div>
+  
+  <p style="text-align: center; font-size: 13px; color: #aaa; margin-top: -10px; margin-bottom: 25px;">
+    To turn the report button ON or OFF globally, please use the <strong style="color: #00bfff;">Firebase Remote Config</strong> dashboard.
+  </p>
 
   <div id="reports">
     <p style="text-align: center; color: rgba(255,255,255,0.6);">Loading Reports...</p>
@@ -66,7 +52,6 @@
   auth.onAuthStateChanged(user => {
     if (user) {
       loadReports();
-      loadToggle();
     } else {
       window.location.href = "admin.html";
     }
@@ -98,23 +83,6 @@
     if (!confirm("Dismiss this report?")) return;
     await db.collection("reports").doc(id).delete();
     loadReports();
-  }
-
-  async function loadToggle() {
-    const doc = await db.collection("settings").doc("config").get();
-    let enabled = true;
-    if (doc.exists) { enabled = doc.data().reportEnabled !== false; }
-    
-    document.getElementById("toggle").checked = enabled;
-    document.getElementById("status").innerText = enabled ? "Reporting is ON" : "Reporting is OFF";
-    document.getElementById("status").style.color = enabled ? "#00bfff" : "#ff4d4d";
-  }
-
-  async function toggleReports(el) {
-    const enabled = el.checked;
-    await db.collection("settings").doc("config").set({ reportEnabled: enabled });
-    document.getElementById("status").innerText = enabled ? "Reporting is ON" : "Reporting is OFF";
-    document.getElementById("status").style.color = enabled ? "#00bfff" : "#ff4d4d";
   }
 </script>
 
