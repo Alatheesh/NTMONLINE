@@ -40,8 +40,33 @@
     .action-btn:hover { background: rgba(0, 191, 255, 0.15); border-color: #00bfff; transform: translateY(-2px); }
     .action-btn.saved { background: rgba(0, 191, 255, 0.2); border-color: #00bfff; color: #00bfff; }
 
+    /* 🎬 THE WATCH BUTTONS (Updated with Bouncy Hover) */
     .download-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 25px; max-height: 350px; overflow-y: auto; padding-right: 10px; }
-    .download-grid button { flex: 1; min-width: 130px; margin: 0; background: linear-gradient(135deg, #007bff, #00bfff); box-shadow: 0 4px 15px rgba(0, 191, 255, 0.3); padding: 12px 18px; border: none; border-radius: 10px; cursor: pointer; color: white; font-weight: bold; }
+    
+    .download-grid button { 
+      flex: 1; 
+      min-width: 130px; 
+      margin: 0; 
+      background: linear-gradient(135deg, #007bff, #00bfff); 
+      box-shadow: 0 4px 15px rgba(0, 191, 255, 0.3); 
+      padding: 12px 18px; 
+      border: none; 
+      border-radius: 10px; 
+      cursor: pointer; 
+      color: white; 
+      font-weight: bold; 
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Added smooth bouncy transition */
+    }
+
+    .download-grid button:hover {
+      transform: translateY(-4px) scale(1.03); /* Lifts and zooms */
+      box-shadow: 0 8px 20px rgba(0, 191, 255, 0.5); /* Stronger glowing effect */
+    }
+
+    .download-grid button:active {
+      transform: translateY(1px) scale(0.98); /* Satisfying click effect */
+      box-shadow: 0 2px 10px rgba(0, 191, 255, 0.2);
+    }
     
     .back { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); margin: 30px auto; display: block; padding: 12px 25px; color: white; border-radius: 10px; cursor: pointer; width: 100%; max-width: 200px; text-align: center; }
     #reportBtn { position: fixed; top: 15px; right: 15px; background: linear-gradient(135deg, #ff4d4d, #cc0000); padding: 10px 16px; border-radius: 10px; z-index: 1000; display: none; box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3); border: none; color: white; cursor: pointer; }
@@ -108,7 +133,7 @@ remoteConfig.fetchAndActivate()
   .catch((err) => console.error("Remote Config Error:", err));
 
 
-// 2. THE ONE READ TRICK LOGIC
+// 2. THE ONE READ TRICK LOGIC WITH CACHE DEFENSE
 let currentFile = null; 
 let currentFileId = null; 
 let allFileLinks = []; 
@@ -124,16 +149,31 @@ async function loadFile() {
   }
   currentFileId = id;
 
-  // STEP A: INSTANT UI LOAD FROM MEMORY (0 Database Reads)
+  // STEP A: INSTANT UI LOAD FROM MEMORY
   let fileData = null;
   const cachedData = sessionStorage.getItem("ntm_current_movie");
   if (cachedData) {
       fileData = JSON.parse(cachedData);
       paintUI(fileData);
       currentFile = fileData;
+
+      // 🛡️ THE LINK CACHE DEFENSE
+      // Check if the backpack already contains the streaming links
+      if (fileData.links || fileData.downloads || fileData.stream_url || fileData.link) {
+          if (Array.isArray(fileData.links) && fileData.links.length > 0) allFileLinks = fileData.links;
+          else if (Array.isArray(fileData.downloads) && fileData.downloads.length > 0) allFileLinks = fileData.downloads;
+          else if (fileData.link) allFileLinks = [fileData.link];
+          else if (fileData.stream_url) allFileLinks = [fileData.stream_url];
+
+          // If links exist, render them and STOP! (Costs 0 Database Reads)
+          if (allFileLinks && allFileLinks.length > 0) {
+              processLinksAndRender(currentFile);
+              return; // <--- This command stops Firebase from being called!
+          }
+      }
   }
 
-  // STEP B: THE 1 FIREBASE READ FOR STREAM LINKS
+  // STEP B: THE 1 FIREBASE READ (Only happens if the backpack is empty!)
   try {
       // Look up the specific movie document using its ID
       let docSnap = await db.collection("movies").doc(String(id)).get();
@@ -164,6 +204,9 @@ async function loadFile() {
           else if (Array.isArray(dbData.downloads) && dbData.downloads.length > 0) allFileLinks = dbData.downloads;
           else if (dbData.link) allFileLinks = [dbData.link];
           else if (dbData.stream_url) allFileLinks = [dbData.stream_url];
+
+          // 🎒 SAVE LINKS TO THE BACKPACK SO THE NEXT VISIT COSTS 0 READS
+          sessionStorage.setItem("ntm_current_movie", JSON.stringify(dbData));
 
           processLinksAndRender(currentFile);
       } else {
