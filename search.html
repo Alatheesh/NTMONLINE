@@ -421,36 +421,35 @@
       const moviesToDisplay = filteredMovies.slice(startIndex, endIndex);
       
       moviesToDisplay.forEach(d => {
-        const name = d.name || d.title || "Unknown";
-        const rating = d.rating || "N/A";
-        const year = (d.release_date || d.year || "").split("-")[0] || "N/A";
-        const desc = d.description || d.overview || "No plot summary available.";
-        const movieId = d.customId || d.id;
-        const uploadDate = new Date(movieId);
+        const uploadDate = new Date(d.customId || d.id);
         const isNew = (new Date() - uploadDate) < (3 * 24 * 60 * 60 * 1000);
         
+        const rating = d.rating || "N/A";
+        const year = (d.release_date || d.year || "").split("-")[0] || "N/A";
+        const desc = d.description ? d.description.replace(/(<([^>]+)>)/gi, "") : "No plot summary available.";
+        const movieId = d.customId || d.id;
+
         const card = document.createElement("a");
         card.className = "movie-card";
-        card.id = "card-" + movieId;
-        card.href = "file.html?id=" + movieId;
-        card.onclick = function(e) { window.goToMovie(e, movieId); };
+        card.href = "file.html?id=" + movieId; 
+        card.onclick = function(e) { window.goToMovie(e, movieId); }; 
         card.setAttribute("ontouchstart", ""); 
         
         card.innerHTML = `
           ${isNew ? '<div class="new-badge">NEW</div>' : ''}
-          <img id="img-${movieId}" loading="lazy" src="${d.image || (d.poster_path ? 'https://image.tmdb.org/t/p/w500' + d.poster_path : 'https://via.placeholder.com/200x300')}" alt="${name}">
+          <img id="img-${movieId}" loading="lazy" src="${d.image || (d.poster_path ? 'https://image.tmdb.org/t/p/w500' + d.poster_path : 'https://via.placeholder.com/200x300')}" alt="${d.name}">
           
           <div class="movie-info">
-            <div class="movie-name">${name}</div>
-            <div class="movie-meta">${d.type || 'Movie'} • ${d.category || 'General'}</div>
+            <div class="movie-name">${d.name}</div>
+            <div class="movie-meta">${d.type} • ${d.category}</div>
           </div>
 
           <div class="preview-info">
-            <div class="preview-title">${name}</div>
+            <div class="preview-title">${d.name}</div>
             <div class="preview-meta">
               <span id="rating-${movieId}">⭐ ${rating}</span>
               <span id="year-${movieId}">${year}</span>
-              <span>${d.type || 'Movie'}</span>
+              <span>${d.type}</span>
             </div>
             <div class="preview-plot" id="desc-${movieId}">${desc}</div>
             <div class="preview-btn">Watch Now 🚀</div>
@@ -525,7 +524,7 @@
       } else {
         const searchWords = term.split(" ").filter(word => word !== "");
         filteredMovies = allMovies.filter(file => {
-          const fileData = `${file.name || file.title || ""} ${file.type || ""} ${file.category || ""}`.toLowerCase();
+          const fileData = `${file.name || ""} ${file.type || ""} ${file.category || ""}`.toLowerCase();
           return searchWords.every(word => fileData.includes(word));
         });
         searchBtn.innerHTML = "✖"; 
@@ -588,7 +587,7 @@
             <a class="movie-card" href="file.html?id=${movie.id}" onclick="window.goToMovie(event, '${movie.id}')">
               <img src="${movie.image || (movie.poster_path ? 'https://image.tmdb.org/t/p/w500' + movie.poster_path : 'https://via.placeholder.com/200x300')}">
               <div class="movie-info">
-                <div class="movie-name">${movie.name || movie.title}</div>
+                <div class="movie-name">${movie.name}</div>
               </div>
             </a>`;
         });
