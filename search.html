@@ -430,7 +430,7 @@
         
         const rating = d.rating || "N/A";
         const year = (d.release_date || d.year || "").split("-")[0] || "N/A";
-        const desc = d.description ? d.description.replace(/(<([^>]+)>)/gi, "") : "No plot summary available.";
+        const descText = d.description ? d.description.replace(/(<([^>]+)>)/gi, "") : "No plot summary available.";
         const movieId = d.customId || d.id;
 
         const card = document.createElement("a");
@@ -455,7 +455,7 @@
               <span id="year-${movieId}">${year}</span>
               <span>${d.type}</span>
             </div>
-            <div class="preview-plot" id="desc-${movieId}">${desc}</div>
+            <div class="preview-plot" id="desc-${movieId}">${descText}</div>
             <div class="preview-btn">Watch Now 🚀</div>
           </div>
         `;
@@ -466,14 +466,20 @@
           fetchFromTMDB(d.tmdb_id, d.media_type || d.type).then(data => {
             if (data) {
               const img = document.getElementById(`img-${movieId}`);
-              const desc = document.getElementById(`desc-${movieId}`);
+              const descEl = document.getElementById(`desc-${movieId}`);
               const ratingEl = document.getElementById(`rating-${movieId}`);
               const yearEl = document.getElementById(`year-${movieId}`);
               
               if (img && data.poster_path && !d.image) img.src = `https://image.tmdb.org/t/p/w500${data.poster_path}`;
-              if (desc && (!d.description || d.description === "Loading...")) desc.innerText = data.overview || "No summary available.";
+              if (descEl && (!d.description || d.description === "Loading...")) descEl.innerText = data.overview || "No summary available.";
               if (ratingEl && data.vote_average) ratingEl.innerText = `⭐ ${data.vote_average.toFixed(1)}`;
               if (yearEl && data.release_date) yearEl.innerText = data.release_date.split("-")[0];
+
+              // 🛑 THE FIX: Update the memory reference so goToMovie captures it!
+              d.image = data.poster_path ? `https://image.tmdb.org/t/p/w500${data.poster_path}` : d.image;
+              d.description = data.overview || d.description;
+              d.rating = data.vote_average ? data.vote_average.toFixed(1) : d.rating;
+              d.release_date = data.release_date || d.release_date;
             }
           });
         }
