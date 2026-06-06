@@ -22,7 +22,7 @@
       aspect-ratio: 2/3;
     }
 
-    .movie-card img { width: 100%; height: 100%; object-fit: cover; transition: filter 0.4s ease; background: #1a1a1a; }
+    .movie-card img { width: 100%; height: 100%; object-fit: cover; transition: filter 0.4s ease; }
     
     /* Hover Triggers */
     .movie-card:hover { 
@@ -377,7 +377,7 @@
       } catch (e) {}
 
       allMovies = [...localFiles, ...firebaseFiles];
-      allMovies = allMovies.filter(movie => movie && (movie.name || movie.title) && (movie.name || movie.title) !== "undefined");
+      allMovies = allMovies.filter(movie => movie && movie.name && movie.name !== "undefined");
       
       const uniqueMap = new Map();
       allMovies.forEach(item => uniqueMap.set(item.customId || item.id, item));
@@ -393,16 +393,20 @@
     window.goToMovie = function(event, id) {
       if (event) event.preventDefault(); // Stop normal navigation
       
+      // Look for the movie in the current loaded array
       const movieData = allMovies.find(m => String(m.customId || m.id) === String(id));
       
       if (movieData) {
+        // Save to browser memory so file.html doesn't need to read the database for UI
         sessionStorage.setItem('ntm_current_movie', JSON.stringify(movieData));
       } else {
+        // Fallback: Check if it's a bookmark that isn't loaded yet
         const bookmarks = getBookmarks();
         const bData = bookmarks.find(b => String(b.id) === String(id));
         if (bData) sessionStorage.setItem('ntm_current_movie', JSON.stringify(bData));
       }
       
+      // Redirect to the file page
       window.location.href = `file.html?id=${id}`;
     };
 
@@ -431,8 +435,8 @@
 
         const card = document.createElement("a");
         card.className = "movie-card";
-        card.href = "file.html?id=" + movieId; 
-        card.onclick = function(e) { window.goToMovie(e, movieId); }; 
+        card.href = "file.html?id=" + movieId; // Keeps SEO & "Open in new tab" working
+        card.onclick = function(e) { window.goToMovie(e, movieId); }; // Intercepts standard left-click
         card.setAttribute("ontouchstart", ""); 
         
         card.innerHTML = `
@@ -457,7 +461,7 @@
         `;
         grid.appendChild(card);
 
-        // Auto-fetch if lightweight (ID present but description missing/placeholder)
+        // Auto-fetch if lightweight (ID present but description/rating missing/placeholder)
         if (d.tmdb_id && (!d.description || d.rating === undefined || !d.release_date)) {
           fetchFromTMDB(d.tmdb_id, d.media_type || d.type).then(data => {
             if (data) {
@@ -583,9 +587,10 @@
         grid.innerHTML = "<p style='color:white; grid-column: span 3; text-align: center;'>No bookmarks yet.</p>";
       } else {
         savedItems.forEach(movie => {
+          // Update bookmark grid links to also use the zero-read trick
           grid.innerHTML += `
             <a class="movie-card" href="file.html?id=${movie.id}" onclick="window.goToMovie(event, '${movie.id}')">
-              <img src="${movie.image || (movie.poster_path ? 'https://image.tmdb.org/t/p/w500' + movie.poster_path : 'https://via.placeholder.com/200x300')}">
+              <img src="${movie.image || 'https://via.placeholder.com/200x300'}">
               <div class="movie-info">
                 <div class="movie-name">${movie.name}</div>
               </div>
@@ -614,6 +619,8 @@
       
       <div style="margin-top:25px;padding:15px;border-radius:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);text-align:center;color:#d0d0d0;font-size:14px;line-height:1.7;">
         🔖 Your bookmarks are stored locally on this device.
+        <br><br>
+        ⚠️ Clearing browser data, cache, app storage, or reinstalling the app will permanently remove your saved bookmarks.
       </div>
       
       <div style="text-align:center;margin-top:20px;">
