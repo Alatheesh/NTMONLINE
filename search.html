@@ -422,9 +422,9 @@
       
       moviesToDisplay.forEach(d => {
         const name = d.name || d.title || "Unknown";
-        const rating = d.rating || d.vote_average || "N/A";
+        const rating = d.rating || "N/A";
         const year = (d.release_date || d.year || "").split("-")[0] || "N/A";
-        const desc = (d.description || d.overview || "No plot summary available.").replace(/(<([^>]+)>)/gi, "");
+        const desc = d.description || d.overview || "No plot summary available.";
         const movieId = d.customId || d.id;
         const uploadDate = new Date(movieId);
         const isNew = (new Date() - uploadDate) < (3 * 24 * 60 * 60 * 1000);
@@ -434,6 +434,7 @@
         card.id = "card-" + movieId;
         card.href = "file.html?id=" + movieId;
         card.onclick = function(e) { window.goToMovie(e, movieId); };
+        card.setAttribute("ontouchstart", ""); 
         
         card.innerHTML = `
           ${isNew ? '<div class="new-badge">NEW</div>' : ''}
@@ -447,8 +448,8 @@
           <div class="preview-info">
             <div class="preview-title">${name}</div>
             <div class="preview-meta">
-              <span>⭐ ${rating}</span>
-              <span>${year}</span>
+              <span id="rating-${movieId}">⭐ ${rating}</span>
+              <span id="year-${movieId}">${year}</span>
               <span>${d.type || 'Movie'}</span>
             </div>
             <div class="preview-plot" id="desc-${movieId}">${desc}</div>
@@ -457,14 +458,19 @@
         `;
         grid.appendChild(card);
 
-        // Smart Fetch: If TMDB ID is present but no description, fetch from API
-        if (d.tmdb_id && (!d.description && !d.overview)) {
+        // Auto-fetch if lightweight (ID present but description missing/placeholder)
+        if (d.tmdb_id && (!d.description || d.rating === undefined || !d.release_date)) {
           fetchFromTMDB(d.tmdb_id, d.media_type || d.type).then(data => {
             if (data) {
               const img = document.getElementById(`img-${movieId}`);
               const desc = document.getElementById(`desc-${movieId}`);
-              if (img && data.poster_path) img.src = `https://image.tmdb.org/t/p/w500${data.poster_path}`;
-              if (desc) desc.innerText = data.overview || "No summary available.";
+              const ratingEl = document.getElementById(`rating-${movieId}`);
+              const yearEl = document.getElementById(`year-${movieId}`);
+              
+              if (img && data.poster_path && !d.image) img.src = `https://image.tmdb.org/t/p/w500${data.poster_path}`;
+              if (desc && (!d.description || d.description === "Loading...")) desc.innerText = data.overview || "No summary available.";
+              if (ratingEl && data.vote_average) ratingEl.innerText = `⭐ ${data.vote_average.toFixed(1)}`;
+              if (yearEl && data.release_date) yearEl.innerText = data.release_date.split("-")[0];
             }
           });
         }
@@ -558,7 +564,7 @@
     loadDatabase();
 
     // ==========================================
-    // 4. BOOKMARK STORAGE SYNC
+    // 4. BOOKMARK STORAGE SYNC FIX 
     // ==========================================
     function getBookmarks() {
       return JSON.parse(localStorage.getItem("ntm_bookmarks") || "[]");
@@ -602,16 +608,21 @@
 
   <div id="bookmarkModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:99999;overflow:auto;">
     <div style="max-width:1000px;margin:40px auto;padding:20px;">
+      
       <h2 style="text-align:center;color:white;margin-bottom:20px;">🔖 Bookmarks</h2>
+      
       <div id="bookmarkGrid" class="movie-grid"></div>
+      
       <div style="margin-top:25px;padding:15px;border-radius:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);text-align:center;color:#d0d0d0;font-size:14px;line-height:1.7;">
         🔖 Your bookmarks are stored locally on this device.
       </div>
+      
       <div style="text-align:center;margin-top:20px;">
         <button onclick="closeBookmarks()" style="padding:10px 20px;border:none;border-radius:10px;background:#00bfff;color:white;cursor:pointer;font-weight:bold;">
           Close
         </button>
       </div>
+
     </div>
   </div>
 
