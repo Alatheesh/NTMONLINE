@@ -40,7 +40,7 @@
     .action-btn:hover { background: rgba(0, 191, 255, 0.15); border-color: #00bfff; transform: translateY(-2px); }
     .action-btn.saved { background: rgba(0, 191, 255, 0.2); border-color: #00bfff; color: #00bfff; }
 
-    /* 🎬 THE WATCH BUTTONS (Updated with Bouncy Hover) */
+    /* 🎬 THE WATCH BUTTONS */
     .download-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 25px; max-height: 350px; overflow-y: auto; padding-right: 10px; }
     
     .download-grid button { 
@@ -162,9 +162,9 @@ async function fetchFromTMDB(tmdbId, mediaType) {
   } catch (e) { return null; }
 }
 
-// 1. INITIALIZE REMOTE CONFIG FOR REPORT TOGGLE ($0.00 Cost)
+// 1. INITIALIZE REMOTE CONFIG FOR REPORT TOGGLE
 const remoteConfig = firebase.remoteConfig();
-remoteConfig.settings.minimumFetchIntervalMillis = 0; // Change to 3600000 before public launch
+remoteConfig.settings.minimumFetchIntervalMillis = 0; 
 remoteConfig.defaultConfig = { "is_report_btn_enabled": true };
 
 remoteConfig.fetchAndActivate()
@@ -175,7 +175,9 @@ remoteConfig.fetchAndActivate()
   .catch((err) => console.error("Remote Config Error:", err));
 
 
-// 2. THE ONE READ TRICK LOGIC WITH CACHE DEFENSE
+// ==========================================
+// 2. THE ONE READ TRICK (Incognito Cached Fix)
+// ==========================================
 let currentFile = null; 
 let currentFileId = null; 
 let allFileLinks = []; 
@@ -191,57 +193,70 @@ async function loadFile() {
   }
   currentFileId = id;
 
-  // STEP A: INSTANT UI LOAD FROM MEMORY
+  // 🛠️ HELPER 1: Extract links safely
+  const extractLinks = (data) => {
+      if (data.links || data.downloads || data.stream_url || data.link) {
+          if (Array.isArray(data.links) && data.links.length > 0) allFileLinks = data.links;
+          else if (Array.isArray(data.downloads) && data.downloads.length > 0) allFileLinks = data.downloads;
+          else if (data.link) allFileLinks = [data.link];
+          else if (data.stream_url) allFileLinks = [data.stream_url];
+      }
+  };
+
+  // 🛠️ HELPER 2: The TMDB Hydrator (Fills in missing data automatically)
+  const hydrateWithTMDB = (dataObj) => {
+      if (dataObj.tmdb_id && (!dataObj.description || !dataObj.image || dataObj.description === "No plot summary available." || dataObj.description === "Loading...")) {
+          fetchFromTMDB(dataObj.tmdb_id, dataObj.media_type || dataObj.type).then(tmdbData => {
+              if (tmdbData) {
+                  dataObj.description = tmdbData.overview || dataObj.description;
+                  dataObj.image = tmdbData.poster_path ? `https://image.tmdb.org/t/p/w500${tmdbData.poster_path}` : dataObj.image;
+                  dataObj.rating = tmdbData.vote_average ? tmdbData.vote_average.toFixed(1) : dataObj.rating;
+                  dataObj.release_date = tmdbData.release_date || dataObj.release_date;
+                  
+                  // Update cache so subsequent reloads are instantaneous
+                  sessionStorage.setItem("ntm_current_movie", JSON.stringify(dataObj));
+                  
+                  // Repaint the UI with the fresh data
+                  paintUI(dataObj); 
+                  if (allFileLinks && allFileLinks.length > 0) {
+                      processLinksAndRender(dataObj);
+                  }
+              }
+          });
+      }
+  };
+
   let fileData = null;
   const cachedData = sessionStorage.getItem("ntm_current_movie");
+
+  // ==========================================
+  // STEP A: INSTANT UI LOAD FROM MEMORY
+  // ==========================================
   if (cachedData) {
       const parsedCache = JSON.parse(cachedData);
       
-      // 🛡️ THE CACHE VALIDATION FIX
       if (String(parsedCache.id) === String(id) || String(parsedCache.customId) === String(id)) {
           fileData = parsedCache;
           paintUI(fileData);
           currentFile = fileData;
 
-          // Extract links early to ensure they are safe
-          if (fileData.links || fileData.downloads || fileData.stream_url || fileData.link) {
-              if (Array.isArray(fileData.links) && fileData.links.length > 0) allFileLinks = fileData.links;
-              else if (Array.isArray(fileData.downloads) && fileData.downloads.length > 0) allFileLinks = fileData.downloads;
-              else if (fileData.link) allFileLinks = [fileData.link];
-              else if (fileData.stream_url) allFileLinks = [fileData.stream_url];
-          }
+          extractLinks(fileData);
 
-          // Smart Fetch for TMDB data if missing (description or image)
-          if (fileData.tmdb_id && (!fileData.description || !fileData.image)) {
-              fetchFromTMDB(fileData.tmdb_id, fileData.media_type || fileData.type).then(tmdbData => {
-                  if (tmdbData) {
-                      fileData.description = tmdbData.overview || fileData.description;
-                      fileData.image = tmdbData.poster_path ? `https://image.tmdb.org/t/p/w500${tmdbData.poster_path}` : fileData.image;
-                      fileData.rating = tmdbData.vote_average ? tmdbData.vote_average.toFixed(1) : fileData.rating;
-                      sessionStorage.setItem("ntm_current_movie", JSON.stringify(fileData));
-                      
-                      // Repaint the UI with the fresh data
-                      paintUI(fileData); 
-                      
-                      // CRITICAL FIX: Repaint destroys the button container, so we MUST re-render the buttons!
-                      if (allFileLinks && allFileLinks.length > 0) {
-                          processLinksAndRender(fileData);
-                      }
-                  }
-              });
-          }
-
-          // Render links immediately if we didn't need to fetch TMDB
           if (allFileLinks && allFileLinks.length > 0) {
               processLinksAndRender(currentFile);
-              return; 
           }
+
+          // Fetch missing TMDB data if the cached version was lightweight
+          hydrateWithTMDB(fileData);
+          return; 
       } else {
           sessionStorage.removeItem("ntm_current_movie");
       }
   }
 
-  // STEP B: THE 1 FIREBASE READ (Only happens if cache misses)
+  // ==========================================
+  // STEP B: THE 1 FIREBASE READ (Incognito / Direct Link)
+  // ==========================================
   try {
       let docSnap = await db.collection("movies").doc(String(id)).get();
       
@@ -258,20 +273,15 @@ async function loadFile() {
 
       if (docSnap.exists) {
           const dbData = docSnap.data();
+          paintUI(dbData);
+          currentFile = dbData;
           
-          if (!fileData) {
-              paintUI(dbData);
-              currentFile = dbData;
-          }
-
-          if (Array.isArray(dbData.links) && dbData.links.length > 0) allFileLinks = dbData.links;
-          else if (Array.isArray(dbData.downloads) && dbData.downloads.length > 0) allFileLinks = dbData.downloads;
-          else if (dbData.link) allFileLinks = [dbData.link];
-          else if (dbData.stream_url) allFileLinks = [dbData.stream_url];
-
+          extractLinks(dbData);
           sessionStorage.setItem("ntm_current_movie", JSON.stringify(dbData));
-
           processLinksAndRender(currentFile);
+
+          // 🛑 THE INCOGNITO FIX: Fill in missing data right after Firebase fetch!
+          hydrateWithTMDB(dbData);
       } else {
           document.getElementById("fileCard").innerHTML = "<h2>Sorry, this movie hasn't been uploaded yet.</h2><p>Our team is probably working on it!</p>";
       }
