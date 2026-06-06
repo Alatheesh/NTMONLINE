@@ -74,25 +74,110 @@
     body.light-mode .preview-meta span { background: rgba(0,0,0,0.06); border: 1px solid rgba(0,0,0,0.08); color: #2d3748; }
 
     /* 🌟 HIGH VISIBILITY NAV BUTTONS */
-    .nav-action-btn { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.15); color: #00bfff; font-size: 18px; width: 42px; height: 42px; border-radius: 50%; display: inline-flex; justify-content: center; align-items: center; cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 4px 15px rgba(0,0,0,0.3); padding: 0; }
-    .nav-action-btn:hover { background: rgba(0, 191, 255, 0.15); border-color: #00bfff; transform: translateY(-3px) scale(1.05); box-shadow: 0 6px 20px rgba(0, 191, 255, 0.4); }
+    .nav-action-btn {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #00bfff;
+      font-size: 18px;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      padding: 0;
+    }
+    .nav-action-btn:hover {
+      background: rgba(0, 191, 255, 0.15);
+      border-color: #00bfff;
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 6px 20px rgba(0, 191, 255, 0.4);
+    }
+    
     body.light-mode .nav-action-btn { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.2); color: #111; }
     body.light-mode .nav-action-btn:hover { background: rgba(0, 140, 186, 0.2); border-color: #008cba; }
 
-    /* 🔍 UNIFIED SEARCH BAR */
-    .search-container { position: relative; margin: 20px auto; width: 85%; max-width: 400px; }
-    #search { width: 100%; box-sizing: border-box; padding: 12px 20px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.2); outline: none; background: rgba(255, 255, 255, 0.1); color: inherit; font-size: 15px; transition: all 0.3s ease; }
-    #search:focus { border-color: #00bfff; background: rgba(255,255,255,0.15); padding-right: 50px; }
-    #searchBtn { position: absolute; right: 7px; top: 50%; transform: translateY(-50%) scale(0.5); background: rgba(0, 191, 255, 0.2); border: none; outline: none; color: white; cursor: pointer; font-size: 16px; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: all 0.3s; }
-    .search-container:focus-within #searchBtn { opacity: 1; pointer-events: auto; transform: translateY(-50%) scale(1); }
+    /* 🔍 UNIFIED SEARCH BAR (ANIMATED) */
+    .search-container { 
+      position: relative;
+      margin: 20px auto;
+      width: 85%;
+      max-width: 400px;
+    }
+    
+    #search { 
+      width: 100%; 
+      box-sizing: border-box;
+      padding: 12px 20px; 
+      border-radius: 25px; 
+      border: 1px solid rgba(255,255,255,0.2); 
+      outline: none; 
+      background: rgba(255, 255, 255, 0.1); 
+      color: inherit;
+      font-size: 15px;
+      transition: all 0.3s ease;
+    }
+    
+    #search:focus, .search-container.active #search { 
+      border-color: #00bfff; 
+      background: rgba(255,255,255,0.15); 
+      padding-right: 50px; 
+    }
+    
+    #searchBtn { 
+      position: absolute;
+      right: 7px;
+      top: 50%;
+      transform: translateY(-50%) scale(0.5); 
+      background: rgba(0, 191, 255, 0.2); 
+      border: none;
+      outline: none;
+      color: white;
+      cursor: pointer;
+      font-size: 16px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%; 
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0; 
+      pointer-events: none; 
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+    }
+    
+    #searchBtn:hover { 
+      background: #00bfff; 
+      color: black; 
+    }
+    
+    .search-container:focus-within #searchBtn,
+    .search-container.active #searchBtn {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(-50%) scale(1); 
+    }
+    
+    body.light-mode #search { background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.2); color: #111; }
+    body.light-mode #search:focus, body.light-mode .search-container.active #search { border-color: #008cba; }
+    body.light-mode #searchBtn { background: rgba(0, 140, 186, 0.2); color: #111; }
+    body.light-mode #searchBtn:hover { background: #008cba; color: white; }
 
     /* 📄 PAGINATION STYLES */
     .pagination-container { grid-column: span 3; text-align: center; margin-top: 20px; padding: 15px; }
     .pagination-container button { background: rgba(0, 191, 255, 0.2); border: 1px solid #00bfff; color: white; padding: 8px 12px; margin: 0 4px; border-radius: 5px; cursor: pointer; transition: all 0.3s ease; }
     .pagination-container button:hover:not(:disabled) { background: #00bfff; color: black; }
-    .pagination-container button:disabled { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.3); }
+    .pagination-container button:disabled { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.3); cursor: not-allowed; }
     .pagination-container .active-page { background: #00bfff; color: black; font-weight: bold; }
     .page-info { font-size: 12px; margin-bottom: 10px; opacity: 0.8; color: white; }
+    
+    body.light-mode .pagination-container button { color: #111; border-color: #008cba; background: rgba(0, 140, 186, 0.1); }
+    body.light-mode .pagination-container .active-page { background: #008cba; color: white; }
+    body.light-mode .pagination-container button:disabled { border-color: rgba(0,0,0,0.1); color: rgba(0,0,0,0.3); }
   </style>
 </head>
 <body>
@@ -112,8 +197,17 @@
   <button onclick="goHome()" class="back-btn">← Home</button>
 
   <div class="container">
+
     <div class="ad">
-      <script>atOptions = {'key' : '9d4e234e334f6012b5b60f60507d7877', 'format' : 'iframe', 'height' : 90, 'width' : 728, 'params' : {}};</script>
+      <script>
+        atOptions = {
+          'key' : '9d4e234e334f6012b5b60f60507d7877',
+          'format' : 'iframe',
+          'height' : 90,
+          'width' : 728,
+          'params' : {}
+        };
+      </script>
       <script src="https://www.highperformanceformat.com/9d4e234e334f6012b5b60f60507d7877/invoke.js"></script>
     </div>
 
@@ -135,6 +229,7 @@
     <div id="movie-grid" class="movie-grid">
       <p id="loadingText" style="text-align: center; grid-column: span 3;">Loading Database...</p>
     </div>
+
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -202,10 +297,13 @@
     }
     function closeModal() { modal.classList.remove('active'); }
     btnCancel.onclick = closeModal;
+
+    mInput.addEventListener("keypress", function(event) { if (event.key === "Enter") { event.preventDefault(); btnSubmit.click(); }});
+    
     btnSubmit.onclick = () => {
       if (isAlertMode) { closeModal(); return; }
       let attempt = mInput.value;
-      if (attempt && attempt.trim()) {
+      if (attempt !== null && attempt.trim() !== "") {
         if (attempt === secretCache.bossHash) {
           showMessageModal("System Override 👑", "Welcome back, Boss! Routing to Admin Panel...");
           setTimeout(() => { window.location.href = atob(secretCache.bossRoute); }, 1500);
@@ -237,24 +335,30 @@
     }
 
     // ==========================================
-    // 2. THEME & BOOKMARK LOGIC
+    // 2. THEME TOGGLE (LIGHT / DARK MODE)
     // ==========================================
     const toggleBtn = document.getElementById("themeToggle");
     if (toggleBtn) {
       if (localStorage.getItem("theme") === "light") {
         document.body.classList.add("light-mode"); toggleBtn.textContent = "🌙";
       } else { toggleBtn.textContent = "☀️"; }
-      toggleBtn.addEventListener("click", () => {
+      
+      toggleBtn.addEventListener("click", function () {
         document.body.classList.toggle("light-mode");
-        const isLight = document.body.classList.contains("light-mode");
-        localStorage.setItem("theme", isLight ? "light" : "dark");
-        toggleBtn.textContent = isLight ? "🌙" : "☀️";
-        document.getElementById('bookmarkCount').style.borderColor = isLight ? "#ffffff" : "#020202";
+        if (document.body.classList.contains("light-mode")) { 
+          localStorage.setItem("theme", "light"); 
+          toggleBtn.textContent = "🌙"; 
+          document.getElementById('bookmarkCount').style.borderColor = "#ffffff";
+        } else { 
+          localStorage.setItem("theme", "dark"); 
+          toggleBtn.textContent = "☀️"; 
+          document.getElementById('bookmarkCount').style.borderColor = "#020202";
+        }
       });
     }
 
     // ==========================================
-    // 3. DATABASE & RENDERING
+    // 3. READ FIREBASE + PAGINATION LOGIC
     // ==========================================
     let allMovies = []; 
     let filteredMovies = [];
@@ -264,29 +368,41 @@
     async function loadDatabase() {
       let localFiles = [];
       let firebaseFiles = [];
+      
       try { const res = await fetch("files.json"); localFiles = await res.json(); } catch (e) {}
+      
       try {
         const docSnap = await db.collection("movie_database").doc("master_list").get();
         if (docSnap.exists && docSnap.data().movies) firebaseFiles = docSnap.data().movies;
       } catch (e) {}
+
       allMovies = [...localFiles, ...firebaseFiles];
       allMovies = allMovies.filter(movie => movie && (movie.name || movie.title) && (movie.name || movie.title) !== "undefined");
+      
       const uniqueMap = new Map();
       allMovies.forEach(item => uniqueMap.set(item.customId || item.id, item));
       allMovies = Array.from(uniqueMap.values());
+      
       allMovies.sort((a, b) => (b.customId || b.id) - (a.customId || a.id));
+
       filteredMovies = [...allMovies];
       renderPage(1);
     }
 
+    // ⚡ THE "ONE READ TRICK" INTERCEPTOR
     window.goToMovie = function(event, id) {
-      if (event) event.preventDefault();
+      if (event) event.preventDefault(); // Stop normal navigation
+      
       const movieData = allMovies.find(m => String(m.customId || m.id) === String(id));
-      if (movieData) sessionStorage.setItem('ntm_current_movie', JSON.stringify(movieData));
-      else {
-        const bData = getBookmarks().find(b => String(b.id) === String(id));
+      
+      if (movieData) {
+        sessionStorage.setItem('ntm_current_movie', JSON.stringify(movieData));
+      } else {
+        const bookmarks = getBookmarks();
+        const bData = bookmarks.find(b => String(b.id) === String(id));
         if (bData) sessionStorage.setItem('ntm_current_movie', JSON.stringify(bData));
       }
+      
       window.location.href = `file.html?id=${id}`;
     };
 
@@ -294,27 +410,54 @@
       currentPage = page;
       const grid = document.getElementById("movie-grid");
       grid.innerHTML = "";
-      const movies = filteredMovies.slice((page-1)*itemsPerPage, page*itemsPerPage);
       
-      movies.forEach(d => {
+      if (filteredMovies.length === 0) {
+        grid.innerHTML = `<p class="page-info" style="grid-column: span 3; text-align: center;">No movies found.</p>`;
+        return;
+      }
+
+      const startIndex = (page - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const moviesToDisplay = filteredMovies.slice(startIndex, endIndex);
+      
+      moviesToDisplay.forEach(d => {
+        const name = d.name || d.title || "Unknown";
+        const rating = d.rating || d.vote_average || "N/A";
+        const year = (d.release_date || d.year || "").split("-")[0] || "N/A";
+        const desc = (d.description || d.overview || "No plot summary available.").replace(/(<([^>]+)>)/gi, "");
         const movieId = d.customId || d.id;
-        const name = d.name || d.title;
-        const desc = d.description || d.overview || "No plot summary available.";
+        const uploadDate = new Date(movieId);
+        const isNew = (new Date() - uploadDate) < (3 * 24 * 60 * 60 * 1000);
+        
         const card = document.createElement("a");
         card.className = "movie-card";
+        card.id = "card-" + movieId;
         card.href = "file.html?id=" + movieId;
-        card.onclick = (e) => window.goToMovie(e, movieId);
+        card.onclick = function(e) { window.goToMovie(e, movieId); };
         
         card.innerHTML = `
-          <img id="img-${movieId}" src="${d.image || (d.poster_path ? 'https://image.tmdb.org/t/p/w500' + d.poster_path : 'https://via.placeholder.com/200x300')}" alt="${name}">
-          <div class="movie-info"><div class="movie-name">${name}</div></div>
+          ${isNew ? '<div class="new-badge">NEW</div>' : ''}
+          <img id="img-${movieId}" loading="lazy" src="${d.image || (d.poster_path ? 'https://image.tmdb.org/t/p/w500' + d.poster_path : 'https://via.placeholder.com/200x300')}" alt="${name}">
+          
+          <div class="movie-info">
+            <div class="movie-name">${name}</div>
+            <div class="movie-meta">${d.type || 'Movie'} • ${d.category || 'General'}</div>
+          </div>
+
           <div class="preview-info">
             <div class="preview-title">${name}</div>
+            <div class="preview-meta">
+              <span>⭐ ${rating}</span>
+              <span>${year}</span>
+              <span>${d.type || 'Movie'}</span>
+            </div>
             <div class="preview-plot" id="desc-${movieId}">${desc}</div>
+            <div class="preview-btn">Watch Now 🚀</div>
           </div>
         `;
         grid.appendChild(card);
 
+        // Smart Fetch: If TMDB ID is present but no description, fetch from API
         if (d.tmdb_id && (!d.description && !d.overview)) {
           fetchFromTMDB(d.tmdb_id, d.media_type || d.type).then(data => {
             if (data) {
@@ -326,66 +469,151 @@
           });
         }
       });
+
       renderPagination();
     }
 
     function renderPagination() {
       const totalPages = Math.ceil(filteredMovies.length / itemsPerPage);
-      const grid = document.getElementById("movie-grid");
+      const startItem = (currentPage - 1) * itemsPerPage + 1;
+      const endItem = Math.min(currentPage * itemsPerPage, filteredMovies.length);
+
       if (filteredMovies.length === 0) return;
-      let paginationHtml = `<div class="pagination-container"><div class="page-info">Showing ${Math.min((currentPage-1)*itemsPerPage+1, filteredMovies.length)}–${Math.min(currentPage*itemsPerPage, filteredMovies.length)} of ${filteredMovies.length} movies</div>`;
+
+      const grid = document.getElementById("movie-grid");
+      
+      let paginationHtml = `
+        <div class="pagination-container">
+          <div class="page-info">Showing ${startItem}–${endItem} of ${filteredMovies.length} movies</div>
+      `;
+
       paginationHtml += `<button onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>← Prev</button>`;
-      for (let i = 1; i <= totalPages; i++) paginationHtml += `<button class="${i === currentPage ? 'active-page' : ''}" onclick="goToPage(${i})">${i}</button>`;
-      paginationHtml += `<button onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Next →</button></div>`;
+
+      for (let i = 1; i <= totalPages; i++) {
+        paginationHtml += `<button class="${i === currentPage ? 'active-page' : ''}" onclick="goToPage(${i})">${i}</button>`;
+      }
+
+      paginationHtml += `<button onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Next →</button>`;
+      paginationHtml += `</div>`;
+
       grid.innerHTML += paginationHtml;
     }
 
-    window.goToPage = (page) => { const totalPages = Math.ceil(filteredMovies.length / itemsPerPage); if (page >= 1 && page <= totalPages) renderPage(page); };
+    window.goToPage = function(page) {
+      const totalPages = Math.ceil(filteredMovies.length / itemsPerPage);
+      if (page >= 1 && page <= totalPages) { renderPage(page); }
+    };
+
+    const searchInput = document.getElementById("search");
+    const searchBtn = document.getElementById("searchBtn");
+    const searchWrapper = document.getElementById("searchWrapper");
+    let isSearchActive = false;
 
     function executeSearch() {
       const term = searchInput.value.toLowerCase().trim();
-      if (!term) { filteredMovies = [...allMovies]; searchWrapper.classList.remove("active"); } 
-      else {
-        const searchWords = term.split(" ");
+      if (!term) { 
+        filteredMovies = [...allMovies]; 
+        searchBtn.innerHTML = "🔍";
+        isSearchActive = false;
+        searchWrapper.classList.remove("active");
+      } else {
+        const searchWords = term.split(" ").filter(word => word !== "");
         filteredMovies = allMovies.filter(file => {
-          const fileData = `${file.name || ""} ${file.type || ""} ${file.category || ""}`.toLowerCase();
+          const fileData = `${file.name || file.title || ""} ${file.type || ""} ${file.category || ""}`.toLowerCase();
           return searchWords.every(word => fileData.includes(word));
         });
-        searchWrapper.classList.add("active");
+        searchBtn.innerHTML = "✖"; 
+        isSearchActive = true;
       }
       renderPage(1); 
     }
-    const searchInput = document.getElementById("search");
-    const searchBtn = document.getElementById("searchBtn");
-    searchInput.addEventListener("input", (e) => { if(!e.target.value.trim()) executeSearch(); });
-    searchBtn.addEventListener("click", executeSearch);
-    searchInput.addEventListener("keypress", (e) => { if(e.key === "Enter") executeSearch(); });
 
-    function getBookmarks() { return JSON.parse(localStorage.getItem("ntm_bookmarks") || "[]"); }
+    searchInput.addEventListener("input", function(e) {
+      if (e.target.value.trim() === "") {
+        searchWrapper.classList.remove("active");
+        if (isSearchActive) { executeSearch(); } 
+      } else {
+        searchWrapper.classList.add("active");
+        if (isSearchActive) {
+          searchBtn.innerHTML = "🔍";
+          isSearchActive = false;
+        }
+      }
+    });
+
+    searchBtn.addEventListener("click", function() {
+      if (isSearchActive) {
+        searchInput.value = "";
+        searchWrapper.classList.remove("active");
+        executeSearch(); 
+      } else { executeSearch(); }
+    });
+
+    searchInput.addEventListener("keypress", function(e) {
+      if (e.key === "Enter") { e.preventDefault(); executeSearch(); }
+    });
+
+    function goHome() { window.location.href = "index.html"; }
+
+    loadDatabase();
+
+    // ==========================================
+    // 4. BOOKMARK STORAGE SYNC
+    // ==========================================
+    function getBookmarks() {
+      return JSON.parse(localStorage.getItem("ntm_bookmarks") || "[]");
+    }
+
+    function updateBookmarkCount() {
+      const e = document.getElementById("bookmarkCount");
+      if (e) e.textContent = getBookmarks().length;
+    }
+
     function openBookmarks() {
-      const savedItems = getBookmarks();
+      const savedItems = getBookmarks(); 
       const grid = document.getElementById("bookmarkGrid");
-      grid.innerHTML = savedItems.length ? "" : "<p style='color:white; grid-column: span 3; text-align: center;'>No bookmarks yet.</p>";
-      savedItems.forEach(movie => {
-        grid.innerHTML += `<a class="movie-card" href="file.html?id=${movie.id}" onclick="window.goToMovie(event, '${movie.id}')"><img src="${movie.image || 'https://via.placeholder.com/200x300'}"><div class="movie-info"><div class="movie-name">${movie.name}</div></div></a>`;
-      });
+      grid.innerHTML = "";
+      
+      if (!savedItems.length) {
+        grid.innerHTML = "<p style='color:white; grid-column: span 3; text-align: center;'>No bookmarks yet.</p>";
+      } else {
+        savedItems.forEach(movie => {
+          grid.innerHTML += `
+            <a class="movie-card" href="file.html?id=${movie.id}" onclick="window.goToMovie(event, '${movie.id}')">
+              <img src="${movie.image || (movie.poster_path ? 'https://image.tmdb.org/t/p/w500' + movie.poster_path : 'https://via.placeholder.com/200x300')}">
+              <div class="movie-info">
+                <div class="movie-name">${movie.name || movie.title}</div>
+              </div>
+            </a>`;
+        });
+      }
       document.getElementById("bookmarkModal").style.display = "block";
     }
 
     function closeBookmarks() { document.getElementById("bookmarkModal").style.display = "none"; }
-    document.getElementById("bookmarkToggle").addEventListener("click", openBookmarks);
-    document.getElementById("bookmarkCount").textContent = getBookmarks().length;
+    
+    setTimeout(() => {
+      const b = document.getElementById("bookmarkToggle");
+      if (b) b.addEventListener("click", openBookmarks);
+      updateBookmarkCount();
+    }, 500);
 
-    loadDatabase();
   </script>
 
   <div id="bookmarkModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:99999;overflow:auto;">
     <div style="max-width:1000px;margin:40px auto;padding:20px;">
       <h2 style="text-align:center;color:white;margin-bottom:20px;">🔖 Bookmarks</h2>
       <div id="bookmarkGrid" class="movie-grid"></div>
-      <div style="margin-top:25px;padding:15px;border-radius:12px;background:rgba(255,255,255,0.05);text-align:center;color:#d0d0d0;font-size:14px;">Bookmarks are saved locally on this device.</div>
-      <div style="text-align:center;margin-top:20px;"><button onclick="closeBookmarks()" style="padding:10px 20px;border:none;border-radius:10px;background:#00bfff;color:white;cursor:pointer;font-weight:bold;">Close</button></div>
+      <div style="margin-top:25px;padding:15px;border-radius:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);text-align:center;color:#d0d0d0;font-size:14px;line-height:1.7;">
+        🔖 Your bookmarks are stored locally on this device.
+      </div>
+      <div style="text-align:center;margin-top:20px;">
+        <button onclick="closeBookmarks()" style="padding:10px 20px;border:none;border-radius:10px;background:#00bfff;color:white;cursor:pointer;font-weight:bold;">
+          Close
+        </button>
+      </div>
     </div>
   </div>
+
 </body>
 </html>
