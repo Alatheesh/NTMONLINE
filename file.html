@@ -26,15 +26,22 @@
     .card h2 { margin: 10px 0 5px; font-size: 24px; background: linear-gradient(90deg, #fff, #b3e5fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     
     /* Ad Containers */
-    .ad-wrapper { margin: 30px auto; display: flex; justify-content: center; align-items: center; width: 100%; min-height: 260px; padding: 10px 0; overflow: visible; }
+    .ad-wrapper { margin: 20px 0; text-align: center; width: 100%; overflow: hidden; }
     .adsterra-wrapper { margin: 30px 0; text-align: center; width: 100%; overflow: hidden; }
     
+    .desktop-only { display: block; }
+    .mobile-only { display: none; }
+    @media (max-width: 900px) {
+        .desktop-only { display: none; }
+        .mobile-only { display: block; }
+    }
+
     .action-btn { background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); padding: 10px 20px; border-radius: 20px; color: white; font-size: 14px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
     .action-btn:hover { background: rgba(0, 191, 255, 0.15); border-color: #00bfff; transform: translateY(-2px); }
     .action-btn.saved { background: rgba(0, 191, 255, 0.2); border-color: #00bfff; color: #00bfff; }
 
-    /* 🎬 THE WATCH BUTTONS */
-    .download-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 15px; max-height: 350px; overflow-y: auto; padding: 15px; }
+    /* 🎬 THE WATCH BUTTONS (Updated with Bouncy Hover) */
+    .download-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 25px; max-height: 350px; overflow-y: auto; padding-right: 10px; }
     
     .download-grid button { 
       flex: 1; 
@@ -73,16 +80,8 @@
   <div class="center">
     
     <div class="ad-wrapper">
-      <script type="text/javascript">
-        atOptions = {
-          'key' : 'c371556f2f761e68ac3fdb0215382818',
-          'format' : 'iframe',
-          'height' : 250,
-          'width' : 300,
-          'params' : {}
-        };
-      </script>
-      <script type="text/javascript" src="https://www.highperformanceformat.com/c371556f2f761e68ac3fdb0215382818/invoke.js"></script>
+      <div class="desktop-only"><iframe data-aa='2440767' src='//acceptable.a-ads.com/2440767/?size=Adaptive' style='border:0; padding:0; width:100%; height:auto; overflow:hidden;'></iframe></div>
+      <div class="mobile-only"><iframe data-aa='2440765' src='//acceptable.a-ads.com/2440765/?size=Adaptive' style='border:0; padding:0; width:100%; height:auto; overflow:hidden;'></iframe></div>
     </div>
 
     <div class="card" id="fileCard"><p style="opacity:0.7;">Loading Movie Details...</p></div>
@@ -104,16 +103,8 @@
         </div>
 
         <div class="ad-wrapper">
-          <script type="text/javascript">
-            atOptions = {
-              'key' : 'c371556f2f761e68ac3fdb0215382818',
-              'format' : 'iframe',
-              'height' : 250,
-              'width' : 300,
-              'params' : {}
-            };
-          </script>
-          <script type="text/javascript" src="https://www.highperformanceformat.com/c371556f2f761e68ac3fdb0215382818/invoke.js"></script>
+          <div class="desktop-only"><iframe data-aa='2440767' src='//acceptable.a-ads.com/2440767/?size=Adaptive' style='border:0; padding:0; width:100%; height:auto; overflow:hidden;'></iframe></div>
+          <div class="mobile-only"><iframe data-aa='2440765' src='//acceptable.a-ads.com/2440765/?size=Adaptive' style='border:0; padding:0; width:100%; height:auto; overflow:hidden;'></iframe></div>
         </div>
     </div>
 
@@ -129,9 +120,35 @@
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
+// ==========================================
+// TMDB API LOAD BALANCER
+// ==========================================
+const tmdbApiKeys = [
+  "e262bd07ebfb205acaed257bb4227ea6",
+  "931e6d3b603237c1179a7b8a23d2e8c4"
+];
+let currentKeyIndex = 0;
+
+function getNextTmdbKey() {
+  const key = tmdbApiKeys[currentKeyIndex];
+  currentKeyIndex = (currentKeyIndex + 1) % tmdbApiKeys.length;
+  return key;
+}
+
+async function fetchFromTMDB(tmdbId, mediaType) {
+  const apiKey = getNextTmdbKey();
+  const type = (mediaType || 'movie').toLowerCase(); 
+  const endpoint = type === 'series' ? 'tv' : 'movie';
+  const url = `https://api.themoviedb.org/3/${endpoint}/${tmdbId}?api_key=${apiKey}&language=en-US`;
+  try {
+    const response = await fetch(url);
+    return await response.json();
+  } catch (e) { return null; }
+}
+
 // 1. INITIALIZE REMOTE CONFIG FOR REPORT TOGGLE ($0.00 Cost)
 const remoteConfig = firebase.remoteConfig();
-remoteConfig.settings.minimumFetchIntervalMillis = 0; // Change to 3600000 before public launch
+remoteConfig.settings.minimumFetchIntervalMillis = 0; 
 remoteConfig.defaultConfig = { "is_report_btn_enabled": true };
 
 remoteConfig.fetchAndActivate()
@@ -142,7 +159,7 @@ remoteConfig.fetchAndActivate()
   .catch((err) => console.error("Remote Config Error:", err));
 
 
-// 2. THE ONE READ TRICK LOGIC WITH CACHE DEFENSE & VALIDATION
+// 2. THE ONE READ TRICK LOGIC WITH CACHE DEFENSE
 let currentFile = null; 
 let currentFileId = null; 
 let allFileLinks = []; 
@@ -164,74 +181,65 @@ async function loadFile() {
   if (cachedData) {
       const parsedCache = JSON.parse(cachedData);
       
-      // 🛡️ THE CACHE VALIDATION FIX 🛡️
+      // 🛡️ CACHE VALIDATION FIX
       if (String(parsedCache.id) === String(id) || String(parsedCache.customId) === String(id)) {
           fileData = parsedCache;
           paintUI(fileData);
           currentFile = fileData;
 
-          // Check if the backpack already contains the streaming links
+          // If data is lightweight, check if we need to fetch fresh info from TMDB
+          if (fileData.tmdb_id && (!fileData.description || !fileData.image)) {
+              fetchFromTMDB(fileData.tmdb_id, fileData.media_type || fileData.type).then(tmdbData => {
+                  if (tmdbData) {
+                      fileData.description = tmdbData.overview || fileData.description;
+                      fileData.image = tmdbData.poster_path ? `https://image.tmdb.org/t/p/w500${tmdbData.poster_path}` : fileData.image;
+                      fileData.rating = tmdbData.vote_average ? tmdbData.vote_average.toFixed(1) : fileData.rating;
+                      sessionStorage.setItem("ntm_current_movie", JSON.stringify(fileData));
+                      paintUI(fileData); // Repaint with new data
+                  }
+              });
+          }
+
           if (fileData.links || fileData.downloads || fileData.stream_url || fileData.link) {
               if (Array.isArray(fileData.links) && fileData.links.length > 0) allFileLinks = fileData.links;
               else if (Array.isArray(fileData.downloads) && fileData.downloads.length > 0) allFileLinks = fileData.downloads;
               else if (fileData.link) allFileLinks = [fileData.link];
               else if (fileData.stream_url) allFileLinks = [fileData.stream_url];
 
-              // If links exist, render them and STOP! (Costs 0 Database Reads)
               if (allFileLinks && allFileLinks.length > 0) {
                   processLinksAndRender(currentFile);
-                  return; // <--- This command stops Firebase from being called!
+                  return; 
               }
           }
-      } else {
-          // IDs don't match! The user clicked a new movie. Clear the old cache.
-          sessionStorage.removeItem("ntm_current_movie");
       }
   }
 
-  // STEP B: THE 1 FIREBASE READ (Only happens if the backpack is empty or has the wrong movie!)
+  // STEP B: THE 1 FIREBASE READ
   try {
-      // Look up the specific movie document using its ID
       let docSnap = await db.collection("movies").doc(String(id)).get();
-      
-      // FALLBACK: If you haven't moved to the "movies" collection yet, check the old master_list
       if (!docSnap.exists) {
           const masterSnap = await db.collection("movie_database").doc("master_list").get();
           if (masterSnap.exists && masterSnap.data().movies) {
               const oldArray = masterSnap.data().movies;
               const foundOld = oldArray.find(m => String(m.id || m.customId) === String(id));
-              if (foundOld) {
-                  docSnap = { exists: true, data: () => foundOld };
-              }
+              if (foundOld) docSnap = { exists: true, data: () => foundOld };
           }
       }
 
       if (docSnap.exists) {
           const dbData = docSnap.data();
-          
-          // Safety Net: If the user got here from a shared link, UI data is empty. Use dbData to paint UI.
-          if (!fileData) {
-              paintUI(dbData);
-              currentFile = dbData;
-          }
-
-          // Extract the links based on how you stored them
+          if (!fileData) { paintUI(dbData); currentFile = dbData; }
           if (Array.isArray(dbData.links) && dbData.links.length > 0) allFileLinks = dbData.links;
           else if (Array.isArray(dbData.downloads) && dbData.downloads.length > 0) allFileLinks = dbData.downloads;
           else if (dbData.link) allFileLinks = [dbData.link];
           else if (dbData.stream_url) allFileLinks = [dbData.stream_url];
-
-          // 🎒 SAVE LINKS TO THE BACKPACK SO THE NEXT VISIT COSTS 0 READS
           sessionStorage.setItem("ntm_current_movie", JSON.stringify(dbData));
-
           processLinksAndRender(currentFile);
       } else {
-          // It doesn't exist in the database at all
-          document.getElementById("fileCard").innerHTML = "<h2>Sorry, this movie hasn't been uploaded yet.</h2><p>Our team is probably working on it!</p>";
+          document.getElementById("fileCard").innerHTML = "<h2>Sorry, this movie hasn't been uploaded yet.</h2>";
       }
   } catch (e) {
       console.error("Error fetching links:", e);
-      if(!fileData) document.getElementById("fileCard").innerHTML = "<h2>Error loading movie data.</h2>";
   }
 }
 
@@ -240,8 +248,6 @@ function paintUI(file) {
       document.body.style.backgroundImage = `linear-gradient(180deg, rgba(2,2,2,0.85), rgba(10,17,40,0.9), rgba(2,2,2,0.95)), url('${file.backdrop}')`; 
       document.body.style.backgroundSize = "cover"; 
   }
-  
-  // Format TMDB data if present, or fallback to custom database values
   const imgUrl = file.image || (file.poster_path ? `https://image.tmdb.org/t/p/w500${file.poster_path}` : 'https://via.placeholder.com/400x220?text=No+Image');
   const title = file.name || file.title || "Unknown Title";
   const desc = file.description || file.overview || 'No description provided.';
@@ -259,18 +265,12 @@ function paintUI(file) {
     </div>
     <p style="margin-top: 5px;"><strong>${file.type || 'Movie'}</strong> ${file.category ? '• ' + file.category : ''}</p>
     <p style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; border-left: 3px solid #00bfff; font-size: 14px; text-align: left;">${desc}</p>
-    
     <div style="display: flex; gap: 15px; justify-content: center; margin: 15px 0;">
       <button class="action-btn" id="shareBtn" onclick="shareMovie()">📤 Share</button>
       <button class="action-btn" id="bookmarkBtn" onclick="toggleBookmark()">🔖 Save</button>
     </div>
-
     <div id="quality-dropdown-container"></div>
-    <div id="dynamic-button-container">
-        <div class="modal-spinner" style="margin: 20px auto;"></div>
-        <p style="opacity:0.7;">Fetching streaming links...</p>
-    </div>`;
-    
+    <div id="dynamic-button-container"><div class="modal-spinner" style="margin: 20px auto;"></div><p style="opacity:0.7;">Fetching streaming links...</p></div>`;
   checkBookmarkState();
 }
 
@@ -279,14 +279,11 @@ function processLinksAndRender(file) {
       document.getElementById("dynamic-button-container").innerHTML = "<p style='opacity:0.7; color: #ffcc00;'>Links are being processed or are currently unavailable.</p>";
       return;
   }
-
   if (file.type === "Series") { 
       allFileLinks.sort((a, b) => { let epA = 0, epB = 0; if (typeof a === "object" && a.episode) { const matchA = a.episode.match(/\d+/); if (matchA) epA = parseInt(matchA[0]); } if (typeof b === "object" && b.episode) { const matchB = b.episode.match(/\d+/); if (matchB) epB = parseInt(matchB[0]); } return epA - epB; }); 
   }
-  
   let isSeries = false; let availableQualities = new Set();
   allFileLinks.forEach(l => { if (typeof l === "object" && l.episode) { isSeries = true; if (l.quality) availableQualities.add(l.quality); } });
-
   let qualityDropdownHTML = "";
   if (isSeries && availableQualities.size > 1) {
     const order = {"Auto": 1, "480p": 2, "720p": 3, "1080p": 4, "4K": 5};
@@ -300,10 +297,8 @@ function processLinksAndRender(file) {
         </select>
       </div>`;
   }
-  
   const dropdownContainer = document.getElementById("quality-dropdown-container");
   if(dropdownContainer) dropdownContainer.innerHTML = qualityDropdownHTML;
-  
   renderButtons();
 }
 
@@ -312,7 +307,6 @@ function renderButtons() {
   const qualitySelect = document.getElementById("qualitySelect");
   let linksToRender = allFileLinks;
   if (qualitySelect) { const selectedQuality = qualitySelect.value; linksToRender = allFileLinks.filter(l => typeof l === "object" && l.quality === selectedQuality); }
-
   let downloadHTML = "";
   if (linksToRender.length > 0) {
     downloadHTML = `<div class="download-grid">`;
@@ -331,28 +325,18 @@ function renderButtons() {
   container.innerHTML = downloadHTML;
 }
 
-// ------------------------------------
-// BOOKMARK, STATS, & SHARE LOGIC 
-// ------------------------------------
-
 function toggleBookmark() {
   if (!currentFile) return;
   let bookmarks = JSON.parse(localStorage.getItem("ntm_bookmarks")) || [];
   const existsIndex = bookmarks.findIndex(b => b.id === currentFileId);
   const btn = document.getElementById("bookmarkBtn");
-
   if (existsIndex > -1) {
     bookmarks.splice(existsIndex, 1);
     btn.innerHTML = "🔖 Save";
     btn.classList.remove("saved");
     alert("Removed from Bookmarks");
   } else {
-    bookmarks.push({
-      id: currentFileId,
-      name: currentFile.name || currentFile.title,
-      image: currentFile.image || (currentFile.poster_path ? `https://image.tmdb.org/t/p/w500${currentFile.poster_path}` : ''),
-      type: currentFile.type || 'Movie'
-    });
+    bookmarks.push({ id: currentFileId, name: currentFile.name || currentFile.title, image: currentFile.image || (currentFile.poster_path ? `https://image.tmdb.org/t/p/w500${currentFile.poster_path}` : ''), type: currentFile.type || 'Movie' });
     btn.innerHTML = "✅ Saved";
     btn.classList.add("saved");
     alert("Added to Bookmarks!");
@@ -364,10 +348,7 @@ function checkBookmarkState() {
   let bookmarks = JSON.parse(localStorage.getItem("ntm_bookmarks")) || [];
   if (bookmarks.find(b => String(b.id) === String(currentFileId))) {
     const btn = document.getElementById("bookmarkBtn");
-    if (btn) {
-      btn.innerHTML = "✅ Saved";
-      btn.classList.add("saved");
-    }
+    if (btn) { btn.innerHTML = "✅ Saved"; btn.classList.add("saved"); }
   }
 }
 
@@ -411,10 +392,8 @@ function shareMovie() {
   const url = window.location.href;
   const movieTitle = document.querySelector('h2') ? document.querySelector('h2').innerText : "this movie";
   const shareText = `\n🎬 *You HAVE to check this out!* 🍿\n\nI just found this movie on NTM Online and the quality is insane. ⚡\n\n🎥 Title: ${movieTitle}\n🚀 Watch here: ${url}\n\nIt's the fastest streaming experience I've used. See for yourself! 👇`;
-
   let stats = JSON.parse(localStorage.getItem("ntm_user_stats"));
   if (stats) { stats.hypeScore = (stats.hypeScore || 0) + 1; localStorage.setItem("ntm_user_stats", JSON.stringify(stats)); }
-
   if (navigator.share) {
     navigator.share({ title: 'NTM Watch Hub', text: shareText, url: url }).catch((e) => console.log("Share cancelled"));
   } else {
