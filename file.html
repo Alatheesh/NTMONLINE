@@ -26,7 +26,6 @@
     .card h2 { margin: 10px 0 5px; font-size: 24px; background: linear-gradient(90deg, #fff, #b3e5fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     
     /* Ad Containers */
-    /* Added min-height, padding, and flexbox to strictly reserve space for the 300x250 ads */
     .ad-wrapper { margin: 30px auto; display: flex; justify-content: center; align-items: center; width: 100%; min-height: 260px; padding: 10px 0; overflow: visible; }
     .adsterra-wrapper { margin: 30px 0; text-align: center; width: 100%; overflow: hidden; }
     
@@ -35,7 +34,6 @@
     .action-btn.saved { background: rgba(0, 191, 255, 0.2); border-color: #00bfff; color: #00bfff; }
 
     /* 🎬 THE WATCH BUTTONS */
-    /* Added 15px padding to all sides so the buttons don't hit the container bounds when scaled up */
     .download-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 15px; max-height: 350px; overflow-y: auto; padding: 15px; }
     
     .download-grid button { 
@@ -144,7 +142,7 @@ remoteConfig.fetchAndActivate()
   .catch((err) => console.error("Remote Config Error:", err));
 
 
-// 2. THE ONE READ TRICK LOGIC WITH CACHE DEFENSE
+// 2. THE ONE READ TRICK LOGIC WITH CACHE DEFENSE & VALIDATION
 let currentFile = null; 
 let currentFileId = null; 
 let allFileLinks = []; 
@@ -164,27 +162,34 @@ async function loadFile() {
   let fileData = null;
   const cachedData = sessionStorage.getItem("ntm_current_movie");
   if (cachedData) {
-      fileData = JSON.parse(cachedData);
-      paintUI(fileData);
-      currentFile = fileData;
+      const parsedCache = JSON.parse(cachedData);
+      
+      // 🛡️ THE CACHE VALIDATION FIX 🛡️
+      if (String(parsedCache.id) === String(id) || String(parsedCache.customId) === String(id)) {
+          fileData = parsedCache;
+          paintUI(fileData);
+          currentFile = fileData;
 
-      // 🛡️ THE LINK CACHE DEFENSE
-      // Check if the backpack already contains the streaming links
-      if (fileData.links || fileData.downloads || fileData.stream_url || fileData.link) {
-          if (Array.isArray(fileData.links) && fileData.links.length > 0) allFileLinks = fileData.links;
-          else if (Array.isArray(fileData.downloads) && fileData.downloads.length > 0) allFileLinks = fileData.downloads;
-          else if (fileData.link) allFileLinks = [fileData.link];
-          else if (fileData.stream_url) allFileLinks = [fileData.stream_url];
+          // Check if the backpack already contains the streaming links
+          if (fileData.links || fileData.downloads || fileData.stream_url || fileData.link) {
+              if (Array.isArray(fileData.links) && fileData.links.length > 0) allFileLinks = fileData.links;
+              else if (Array.isArray(fileData.downloads) && fileData.downloads.length > 0) allFileLinks = fileData.downloads;
+              else if (fileData.link) allFileLinks = [fileData.link];
+              else if (fileData.stream_url) allFileLinks = [fileData.stream_url];
 
-          // If links exist, render them and STOP! (Costs 0 Database Reads)
-          if (allFileLinks && allFileLinks.length > 0) {
-              processLinksAndRender(currentFile);
-              return; // <--- This command stops Firebase from being called!
+              // If links exist, render them and STOP! (Costs 0 Database Reads)
+              if (allFileLinks && allFileLinks.length > 0) {
+                  processLinksAndRender(currentFile);
+                  return; // <--- This command stops Firebase from being called!
+              }
           }
+      } else {
+          // IDs don't match! The user clicked a new movie. Clear the old cache.
+          sessionStorage.removeItem("ntm_current_movie");
       }
   }
 
-  // STEP B: THE 1 FIREBASE READ (Only happens if the backpack is empty!)
+  // STEP B: THE 1 FIREBASE READ (Only happens if the backpack is empty or has the wrong movie!)
   try {
       // Look up the specific movie document using its ID
       let docSnap = await db.collection("movies").doc(String(id)).get();
