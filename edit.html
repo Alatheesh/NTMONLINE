@@ -174,7 +174,6 @@
         
         if (doc.exists && doc.data().movies) {
             masterMovieData = doc.data().movies;
-            // Sort alphabetically by name
             masterMovieData.sort((a, b) => a.name.localeCompare(b.name));
             
             const selector = document.getElementById("movieSelector");
@@ -198,11 +197,10 @@
   async function loadSelectedMovie() {
       const selectedIndex = document.getElementById("movieSelector").value;
       const linksContainer = document.getElementById("links-container");
-      linksContainer.innerHTML = ""; // Clear existing links
+      linksContainer.innerHTML = ""; 
       document.getElementById("status").innerText = "";
 
       if (selectedIndex === "") {
-          // Clear form if reset
           document.getElementById("name").value = "";
           document.getElementById("upload_quality").value = "";
           document.getElementById("display_tmdb_id").value = "";
@@ -221,21 +219,17 @@
 
       const movie = masterMovieData[selectedIndex];
 
-      // Populate basic fields
       document.getElementById("name").value = movie.name || "";
       document.getElementById("upload_quality").value = movie.upload_quality || "HD";
       document.getElementById("type").value = movie.type || "Movie";
       document.getElementById("display_tmdb_id").value = movie.tmdb_id || "";
       
-      // Hidden tracking fields
       document.getElementById("tmdb_id_hidden").value = movie.tmdb_id || "";
       document.getElementById("media_type_hidden").value = movie.media_type || (movie.type === "Series" ? "tv" : "movie");
       document.getElementById("custom_id_hidden").value = movie.customId || "";
 
-      // Ensure appropriate link fields are visible
       toggleMediaFields();
 
-      // Load Heavy fields if they exist in Firebase (Custom Edit was saved previously)
       if (movie.description || movie.image || movie.category) {
           document.getElementById("category").value = movie.category || "";
           document.getElementById("release_date").value = movie.release_date || "";
@@ -247,7 +241,6 @@
           document.getElementById("status").innerText = "✅ Loaded Custom Saved Data from Firebase.";
           document.getElementById("status").style.color = "#00ff88";
       } else if (movie.tmdb_id) {
-          // It's a lightweight save. Fetch from TMDB to display visually!
           document.getElementById("status").innerText = "⏳ Fetching visual details from TMDB...";
           document.getElementById("status").style.color = "#ffcc00";
           await fetchDeepDetails(movie.tmdb_id, movie.media_type || (movie.type === "Series" ? "tv" : "movie"), true);
@@ -261,29 +254,25 @@
           document.getElementById("description").value = "";
       }
 
-      // Populate Links
       if (movie.links && movie.links.length > 0) {
           movie.links.forEach(link => {
-              // Safely decode Base64 URL back to plaintext
               let decodedUrl = "";
-              try { decodedUrl = atob(link.url); } catch(e) { decodedUrl = link.url; } // Fallback if old data wasn't base64
+              try { decodedUrl = atob(link.url); } catch(e) { decodedUrl = link.url; } 
 
-              // Strip "Ep " from string to put back into number input
               let epNumber = 1;
               if (link.episode) {
-                  epNumber = link.episode.replace(/\D/g, ''); // Removes all non-numeric characters (e.g. "Ep 4" -> "4")
+                  epNumber = link.episode.replace(/\D/g, ''); 
               }
 
               addLinkRow(decodedUrl, epNumber, link.quality, link.size, link.unit);
           });
       } else {
-          addLinkRow(); // Add one blank row if none exist
+          addLinkRow(); 
       }
       
       showMessage(`Loaded: ${movie.name}`);
   }
 
-  // Toggle Episode AND Quality Inputs based on Movie/Series
   function toggleMediaFields() {
     const isSeries = document.getElementById("type").value === "Series";
     const displayStyle = isSeries ? "inline-block" : "none";
@@ -292,7 +281,6 @@
     document.querySelectorAll(".link-quality").forEach(el => el.style.display = displayStyle);
   }
 
-  // Hide Search Dropdown when clicking outside
   document.addEventListener("click", function(event) {
     const wrapper = document.querySelector(".search-wrapper");
     if (wrapper && !wrapper.contains(event.target)) {
@@ -470,7 +458,7 @@
       const url = row.querySelector(".link-url").value.trim();
       if (url) {
         finalLinks.push({
-          url: btoa(url), // Re-encrypt to Base64 before saving
+          url: btoa(url), 
           episode: isSeries ? "Ep " + row.querySelector(".link-ep").value : "", 
           quality: isSeries ? row.querySelector(".link-quality").value : "",
           size: row.querySelector(".link-size").value.trim(),
@@ -492,7 +480,6 @@
       const targetMovieIndex = masterMovieData.findIndex(m => m.customId == customId);
       
       if(targetMovieIndex !== -1) {
-          // 1. Build the lightweight core object
           let updatedData = {
             customId: parseInt(customId),
             name: name,
@@ -503,8 +490,6 @@
             links: finalLinks
           };
 
-          // 2. If the user clicked the BLUE button, append all the heavy text fields
-          // This forces Firebase to store the custom text instead of relying on TMDB
           if (isCustomEdit) {
               updatedData.category = document.getElementById("category").value;
               updatedData.release_date = document.getElementById("release_date").value;

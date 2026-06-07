@@ -324,7 +324,7 @@ window.addEventListener("DOMContentLoaded", function () {
         return ref.get();
       })
       .then(doc => {
-        document.getElementById("visitorCount").innerText = "Visitors: " + doc.data().count;
+        document.getElementById("visitorCount").innerText = "Visitors: \" + doc.data().count;";
       });
     } else {
       ref.get().then(doc => {

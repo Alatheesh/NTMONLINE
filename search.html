@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>File Hub • NTM Stream</title>
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>File Hub • NTM Stream</title>
   <link rel="stylesheet" href="style.css">
+  
   <style>
     /* 🎬 NETFLIX-STYLE GRID */
     .movie-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 10px; max-width: 800px; margin: 0 auto; }
@@ -358,7 +360,7 @@
     }
 
     // ==========================================
-    // 3. READ FIREBASE + PAGINATION LOGIC
+    // 3. SEAMLESS SESSION STORAGE LOAD + FALLBACK
     // ==========================================
     let allMovies = []; 
     let filteredMovies = [];
@@ -367,6 +369,24 @@
     let searchTimer; // ⚡ NEW: Global timer for Search Debounce
     
     async function loadDatabase() {
+      // Check session storage first (Instant Cache Hit)
+      const cachedCatalog = sessionStorage.getItem("ntm_movie_catalog");
+      if (cachedCatalog) {
+        try {
+          allMovies = JSON.parse(cachedCatalog);
+          if (Array.isArray(allMovies) && allMovies.length > 0) {
+            console.log("⚡ Seamlessly retrieved catalog from sessionStorage!");
+            filteredMovies = [...allMovies];
+            renderPage(1);
+            return;
+          }
+        } catch (e) {
+          console.error("Error parsing cached catalog from sessionStorage:", e);
+        }
+      }
+
+      // Fallback query directly from databases if session cache is missing
+      console.log("🌐 Cache miss. Querying Firebase & local datasets...");
       let localFiles = [];
       let firebaseFiles = [];
       
@@ -385,6 +405,9 @@
       allMovies = Array.from(uniqueMap.values());
       
       allMovies.sort((a, b) => (b.customId || b.id) - (a.customId || a.id));
+
+      // Save catalog to session cache to avoid subsequent database reads
+      sessionStorage.setItem("ntm_movie_catalog", JSON.stringify(allMovies));
 
       filteredMovies = [...allMovies];
       renderPage(1);

@@ -94,8 +94,6 @@
 
       if (docSnap.exists && docSnap.data().movies && docSnap.data().movies.length > 0) {
           const movies = docSnap.data().movies;
-          
-          // Show newest first
           const sortedMovies = [...movies].sort((a, b) => b.customId - a.customId);
 
           sortedMovies.forEach(data => {
@@ -131,7 +129,7 @@
           
           await docRef.update({ movies: movies });
           alert("✅ File deleted successfully!");
-          loadFiles(); // Refresh the list
+          loadFiles(); 
       }
     } catch (err) {
       alert("❌ Error: " + err.message);

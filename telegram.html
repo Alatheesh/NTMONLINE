@@ -127,10 +127,8 @@
         // --- QUICK TAGS LOGIC ---
         function addTag(text) {
             const textarea = document.getElementById('updateMessage');
-            // Add a checkmark and a new line if there is already text
             const prefix = textarea.value.trim() === "" ? "✅ " : "\n✅ ";
             textarea.value += prefix + text;
-            // Highlight the text area briefly to show it worked
             textarea.style.borderColor = "#00ff00";
             setTimeout(() => textarea.style.borderColor = "rgba(255,255,255,0.2)", 500);
         }
@@ -144,7 +142,7 @@
 
             if (type === 'new') {
                 movieArea.style.display = 'block';
-                textArea.style.display = 'block'; // Show text box for optional tags
+                textArea.style.display = 'block'; 
                 document.getElementById('quickTagsNew').style.display = 'flex';
                 document.getElementById('quickTagsUpdate').style.display = 'none';
                 headerInput.value = '🎬 *NOW STREAMING*';
@@ -215,8 +213,6 @@
                 const docSnap = await db.collection("movie_database").doc("master_list").get();
                 if (docSnap.exists && docSnap.data().movies) {
                     loadedMovies = docSnap.data().movies;
-                    
-                    // Sort newest first
                     loadedMovies.sort((a, b) => b.customId - a.customId);
                     
                     container.innerHTML = "";
@@ -245,7 +241,6 @@
             const btn = document.getElementById('sendBtn');
             const type = document.querySelector('input[name="bType"]:checked').value;
             
-            // Validate inputs
             const checkboxes = document.querySelectorAll('.movie-item input[type="checkbox"]:checked');
             const updateText = document.getElementById('updateMessage').value.trim();
             
@@ -264,39 +259,32 @@
             btn.disabled = true;
             statusText.innerText = "";
 
-            // Build the Message
             const header = document.getElementById('customHeader').value || "🎬 *UPDATE*";
             let message = `${header}%0A%0A`;
 
-            // Add custom text / tags if provided
             if (updateText !== "") {
                 message += `${updateText.replace(/\n/g, '%0A')}%0A%0A`; 
             }
 
-            // Add movies if applicable
             if (type === 'new' || type === 'update') {
                 checkboxes.forEach(box => {
                     const movie = loadedMovies[box.value];
-                    const movieLink = `https://alatheesh.github.io/file.html?id=${movie.customId}`;
+                    const movieLink = `https://latheeshreddy947.github.io/file.html?id=${movie.customId}`;
                     message += `🍿 *${movie.name}*%0A`;
                     message += `🏷️ _${movie.category} · ${movie.type}_%0A`;
                     message += `🔗 [Watch on NTM Online](${movieLink})%0A%0A`;
                 });
             }
 
-            // Add general link for website updates
             if (type === 'web' || type === 'custom') {
                 message += `🌐 [Visit NTM Online](https://alatheesh.github.io/)%0A%0A`;
             }
 
-            // Footer credits
             message += `%0A⚡ Powered by @NTMONLINE`;
 
-            // Get Secure Credentials
             const botToken = localStorage.getItem('ntm_bot_token');
             const chatId = localStorage.getItem('ntm_channel_id');
 
-            // Send to Telegram API
             const telegramUrl = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${message}&parse_mode=Markdown&disable_web_page_preview=true`;
 
             try {
@@ -307,7 +295,7 @@
                     statusText.innerText = `✅ Successfully broadcasted to channel!`;
                     statusText.style.color = "#00ff00";
                     checkboxes.forEach(box => box.checked = false);
-                    document.getElementById('updateMessage').value = ""; // Clear text area
+                    document.getElementById('updateMessage').value = ""; 
                 } else {
                     statusText.innerText = "❌ Telegram Error: " + data.description;
                     statusText.style.color = "#ff4d4d";

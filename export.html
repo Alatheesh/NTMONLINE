@@ -45,8 +45,8 @@
     .btn-primary { background: #00bfff; color: black; }
     .btn-primary:hover { background: #008cba; transform: scale(1.02); }
     
-    .btn-secondary { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3); }
-    .btn-secondary:hover { background: rgba(255,255,255,0.2); transform: scale(1.02); }
+    .btn-secondary { background: rgba(255, 255, 255, 0.1); color: white; border: 1px solid rgba(255, 255, 255, 0.3); }
+    .btn-secondary:hover { background: rgba(255, 255, 255, 0.2); transform: scale(1.02); }
 
     .btn-danger { background: #ff4d4d; color: white; border: 1px solid #cc0000; }
     .btn-danger:hover { background: #cc0000; box-shadow: 0 0 15px rgba(255,77,77,0.4); transform: scale(1.02); }
@@ -104,12 +104,10 @@
 <script src="firebase-config.js"></script>
 
 <script>
-  // Initialize Firebase
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
   const auth = firebase.auth();
   
-  // Security Check
   auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
   if (!localStorage.getItem("ntm_admin_session")) { window.location.href = "admin.html"; }
   auth.onAuthStateChanged(user => {
@@ -117,28 +115,21 @@
     else { loadDatabases(); }
   });
 
-  // Global Data Storage
   let localFiles = [];
   let firebaseFiles = [];
 
-  // ==========================================
-  // 1. LOAD DATA ON PAGE START
-  // ==========================================
   async function loadDatabases() {
     const listDiv = document.getElementById("checklist");
     
     try {
-      // Fetch Local
       try {
         const res = await fetch("files.json");
         localFiles = await res.json();
       } catch(e) { console.warn("No local files.json found."); }
 
-      // Fetch Firebase
       const docSnap = await db.collection("movie_database").doc("master_list").get();
       
       if (docSnap.exists && docSnap.data().movies) {
-        // Transform Firebase data exactly like your old code did to prevent errors!
         firebaseFiles = docSnap.data().movies.map(d => ({
             id: d.customId || d.id,
             name: d.name,
@@ -149,7 +140,6 @@
             links: d.links || d.downloads || []
         }));
         
-        // Render UI
         listDiv.innerHTML = "";
         firebaseFiles.sort((a,b) => b.id - a.id).forEach(movie => {
           listDiv.innerHTML += `
@@ -167,18 +157,11 @@
     }
   }
 
-  // ==========================================
-  // 2. CHECKBOX CONTROLS
-  // ==========================================
   function toggleCheckboxes(state) {
     document.querySelectorAll('.movie-cb').forEach(cb => cb.checked = state);
   }
 
-  // ==========================================
-  // 3. GENERATE & MERGE DATA
-  // ==========================================
   function generateMergedData(actionType) {
-    // Get checked IDs
     const checkedBoxes = document.querySelectorAll('.movie-cb:checked');
     if (checkedBoxes.length === 0 && localFiles.length === 0) {
       alert("⚠️ No movies selected and local file is empty.");
@@ -187,10 +170,8 @@
     
     const selectedIds = Array.from(checkedBoxes).map(cb => String(cb.value));
 
-    // Filter Firebase data
     const selectedFirebaseMovies = firebaseFiles.filter(m => selectedIds.includes(String(m.id)));
 
-    // Merge & Remove Duplicates
     const merged = [...localFiles, ...selectedFirebaseMovies];
     const uniqueMap = {};
     merged.forEach(item => { uniqueMap[item.id] = item; });
@@ -219,9 +200,6 @@
     }
   }
 
-  // ==========================================
-  // 4. OVERWRITE FIREBASE
-  // ==========================================
   async function overwriteDatabase() {
     const inputStr = document.getElementById("jsonInput").value.trim();
     const btn = document.getElementById("overwriteBtn");
@@ -241,8 +219,8 @@
     }
 
     const confirmWarning = confirm(
-      "🚨 DANGER ZONE 🚨\n\n" +
-      "You are about to DELETE your current Firebase database and replace it with the " + parsedData.length + " movies you just pasted.\n\n" +
+      "DANGER ZONE\n\n" +
+      "You are about to DELETE your current Firebase database and replace it.\n\n" +
       "Are you 100% sure?"
     );
 
@@ -252,14 +230,13 @@
         btn.style.background = "#555";
         btn.disabled = true;
 
-        // The user's original code pushes movies wrapped in a { movies: [] } object
         await db.collection("movie_database").doc("master_list").set({
           movies: parsedData
         });
 
         alert("✅ SUCCESS! Firebase database overwritten.");
         document.getElementById("jsonInput").value = "";
-        loadDatabases(); // Reload list
+        loadDatabases(); 
         
       } catch (error) {
         alert("❌ Upload Failed: " + error.message);

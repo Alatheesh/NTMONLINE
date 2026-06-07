@@ -171,7 +171,7 @@ function checkAdminSession() {
   if (session) {
     const expiry = parseInt(session);
     if (Date.now() < expiry) {
-      // 🔄 ROLLING SESSION: Because they are still active, give them another full 24 hours!
+      // 🔄 ROLLING SESSION: Give them another full 24 hours!
       setAdminSession(); 
       return true; 
     } else {
@@ -199,7 +199,6 @@ function login() {
 
   isLoggingIn = true; 
 
-  // 🛠️ FIX: Force Firebase to await LOCAL persistence BEFORE signing in
   auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
     .then(() => {
       return auth.signInWithEmailAndPassword(email, pass);
