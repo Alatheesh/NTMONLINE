@@ -516,7 +516,7 @@ function openWatch(clickedIndex) {
   let scrambledPayload = "";
   try { scrambledPayload = btoa(JSON.stringify(bingeData)); } 
   catch(e) { scrambledPayload = JSON.stringify(bingeData); }
-  const netlifyUrl = "https://ntmonline.netlify.app/watch.html?data=" + encodeURIComponent(scrambledPayload);
+  const netlifyUrl = "https://ntmonline.vercel.app/watch.html?data=" + encodeURIComponent(scrambledPayload);
   const finalDestination = "redirect.html?dest=" + encodeURIComponent(netlifyUrl);
   setTimeout(() => { window.location.href = finalDestination; }, 3500);
 }
