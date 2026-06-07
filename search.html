@@ -364,6 +364,7 @@
     let filteredMovies = [];
     let currentPage = 1;
     const itemsPerPage = 12;
+    let searchTimer; // ⚡ NEW: Global timer for Search Debounce
     
     async function loadDatabase() {
       let localFiles = [];
@@ -389,7 +390,7 @@
       renderPage(1);
     }
 
-    // ⚡ THE "ONE READ TRICK" INTERCEPTOR
+    // ⚡ THE "ONE READ TRICK" INTERCEPTOR + VIEW TRANSITIONS
     window.goToMovie = function(event, id) {
       if (event) event.preventDefault(); // Stop normal navigation
       
@@ -406,8 +407,12 @@
         if (bData) sessionStorage.setItem('ntm_current_movie', JSON.stringify(bData));
       }
       
-      // Redirect to the file page
-      window.location.href = `file.html?id=${id}`;
+      // ⚡ NEW: Native View Transitions for a smooth app feel
+      if (document.startViewTransition) {
+        document.startViewTransition(() => { window.location.href = `file.html?id=${id}`; });
+      } else {
+        window.location.href = `file.html?id=${id}`;
+      }
     };
 
     function renderPage(page) {
@@ -544,28 +549,42 @@
     }
 
     searchInput.addEventListener("input", function(e) {
+      // ⚡ NEW: Instant UI update for responsiveness
       if (e.target.value.trim() === "") {
         searchWrapper.classList.remove("active");
-        if (isSearchActive) { executeSearch(); } 
+        searchBtn.innerHTML = "🔍";
+        isSearchActive = false;
       } else {
         searchWrapper.classList.add("active");
-        if (isSearchActive) {
-          searchBtn.innerHTML = "🔍";
-          isSearchActive = false;
-        }
+        searchBtn.innerHTML = "✖";
+        isSearchActive = true;
       }
+
+      // ⚡ NEW: Debounce Timer to prevent lag while typing
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => {
+        executeSearch();
+      }, 300);
     });
 
     searchBtn.addEventListener("click", function() {
       if (isSearchActive) {
         searchInput.value = "";
         searchWrapper.classList.remove("active");
+        clearTimeout(searchTimer);
         executeSearch(); 
-      } else { executeSearch(); }
+      } else { 
+        clearTimeout(searchTimer);
+        executeSearch(); 
+      }
     });
 
     searchInput.addEventListener("keypress", function(e) {
-      if (e.key === "Enter") { e.preventDefault(); executeSearch(); }
+      if (e.key === "Enter") { 
+        e.preventDefault(); 
+        clearTimeout(searchTimer);
+        executeSearch(); 
+      }
     });
 
     function goHome() { window.location.href = "index.html"; }
