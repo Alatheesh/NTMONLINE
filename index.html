@@ -149,7 +149,6 @@
   </div>
 </div>
 
-<!-- 🎮 BINGE CARD MODAL -->
 <div id="bingeModal" class="binge-modal" onclick="closeBingeCard(event)">
   <div class="binge-card">
     <span class="close-binge" onclick="closeBingeCard(event, true)">&times;</span>
@@ -160,8 +159,7 @@
     </div>
 
     <div id="bc-content">
-      <!-- Stats will be injected here via JavaScript -->
-    </div>
+      </div>
     
   </div>
 </div>
@@ -314,6 +312,8 @@ window.addEventListener("DOMContentLoaded", function () {
       firebase.initializeApp(firebaseConfig);
     }
     const db = firebase.firestore();
+    
+    // 1. VISITOR COUNTER LOGIC
     const ref = db.collection("stats").doc("visitors");
     const lastVisit = localStorage.getItem("lastVisitDate");
 
@@ -331,6 +331,37 @@ window.addEventListener("DOMContentLoaded", function () {
         document.getElementById("visitorCount").innerText = "Visitors: " + doc.data().count;
       });
     }
+
+    // 2. ⚡ GLOBAL PRE-FETCH LOGIC (Zero-Read Optimizer)
+    async function preloadCatalog() {
+      // Only fetch if we haven't already cached it this session
+      if (!sessionStorage.getItem("ntm_movie_catalog")) {
+        let localFiles = [];
+        let firebaseFiles = [];
+        
+        try { const res = await fetch("files.json"); localFiles = await res.json(); } catch (e) {}
+        
+        try {
+          const docSnap = await db.collection("movie_database").doc("master_list").get();
+          if (docSnap.exists && docSnap.data().movies) firebaseFiles = docSnap.data().movies;
+        } catch (e) {}
+
+        let allMovies = [...localFiles, ...firebaseFiles];
+        allMovies = allMovies.filter(movie => movie && movie.name && movie.name !== "undefined");
+        
+        const uniqueMap = new Map();
+        allMovies.forEach(item => uniqueMap.set(item.customId || item.id, item));
+        allMovies = Array.from(uniqueMap.values());
+        allMovies.sort((a, b) => (b.customId || b.id) - (a.customId || a.id));
+
+        // Save the entire catalog to session storage quietly
+        sessionStorage.setItem("ntm_movie_catalog", JSON.stringify(allMovies));
+      }
+    }
+    
+    // Start preloading in the background 1 second after home page loads so it doesn't slow down the initial visual render
+    setTimeout(preloadCatalog, 1000);
+
   } catch (e) {
     console.error(e);
     document.getElementById("visitorCount").innerText = "Visitors unavailable";
