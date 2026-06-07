@@ -5,6 +5,7 @@ let currentFiles = [];
 let currentPage = 1;
 let totalFilesCount = 0;
 const itemsPerPage = 10;
+const CACHE_KEY = "ntm_file_cache"; // Key for Session Storage
 
 // 🛑 THE NEW MASTER CACHE
 let allFirebaseFiles = null; 
@@ -25,22 +26,20 @@ async function getTotalCount() {
     .get();
 
   let highestId = 0;
-
   if (!snap.empty) {
     highestId = snap.docs[0].data().customId;
   }
-
   totalFilesCount = Math.max(highestId, allJsonFiles.length);
 }
 
 // ---------------- PRELOAD FIREBASE CACHE ----------------
-// This runs once in the background to save you Firebase reads!
+// Updated: Automatically saves to Session Storage whenever it runs
 async function preloadAllFiles() {
-  if (allFirebaseFiles !== null) return; // Already downloaded!
+  if (allFirebaseFiles !== null) return; 
 
   try {
     const snapshot = await db.collection("files").get();
-    allFirebaseFiles = []; // Initialize empty array
+    allFirebaseFiles = []; 
     
     snapshot.forEach(doc => {
       const d = doc.data();
@@ -55,6 +54,9 @@ async function preloadAllFiles() {
         year: d.year || ""
       });
     });
+    
+    // SAVE TO CACHE
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify(allFirebaseFiles));
     console.log("Database secured in local cache.");
   } catch (error) {
     console.error("Error preloading Firebase cache:", error);
@@ -63,7 +65,6 @@ async function preloadAllFiles() {
 
 // ---------------- LOAD PAGE ----------------
 async function loadPage(page) {
-
   if (pageCache[page]) {
     currentFiles = pageCache[page];
     displayFiles();
@@ -74,32 +75,26 @@ async function loadPage(page) {
   const endId = totalFilesCount - ((page - 1) * itemsPerPage);
   const safeStart = Math.max(1, startId);
 
-  const localFiles = allJsonFiles.filter(f =>
-    f.id >= safeStart && f.id <= endId
-  );
+  // LOGIC: If we have cache, filter from it, else hit Firebase
+  let firebaseFiles = [];
+  if (allFirebaseFiles) {
+    firebaseFiles = allFirebaseFiles.filter(f => f.id >= safeStart && f.id <= endId);
+  } else {
+    const snapshot = await db.collection("files")
+      .where("customId", ">=", safeStart)
+      .where("customId", "<=", endId)
+      .get();
 
-  const snapshot = await db.collection("files")
-    .where("customId", ">=", safeStart)
-    .where("customId", "<=", endId)
-    .get();
+    firebaseFiles = snapshot.docs.map(doc => {
+      const d = doc.data();
+      return { id: d.customId, name: d.name, type: d.type, category: d.category, description: d.description || "", image: d.image || "", downloads: d.links || [] };
+    });
+  }
 
-  const firebaseFiles = snapshot.docs.map(doc => {
-    const d = doc.data();
-    return {
-      id: d.customId,
-      name: d.name,
-      type: d.type,
-      category: d.category,
-      description: d.description || "",
-      image: d.image || "",
-      downloads: d.links || []
-    };
-  });
-
+  const localFiles = allJsonFiles.filter(f => f.id >= safeStart && f.id <= endId);
   const pageFiles = [...localFiles, ...firebaseFiles];
 
   pageFiles.sort((a, b) => b.id - a.id);
-
   pageCache[page] = pageFiles;
   currentFiles = pageFiles;
 
@@ -109,7 +104,6 @@ async function loadPage(page) {
 // ---------------- DISPLAY ----------------
 function displayFiles() {
   fileList.innerHTML = "";
-
   currentFiles.forEach(file => {
     fileList.innerHTML += `
       <div class="file">
@@ -121,22 +115,17 @@ function displayFiles() {
       </div>
     `;
   });
-
   createPagination();
 }
 
 // ---------------- PAGINATION ----------------
 function createPagination() {
-
   const totalPages = Math.ceil(totalFilesCount / itemsPerPage);
-
   const startItem = (currentPage - 1) * itemsPerPage + 1;
   const endItem = Math.min(currentPage * itemsPerPage, totalFilesCount);
 
   let html = '<div class="pagination">';
-
   html += `<p class="page-info">Showing ${startItem}–${endItem} of ${totalFilesCount} files</p>`;
-
   html += `<button onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>← Prev</button>`;
 
   for (let i = 1; i <= totalPages; i++) {
@@ -146,15 +135,11 @@ function createPagination() {
       </button>
     `;
   }
-
   html += `<button onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Next →</button>`;
-
   html += '</div>';
-
   fileList.innerHTML += html;
 }
 
-// ---------------- PAGE SWITCH ----------------
 function goToPage(page) {
   if (page < 1) return;
   currentPage = page;
@@ -162,13 +147,8 @@ function goToPage(page) {
 }
 
 // ---------------- NAVIGATION ----------------
-function openFile(id) {
-  window.location.href = "file.html?id=" + id;
-}
-
-function goHome() {
-  window.location.href = "index.html";
-}
+function openFile(id) { window.location.href = "file.html?id=" + id; }
+function goHome() { window.location.href = "index.html"; }
 
 // ---------------- SMART SEARCH & TOGGLE CLEAR ----------------
 const searchInput = document.getElementById("search");
@@ -177,19 +157,14 @@ let isSearchActive = false;
 
 async function toggleSearch() {
   if (isSearchActive) {
-    // 🛑 CLEAR SEARCH
     searchInput.value = "";              
     searchBtn.innerHTML = "🔍";          
     isSearchActive = false;              
-    
     currentPage = 1;
     loadPage(1);
-    
   } else {
-    // 🟢 PERFORM SEARCH ON LOCAL CACHE
     const value = searchInput.value.toLowerCase().trim();
     if (!value) return; 
-    
     searchBtn.innerHTML = "✖";
     isSearchActive = true;
     fileList.innerHTML = "<p style='text-align: center; color: white;'>Searching...</p>";
@@ -197,46 +172,32 @@ async function toggleSearch() {
     let results = [];
     const searchWords = value.split(" ").filter(word => word.trim() !== "");
 
-    // 1. Search Local JSON
     const localMatches = allJsonFiles.filter(file => {
       const fileData = `${file.name || ""} ${file.type || ""} ${file.category || ""} ${file.description || ""} ${file.year || ""}`.toLowerCase();
       return searchWords.every(word => fileData.includes(word));
     });
-    
     results.push(...localMatches);
 
-    // 2. Search Firebase Cache (NO READ COSTS HERE!)
-    try {
-      // Safety check: If the user searches before the background download finishes, force it to finish
-      if (allFirebaseFiles === null) {
-        await preloadAllFiles(); 
-      }
-      
-      const firebaseMatches = allFirebaseFiles.filter(f => {
-        const fileData = `${f.name || ""} ${f.type || ""} ${f.category || ""} ${f.description || ""} ${f.year || ""}`.toLowerCase();
-        return searchWords.every(word => fileData.includes(word));
-      });
+    if (allFirebaseFiles === null) await preloadAllFiles(); 
+    
+    const firebaseMatches = allFirebaseFiles.filter(f => {
+      const fileData = `${f.name || ""} ${f.type || ""} ${f.category || ""} ${f.description || ""} ${f.year || ""}`.toLowerCase();
+      return searchWords.every(word => fileData.includes(word));
+    });
 
-      const combined = [...results, ...firebaseMatches];
-      const uniqueResultsMap = new Map();
-      combined.forEach(item => uniqueResultsMap.set(item.id, item));
-      results = Array.from(uniqueResultsMap.values());
-
-    } catch (error) {
-      console.error("Error searching cache:", error);
-    }
-
+    const combined = [...results, ...firebaseMatches];
+    const uniqueResultsMap = new Map();
+    combined.forEach(item => uniqueResultsMap.set(item.id, item));
+    results = Array.from(uniqueResultsMap.values());
     results.sort((a, b) => b.id - a.id);
+    
     currentFiles = results;
     fileList.innerHTML = "";
-    
     if (currentFiles.length === 0) {
       fileList.innerHTML = `<p style="text-align:center; color: white;">No results found for "${searchInput.value}"</p>`;
       return;
     }
-
     fileList.innerHTML = `<p class="page-info">Found ${currentFiles.length} result(s)</p>`;
-
     currentFiles.forEach(file => {
       fileList.innerHTML += `
         <div class="file">
@@ -251,32 +212,19 @@ async function toggleSearch() {
   }
 }
 
-// Add event listeners
 if (searchBtn) searchBtn.onclick = toggleSearch;
-
 if (searchInput) {
   searchInput.addEventListener("keypress", function (e) {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      if (!isSearchActive) toggleSearch();
-    }
+    if (e.key === "Enter") { e.preventDefault(); if (!isSearchActive) toggleSearch(); }
   });
-
   searchInput.addEventListener("input", function(e) {
-    if (isSearchActive) {
-        searchBtn.innerHTML = "🔍";
-        isSearchActive = false;
-    }
-    if (e.target.value.trim() === "") {
-        currentPage = 1;
-        loadPage(1);
-    }
+    if (isSearchActive) { searchBtn.innerHTML = "🔍"; isSearchActive = false; }
+    if (e.target.value.trim() === "") { currentPage = 1; loadPage(1); }
   });
 }
 
 // ---------------- LIGHT / DARK MODE ----------------
 const toggleBtn = document.getElementById("themeToggle");
-
 if (toggleBtn) {
   if (localStorage.getItem("theme") === "light") {
     document.body.classList.add("light-mode");
@@ -284,7 +232,6 @@ if (toggleBtn) {
   } else {
     toggleBtn.textContent = "☀️";
   }
-
   toggleBtn.addEventListener("click", function () {
     document.body.classList.toggle("light-mode");
     if (document.body.classList.contains("light-mode")) {
@@ -297,14 +244,22 @@ if (toggleBtn) {
   });
 }
 
-// ---------------- INIT ----------------
+// ---------------- INIT (GATEKEEPER) ----------------
 (async function init() {
-  await loadJSON();
-  await getTotalCount();
+  // Check Storage First (Works on any page)
+  const cachedData = sessionStorage.getItem(CACHE_KEY);
   
-  // 1. Instantly load Page 1 so the user isn't waiting
-  loadPage(1); 
-  
-  // 2. Silently download the rest of the database in the background!
-  preloadAllFiles(); 
+  if (cachedData) {
+    console.log("Loading from session storage...");
+    allFirebaseFiles = JSON.parse(cachedData);
+    totalFilesCount = allFirebaseFiles.length; 
+    await loadJSON(); 
+    loadPage(1);
+  } else {
+    console.log("Fetching fresh data...");
+    await loadJSON();
+    await getTotalCount();
+    loadPage(1);
+    preloadAllFiles(); 
+  }
 })();
