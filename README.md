@@ -1,20 +1,35 @@
 <div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
+  <h1>NTM Online</h1>
+  <p><strong>Premium Cinematic Streaming & File Indexing Hub</strong></p>
+  
+  <p>
+    <a href="#features">Features</a> • 
+    <a href="#tech-stack">Tech Stack</a> • 
+    <a href="#setup">Setup</a> • 
+    <a href="#license">License</a>
+  </p>
 </div>
 
-# Run and deploy your AI Studio app
+## About
+NTM Online is a next-generation cinematic streaming interface and hybrid file indexing hub. Designed with a focus on speed, immersion, and premium aesthetics, it provides a professional viewing experience with custom hybrid database architecture.
 
-This contains everything you need to run your app locally.
+## Features
+* **Hybrid Database Architecture:** Merges local high-speed caching with real-time cloud data for lightning-fast search.
+* **Cinematic UI:** Built with an immersive Glassmorphism design and custom aurora animations.
+* **Adaptive Experience:** Fully responsive layout for both mobile and desktop users.
+* **Advanced Features:** Gesture-supported video player, dark/light mode toggle, and detailed file indexing.
+* **Admin Dashboard:** Secure, authenticated management panel to add, edit, and delete content seamlessly.
 
-View your app in AI Studio: https://ai.studio/apps/f69b5fad-8e24-4a9e-be93-a6c65fb343bd
+## Tech Stack
+* **Frontend:** HTML5, CSS3 (Glassmorphism), JavaScript
+* **Backend/Database:** Firebase Firestore
+* **Authentication:** Firebase Auth
+* **Media Metadata:** TheMovieDB (TMDB) API
 
-## Run Locally
+## Setup
+To run this project locally, follow these steps:
 
-**Prerequisites:**  Node.js
-
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+1. **Clone the repository:**
+   ```bash
+   git clone [https://github.com/Alatheesh/ntmonline.git](https://github.com/Alatheesh/ntmonline.git)
+   cd ntmonline
