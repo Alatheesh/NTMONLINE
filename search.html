@@ -17,16 +17,64 @@
     }
 
     .container {
-      flex: 1 0 auto !important; /* Forces the container to stretch and fill empty space */
+      flex: 1 0 auto !important; 
       width: 100%;
-      padding-bottom: 50px; /* Gives some breathing room if the grid fills up */
+      padding-bottom: 50px; 
     }
 
-    .site-footer {
-      flex-shrink: 0 !important; /* Prevents the footer from getting squished */
-      margin-top: auto !important; /* Automatically pushes away from the container above */
-      width: 100%;
-      box-sizing: border-box;
+    /* 🛠️ TOP BAR ALIGNMENT FIX */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      margin-top: 40px; /* Space for the back button */
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .top-bar h1 {
+      margin: 0;
+      font-size: 26px;
+      color: #00bfff;
+      text-shadow: 0 0 10px rgba(0, 191, 255, 0.4);
+    }
+
+    body.light-mode .top-bar h1 {
+      color: #008cba;
+      text-shadow: none;
+    }
+
+    /* 🛠️ BACK BUTTON FIX */
+    .back-btn {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      background: rgba(0, 191, 255, 0.2);
+      border: 1px solid #00bfff;
+      color: white;
+      padding: 8px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      z-index: 100;
+    }
+
+    .back-btn:hover {
+      background: #00bfff;
+      color: black;
+    }
+
+    body.light-mode .back-btn {
+      background: rgba(0, 140, 186, 0.1);
+      border-color: #008cba;
+      color: #111;
+    }
+
+    body.light-mode .back-btn:hover {
+      background: #008cba;
+      color: white;
     }
 
     /* 🎬 NETFLIX-STYLE GRID */
@@ -207,7 +255,8 @@
        🦶 FIXED NTM ONLINE BRAND FOOTER
        ========================================= */
     .site-footer {
-      margin-top: auto; /* THIS FORCES IT TO THE BOTTOM */
+      flex-shrink: 0 !important;
+      margin-top: auto !important; 
       padding: 40px 20px 30px;
       background: rgba(255, 255, 255, 0.03);
       border-top: 1px solid rgba(255, 255, 255, 0.1);
