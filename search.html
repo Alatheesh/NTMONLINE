@@ -180,6 +180,64 @@
     body.light-mode .pagination-container button { color: #111; border-color: #008cba; background: rgba(0, 140, 186, 0.1); }
     body.light-mode .pagination-container .active-page { background: #008cba; color: white; }
     body.light-mode .pagination-container button:disabled { border-color: rgba(0,0,0,0.1); color: rgba(0,0,0,0.3); }
+
+    /* =========================================
+       🦶 NTM ONLINE BRAND FOOTER
+       ========================================= */
+    .site-footer {
+      margin-top: 40px;
+      padding: 35px 20px 25px;
+      background: rgba(255, 255, 255, 0.03);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      backdrop-filter: blur(10px);
+    }
+
+    .footer-brand {
+      font-size: 26px;
+      font-weight: 900;
+      color: #00bfff;
+      letter-spacing: 2px;
+      text-shadow: 0 0 15px rgba(0, 191, 255, 0.5);
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .footer-links a {
+      color: #cdcdcd;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: bold;
+      transition: all 0.3s ease;
+    }
+
+    .footer-links a:hover {
+      color: #00bfff;
+      text-shadow: 0 0 8px rgba(0, 191, 255, 0.4);
+    }
+
+    .footer-copy {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-top: 10px;
+    }
+
+    body.light-mode .site-footer { background: rgba(0, 0, 0, 0.02); border-top: 1px solid rgba(0, 0, 0, 0.1); }
+    body.light-mode .footer-brand { color: #008cba; text-shadow: none; }
+    body.light-mode .footer-links a { color: #555; }
+    body.light-mode .footer-links a:hover { color: #008cba; }
+    body.light-mode .footer-copy { color: rgba(0, 0, 0, 0.4); }
   </style>
 </head>
 <body>
@@ -232,7 +290,17 @@
       <p id="loadingText" style="text-align: center; grid-column: span 3;">Loading Database...</p>
     </div>
 
-  </div>
+  </div> <footer class="site-footer">
+    <div class="footer-brand">NTM ONLINE</div>
+    <div class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="telegram.html">Join Telegram</a>
+      <a href="dmca.html">DMCA</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms & Conditions</a>
+    </div>
+    <div class="footer-copy">© <script>document.write(new Date().getFullYear())</script> NTM Online. All rights reserved.</div>
+  </footer>
 
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -366,10 +434,9 @@
     let filteredMovies = [];
     let currentPage = 1;
     const itemsPerPage = 12;
-    let searchTimer; // ⚡ NEW: Global timer for Search Debounce
+    let searchTimer; 
     
     async function loadDatabase() {
-      // Check session storage first (Instant Cache Hit)
       const cachedCatalog = sessionStorage.getItem("ntm_movie_catalog");
       if (cachedCatalog) {
         try {
@@ -385,7 +452,6 @@
         }
       }
 
-      // Fallback query directly from databases if session cache is missing
       console.log("🌐 Cache miss. Querying Firebase & local datasets...");
       let localFiles = [];
       let firebaseFiles = [];
@@ -406,31 +472,25 @@
       
       allMovies.sort((a, b) => (b.customId || b.id) - (a.customId || a.id));
 
-      // Save catalog to session cache to avoid subsequent database reads
       sessionStorage.setItem("ntm_movie_catalog", JSON.stringify(allMovies));
 
       filteredMovies = [...allMovies];
       renderPage(1);
     }
 
-    // ⚡ THE "ONE READ TRICK" INTERCEPTOR + VIEW TRANSITIONS
     window.goToMovie = function(event, id) {
-      if (event) event.preventDefault(); // Stop normal navigation
+      if (event) event.preventDefault(); 
       
-      // Look for the movie in the current loaded array
       const movieData = allMovies.find(m => String(m.customId || m.id) === String(id));
       
       if (movieData) {
-        // Save to browser memory so file.html doesn't need to read the database for UI
         sessionStorage.setItem('ntm_current_movie', JSON.stringify(movieData));
       } else {
-        // Fallback: Check if it's a bookmark that isn't loaded yet
         const bookmarks = getBookmarks();
         const bData = bookmarks.find(b => String(b.id) === String(id));
         if (bData) sessionStorage.setItem('ntm_current_movie', JSON.stringify(bData));
       }
       
-      // ⚡ NEW: Native View Transitions for a smooth app feel
       if (document.startViewTransition) {
         document.startViewTransition(() => { window.location.href = `file.html?id=${id}`; });
       } else {
@@ -463,8 +523,8 @@
 
         const card = document.createElement("a");
         card.className = "movie-card";
-        card.href = "file.html?id=" + movieId; // Keeps SEO & "Open in new tab" working
-        card.onclick = function(e) { window.goToMovie(e, movieId); }; // Intercepts standard left-click
+        card.href = "file.html?id=" + movieId; 
+        card.onclick = function(e) { window.goToMovie(e, movieId); }; 
         card.setAttribute("ontouchstart", ""); 
         
         card.innerHTML = `
@@ -489,7 +549,6 @@
         `;
         grid.appendChild(card);
 
-        // Auto-fetch if lightweight (ID present but description/rating missing/placeholder)
         if (d.tmdb_id && (!d.description || d.rating === undefined || !d.release_date)) {
           fetchFromTMDB(d.tmdb_id, d.media_type || d.type).then(data => {
             if (data) {
@@ -503,7 +562,6 @@
               if (ratingEl && data.vote_average) ratingEl.innerText = `⭐ ${data.vote_average.toFixed(1)}`;
               if (yearEl && data.release_date) yearEl.innerText = data.release_date.split("-")[0];
 
-              // 🛑 THE FIX: Update the memory reference so goToMovie captures it!
               d.image = data.poster_path ? `https://image.tmdb.org/t/p/w500${data.poster_path}` : d.image;
               d.description = data.overview || d.description;
               d.rating = data.vote_average ? data.vote_average.toFixed(1) : d.rating;
@@ -572,7 +630,6 @@
     }
 
     searchInput.addEventListener("input", function(e) {
-      // ⚡ NEW: Instant UI update for responsiveness
       if (e.target.value.trim() === "") {
         searchWrapper.classList.remove("active");
         searchBtn.innerHTML = "🔍";
@@ -583,11 +640,8 @@
         isSearchActive = true;
       }
 
-      // ⚡ NEW: Debounce Timer to prevent lag while typing
       clearTimeout(searchTimer);
-      searchTimer = setTimeout(() => {
-        executeSearch();
-      }, 300);
+      searchTimer = setTimeout(() => { executeSearch(); }, 300);
     });
 
     searchBtn.addEventListener("click", function() {
@@ -635,7 +689,6 @@
         grid.innerHTML = "<p style='color:white; grid-column: span 3; text-align: center;'>No bookmarks yet.</p>";
       } else {
         savedItems.forEach(movie => {
-          // Update bookmark grid links to also use the zero-read trick
           grid.innerHTML += `
             <a class="movie-card" href="file.html?id=${movie.id}" onclick="window.goToMovie(event, '${movie.id}')">
               <img src="${movie.image || 'https://via.placeholder.com/200x300'}">
