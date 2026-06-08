@@ -7,18 +7,26 @@
   <link rel="stylesheet" href="style.css">
   
   <style>
-    /* 🛠️ THE FIX: FORCE FOOTER TO THE ABSOLUTE BOTTOM */
-    html, body {
+    /* 🛠️ BULLETPROOF FOOTER FIX */
+    body {
       margin: 0; 
       padding: 0;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+      min-height: 100vh !important;
+      display: flex !important;
+      flex-direction: column !important;
     }
 
     .container {
-      flex: 1; /* This acts like a spring, pushing the footer all the way down! */
+      flex: 1 0 auto !important; /* Forces the container to stretch and fill empty space */
       width: 100%;
+      padding-bottom: 50px; /* Gives some breathing room if the grid fills up */
+    }
+
+    .site-footer {
+      flex-shrink: 0 !important; /* Prevents the footer from getting squished */
+      margin-top: auto !important; /* Automatically pushes away from the container above */
+      width: 100%;
+      box-sizing: border-box;
     }
 
     /* 🎬 NETFLIX-STYLE GRID */
