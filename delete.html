@@ -97,13 +97,16 @@
           const sortedMovies = [...movies].sort((a, b) => b.customId - a.customId);
 
           sortedMovies.forEach(data => {
+              // 🚨 SAFEGUARD: Escapes single quotes in names (e.g. Zack Snyder's Justice League) so it doesn't break the button
+              const safeName = data.name.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+              
               container.innerHTML += `
               <div class="movie-item">
                   <div class="movie-info">
                     <strong>${data.name}</strong>
                     <span>${data.type} • ${data.category}</span>
                   </div>
-                  <button class="btn-danger" onclick="deleteFile(${data.customId}, '${data.name}')">Delete</button>
+                  <button class="btn-danger" onclick="deleteFile(${data.customId}, '${safeName}')">Delete</button>
               </div>
               `;
           });
@@ -124,12 +127,26 @@
       const docSnap = await docRef.get();
       
       if (docSnap.exists) {
-          let movies = docSnap.data().movies || [];
-          movies = movies.filter(m => m.customId !== customId);
+          const movies = docSnap.data().movies || [];
           
-          await docRef.update({ movies: movies });
-          alert("✅ File deleted successfully!");
-          loadFiles(); 
+          // 1. Locate the exact object in the database
+          const movieToDelete = movies.find(m => m.customId === customId);
+          
+          if (movieToDelete) {
+              // 2. FIREBASE SAFE-DELETE: Instructs Google servers to surgically remove ONLY this specific object
+              await docRef.update({
+                  movies: firebase.firestore.FieldValue.arrayRemove(movieToDelete)
+              });
+              
+              alert("✅ File deleted successfully!");
+              
+              // 3. Clear local storage so the main website fetches the fresh database immediately!
+              sessionStorage.removeItem("ntm_movie_catalog");
+              
+              loadFiles(); 
+          } else {
+              alert("❌ Error: Could not locate that specific movie in the database.");
+          }
       }
     } catch (err) {
       alert("❌ Error: " + err.message);
@@ -137,5 +154,7 @@
   }
 </script>
 
+</body>
+</html>
 </body>
 </html>
