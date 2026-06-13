@@ -625,6 +625,24 @@
               d.description = data.overview || d.description;
               d.rating = data.vote_average ? data.vote_average.toFixed(1) : d.rating;
               d.release_date = data.release_date || d.release_date;
+
+              // 🟢 NEW: Format TMDB Genres and update the UI card instantly
+              if (data.genres && data.genres.length > 0) {
+                  d.category = data.genres.map(g => g.name).join(", ");
+                  
+                  // Visually update the text on the card so it doesn't say "undefined"
+                  const metaDiv = card.querySelector('.movie-meta');
+                  if (metaDiv) {
+                      metaDiv.innerText = `${d.type} • ${d.category}`;
+                  }
+              }
+
+              // 🟢 NEW: Store the runtime so it's ready when passed to file.html
+              if (data.runtime) {
+                  d.runtime = data.runtime + " min";
+              } else if (data.episode_run_time && data.episode_run_time.length > 0) {
+                  d.runtime = data.episode_run_time[0] + " min";
+              }
             } else {
               // Graceful Fallback if TMDB is offline or fails
               if (img && !img.src) img.src = 'https://via.placeholder.com/200x300?text=No+Poster';
