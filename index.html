@@ -334,14 +334,16 @@ window.addEventListener("DOMContentLoaded", function () {
 
     // 2. ⚡ GLOBAL PRE-FETCH LOGIC (Zero-Read Optimizer)
     async function preloadCatalog() {
-      // Only fetch if we haven't already cached it this session
+      // Step 1: Check if 'ntm_movie_catalog' exists in sessionStorage
       if (!sessionStorage.getItem("ntm_movie_catalog")) {
+        console.log("🌐 [Cache Miss index.html] Pre-loading movie catalog from Firebase...");
         let localFiles = [];
         let firebaseFiles = [];
         
         try { const res = await fetch("files.json"); localFiles = await res.json(); } catch (e) {}
         
         try {
+          // Exactly ONE read to Firebase to fetch ALL movie documents
           const docSnap = await db.collection("movie_database").doc("master_list").get();
           if (docSnap.exists && docSnap.data().movies) firebaseFiles = docSnap.data().movies;
         } catch (e) {}
@@ -354,8 +356,12 @@ window.addEventListener("DOMContentLoaded", function () {
         allMovies = Array.from(uniqueMap.values());
         allMovies.sort((a, b) => (b.customId || b.id) - (a.customId || a.id));
 
-        // Save the entire catalog to session storage quietly
+        // Step 4: Save the entire catalog to sessionStorage quietly
         sessionStorage.setItem("ntm_movie_catalog", JSON.stringify(allMovies));
+        console.log("⚡ [Cache Populated index.html] Catalog pre-loaded successfully!");
+      } else {
+        // Step 2: Cache Hit! Bypassing Firebase completely
+        console.log("⚡ [Cache Hit index.html] Catalog already exists in sessionStorage; skipping pre-loader.");
       }
     }
     
