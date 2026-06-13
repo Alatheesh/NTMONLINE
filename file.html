@@ -151,7 +151,7 @@ function smartBack() {
 }
 
 // ==========================================
-// TMDB API LOAD BALANCER
+// TMDB API LOAD BALANCER & ERROR HANDLING
 // ==========================================
 const tmdbApiKeys = [
   "e262bd07ebfb205acaed257bb4227ea6",
@@ -171,9 +171,20 @@ async function fetchFromTMDB(tmdbId, mediaType) {
   const endpoint = type === 'series' ? 'tv' : 'movie';
   const url = `https://api.themoviedb.org/3/${endpoint}/${tmdbId}?api_key=${apiKey}&language=en-US`;
   try {
-    const response = await fetch(url);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+    
+    const response = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
     return await response.json();
-  } catch (e) { return null; }
+  } catch (e) { 
+    console.error("TMDB fetch gracefully handled failure in file.html:", e);
+    return null; 
+  }
 }
 
 // 1. INITIALIZE REMOTE CONFIG FOR REPORT TOGGLE
@@ -207,7 +218,7 @@ async function loadFile() {
   }
   currentFileId = id;
 
-  // 🛠️ HELPER 1: Extract links safely
+  // 🛠  HELPER 1: Extract links safely
   const extractLinks = (data) => {
       if (data.links || data.downloads || data.stream_url || data.link) {
           if (Array.isArray(data.links) && data.links.length > 0) allFileLinks = data.links;
@@ -217,39 +228,51 @@ async function loadFile() {
       }
   };
 
-  // 🛠️ HELPER 2: The TMDB Hydrator (Fills in missing data automatically)
+  // 🛠 HELPER 2: The TMDB Hydrator (Fills in missing data automatically)
   const hydrateWithTMDB = (dataObj) => {
-      if (dataObj.tmdb_id && (!dataObj.description || !dataObj.image || dataObj.description === "No plot summary available." || dataObj.description === "Loading...")) {
+      const hasDescription = dataObj.description && dataObj.description !== 'No description provided.' && dataObj.description !== 'Loading...' && dataObj.description !== 'No plot summary available.';
+      const hasPoster = dataObj.image && !dataObj.image.includes('placeholder') && !dataObj.image.includes('No Image');
+
+      if (dataObj.tmdb_id && (!hasDescription || !hasPoster)) {
+          console.log("🌐 Calling TMDB API in file.html as fallback...");
           fetchFromTMDB(dataObj.tmdb_id, dataObj.media_type || dataObj.type).then(tmdbData => {
               if (tmdbData) {
-                  dataObj.description = tmdbData.overview || dataObj.description;
-                  dataObj.image = tmdbData.poster_path ? `https://image.tmdb.org/t/p/w500${tmdbData.poster_path}` : dataObj.image;
-                  dataObj.rating = tmdbData.vote_average ? tmdbData.vote_average.toFixed(1) : dataObj.rating;
-                  dataObj.release_date = tmdbData.release_date || dataObj.release_date;
-                  
-                  // Update cache so subsequent reloads are instantaneous
-                  sessionStorage.setItem("ntm_current_movie", JSON.stringify(dataObj));
+                  dataObj.description = tmdbData.overview || dataObj.description || "Description not available";
+                  dataObj.image = tmdbData.poster_path ? `https://image.tmdb.org/t/p/w500${tmdbData.poster_path}` : (dataObj.image || 'https://via.placeholder.com/400x220?text=No+Image');
+                  dataObj.rating = tmdbData.vote_average ? tmdbData.vote_average.toFixed(1) : (dataObj.rating || "N/A");
+                  dataObj.release_date = tmdbData.release_date || dataObj.release_date || "N/A";
+              } else {
+                  // Fallback for failed TMDB fetch
+                  dataObj.description = dataObj.description || "Description not available";
+                  dataObj.image = dataObj.image || 'https://via.placeholder.com/400x220?text=No+Image';
+              }
+              
+              // Update individual session cookie
+              sessionStorage.setItem("ntm_current_movie", JSON.stringify(dataObj));
 
-                  // Also update in master catalog if exists
-                  const storedCatalog = sessionStorage.getItem("ntm_movie_catalog");
-                  if (storedCatalog) {
-                      try {
-                          const catalog = JSON.parse(storedCatalog);
-                          const idx = catalog.findIndex(m => String(m.id || m.customId) === String(id));
-                          if (idx !== -1) {
-                              catalog[idx] = dataObj;
-                              sessionStorage.setItem("ntm_movie_catalog", JSON.stringify(catalog));
-                          }
-                      } catch (err) {}
-                  }
-                  
-                  // Repaint the UI with the fresh data
-                  paintUI(dataObj); 
-                  if (allFileLinks && allFileLinks.length > 0) {
-                      processLinksAndRender(dataObj);
+              // Also update in master catalog if exists
+              const storedCatalog = sessionStorage.getItem("ntm_movie_catalog");
+              if (storedCatalog) {
+                  try {
+                      const catalog = JSON.parse(storedCatalog);
+                      const idx = catalog.findIndex(m => String(m.id || m.customId) === String(id));
+                      if (idx !== -1) {
+                          catalog[idx] = dataObj;
+                          sessionStorage.setItem("ntm_movie_catalog", JSON.stringify(catalog));
+                      }
+                  } catch (err) {
+                      console.error(err);
                   }
               }
+              
+              // Repaint the UI with the fresh data
+              paintUI(dataObj); 
+              if (allFileLinks && allFileLinks.length > 0) {
+                  processLinksAndRender(dataObj);
+              }
           });
+      } else {
+          console.log("⚡ [TMDB Ignored file.html] Description and poster already in cache! Skipping TMDB API fetch.");
       }
   };
 
@@ -261,18 +284,17 @@ async function loadFile() {
       try {
           const parsedCache = JSON.parse(cachedData);
           if (String(parsedCache.id) === String(id) || String(parsedCache.customId) === String(id)) {
-              console.log("⚡ Cache hit in sessionStorage.ntm_current_movie!");
+              console.log("⚡ [Cache Hit file.html - Single Movie] Details parsed from sessionStorage.ntm_current_movie!");
               const fileData = parsedCache;
               paintUI(fileData);
               currentFile = fileData;
-
               extractLinks(fileData);
 
               if (allFileLinks && allFileLinks.length > 0) {
                   processLinksAndRender(currentFile);
               }
 
-              // Fetch missing TMDB data if the cached version was lightweight
+              // Hydrate only if missing
               hydrateWithTMDB(fileData);
               return; 
           }
@@ -284,25 +306,26 @@ async function loadFile() {
   // ==========================================
   // STEP B: FALLBACK SEARCH IN MASTER CATALOG CACHE
   // ==========================================
+  let catalog = [];
   const catalogCache = sessionStorage.getItem("ntm_movie_catalog");
   if (catalogCache) {
       try {
-          const catalog = JSON.parse(catalogCache);
+          catalog = JSON.parse(catalogCache);
           if (Array.isArray(catalog)) {
               const foundInCatalog = catalog.find(m => String(m.id || m.customId) === String(id));
               if (foundInCatalog) {
-                  console.log("⚡ Seamlessly retrieved details from the loaded master catalog cache!");
+                  console.log("⚡ [Cache Hit file.html - Master Catalog] Details retrieved from ntm_movie_catalog cache!");
                   const fileData = foundInCatalog;
                   sessionStorage.setItem("ntm_current_movie", JSON.stringify(fileData));
                   paintUI(fileData);
                   currentFile = fileData;
-
                   extractLinks(fileData);
 
                   if (allFileLinks && allFileLinks.length > 0) {
                       processLinksAndRender(currentFile);
                   }
 
+                  // Hydrate only if missing
                   hydrateWithTMDB(fileData);
                   return;
               }
@@ -313,34 +336,59 @@ async function loadFile() {
   }
 
   // ==========================================
-  // STEP C: FIREBASE FALLBACK (Direct Page Load / Incognito Link)
+  // STEP C: FIREBASE FALLBACK (Direct Page Load / Incognito Link - Cache Miss)
   // ==========================================
-  console.log("🌐 Cache miss. Querying Firebase directly for file details...");
+  console.log("🌐 [Cache Miss file.html] Direct visit / hard refresh. Querying Firebase to cache ALL files...");
   try {
-      let docSnap = await db.collection("movies").doc(String(id)).get();
+      // Direct load lands here, so we do exactly ONE read to fetch ALL movie documents
+      let localFiles = [];
+      let firebaseFiles = [];
       
-      if (!docSnap.exists) {
-          const masterSnap = await db.collection("movie_database").doc("master_list").get();
-          if (masterSnap.exists && masterSnap.data().movies) {
-              const oldArray = masterSnap.data().movies;
-              const foundOld = oldArray.find(m => String(m.id || m.customId) === String(id));
-              if (foundOld) {
-                  docSnap = { exists: true, data: () => foundOld };
-              }
+      try { const res = await fetch("files.json"); localFiles = await res.json(); } catch (e) {}
+      
+      try {
+          const docSnap = await db.collection("movie_database").doc("master_list").get();
+          if (docSnap.exists && docSnap.data().movies) {
+              firebaseFiles = docSnap.data().movies;
+          }
+      } catch (e) {}
+
+      catalog = [...localFiles, ...firebaseFiles];
+      catalog = catalog.filter(movie => movie && movie.name && movie.name !== "undefined");
+      
+      const uniqueMap = new Map();
+      catalog.forEach(item => uniqueMap.set(item.customId || item.id, item));
+      catalog = Array.from(uniqueMap.values());
+      catalog.sort((a, b) => (b.customId || b.id) - (a.customId || a.id));
+
+      // Save catalog in sessionStorage
+      sessionStorage.setItem("ntm_movie_catalog", JSON.stringify(catalog));
+      console.log("⚡ [Cache Populated file.html] Catalog populated via direct detail page load!");
+
+      // Find target movie
+      let foundMovie = catalog.find(m => String(m.customId || m.id) === String(id));
+
+      if (!foundMovie) {
+          // Absolute fallback checks direct Doc collection (legacy compatibility)
+          console.log("⚠️ Movie not found in master list, querying direct fallback doc...");
+          const singleSnap = await db.collection("movies").doc(String(id)).get();
+          if (singleSnap.exists) {
+              foundMovie = singleSnap.data();
           }
       }
 
-      if (docSnap.exists) {
-          const dbData = docSnap.data();
-          paintUI(dbData);
-          currentFile = dbData;
+      if (foundMovie) {
+          paintUI(foundMovie);
+          currentFile = foundMovie;
+          extractLinks(foundMovie);
+          sessionStorage.setItem("ntm_current_movie", JSON.stringify(foundMovie));
           
-          extractLinks(dbData);
-          sessionStorage.setItem("ntm_current_movie", JSON.stringify(dbData));
-          processLinksAndRender(currentFile);
+          if (allFileLinks && allFileLinks.length > 0) {
+              processLinksAndRender(currentFile);
+          }
 
-          // Fill in missing TMDB data
-          hydrateWithTMDB(dbData);
+          // Hydrate with TMDB details if missing
+          hydrateWithTMDB(foundMovie);
       } else {
           document.getElementById("fileCard").innerHTML = "<h2>Sorry, this movie hasn't been uploaded yet.</h2><p>Our team is probably working on it!</p>";
       }
@@ -360,7 +408,7 @@ function paintUI(file) {
   const title = file.name || file.title || "Unknown Title";
   const desc = file.description || file.overview || 'No description provided.';
   const rating = file.rating || file.vote_average;
-  const year = file.release_date ? file.release_date.split('-')[0] : '';
+  const year = file.release_date ? file.release_date.split('-')[0] : (file.year || '');
 
   document.getElementById("fileCard").innerHTML = `
     <img src="${imgUrl}">
