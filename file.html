@@ -228,12 +228,12 @@ async function loadFile() {
       }
   };
 
-// 🛠 HELPER 2: The TMDB Hydrator (Fills in missing data automatically)
+  // 🛠 HELPER 2: The TMDB Hydrator
   const hydrateWithTMDB = (dataObj) => {
       const hasDescription = dataObj.description && dataObj.description !== 'No description provided.' && dataObj.description !== 'Loading...' && dataObj.description !== 'No plot summary available.';
       const hasPoster = dataObj.image && !dataObj.image.includes('placeholder') && !dataObj.image.includes('No Image');
 
-      if (dataObj.tmdb_id && (!hasDescription || !hasPoster)) {
+      if (dataObj.tmdb_id && (!hasDescription || !hasPoster || !dataObj.category || !dataObj.runtime)) {
           console.log("🌐 Calling TMDB API in file.html as fallback...");
           fetchFromTMDB(dataObj.tmdb_id, dataObj.media_type || dataObj.type).then(tmdbData => {
               if (tmdbData) {
@@ -242,16 +242,16 @@ async function loadFile() {
                   dataObj.rating = tmdbData.vote_average ? tmdbData.vote_average.toFixed(1) : (dataObj.rating || "N/A");
                   dataObj.release_date = tmdbData.release_date || dataObj.release_date || "N/A";
                   
-                  // 🟢 NEW: Format TMDB Genres into your 'category' field
+                  // Format TMDB Genres
                   if (tmdbData.genres && tmdbData.genres.length > 0) {
                       dataObj.category = tmdbData.genres.map(g => g.name).join(", ");
                   }
 
-                  // 🟢 NEW: Format TMDB Runtime (Timeline) into your 'runtime' field
+                  // Format TMDB Runtime
                   if (tmdbData.runtime) {
-                      dataObj.runtime = tmdbData.runtime + " min"; // For Movies
+                      dataObj.runtime = tmdbData.runtime + " min"; 
                   } else if (tmdbData.episode_run_time && tmdbData.episode_run_time.length > 0) {
-                      dataObj.runtime = tmdbData.episode_run_time[0] + " min"; // For Series
+                      dataObj.runtime = tmdbData.episode_run_time[0] + " min"; 
                   }
                   
               } else {
@@ -259,35 +259,6 @@ async function loadFile() {
                   dataObj.description = dataObj.description || "Description not available";
                   dataObj.image = dataObj.image || 'https://via.placeholder.com/400x220?text=No+Image';
               }
-              
-              // Update individual session cookie
-              sessionStorage.setItem("ntm_current_movie", JSON.stringify(dataObj));
-
-              // Also update in master catalog if exists
-              const storedCatalog = sessionStorage.getItem("ntm_movie_catalog");
-              if (storedCatalog) {
-                  try {
-                      const catalog = JSON.parse(storedCatalog);
-                      const idx = catalog.findIndex(m => String(m.id || m.customId) === String(id));
-                      if (idx !== -1) {
-                          catalog[idx] = dataObj;
-                          sessionStorage.setItem("ntm_movie_catalog", JSON.stringify(catalog));
-                      }
-                  } catch (err) {
-                      console.error(err);
-                  }
-              }
-              
-              // Repaint the UI with the fresh data
-              paintUI(dataObj); 
-              if (allFileLinks && allFileLinks.length > 0) {
-                  processLinksAndRender(dataObj);
-              }
-          });
-      } else {
-          console.log("⚡ [TMDB Ignored file.html] Description and poster already in cache! Skipping TMDB API fetch.");
-      }
-  };
               
               // Update individual session cookie
               sessionStorage.setItem("ntm_current_movie", JSON.stringify(dataObj));
@@ -378,11 +349,10 @@ async function loadFile() {
   }
 
   // ==========================================
-  // STEP C: FIREBASE FALLBACK (Direct Page Load / Incognito Link - Cache Miss)
+  // STEP C: FIREBASE FALLBACK 
   // ==========================================
   console.log("🌐 [Cache Miss file.html] Direct visit / hard refresh. Querying Firebase to cache ALL files...");
   try {
-      // Direct load lands here, so we do exactly ONE read to fetch ALL movie documents
       let localFiles = [];
       let firebaseFiles = [];
       
@@ -403,16 +373,11 @@ async function loadFile() {
       catalog = Array.from(uniqueMap.values());
       catalog.sort((a, b) => (b.customId || b.id) - (a.customId || a.id));
 
-      // Save catalog in sessionStorage
       sessionStorage.setItem("ntm_movie_catalog", JSON.stringify(catalog));
-      console.log("⚡ [Cache Populated file.html] Catalog populated via direct detail page load!");
 
-      // Find target movie
       let foundMovie = catalog.find(m => String(m.customId || m.id) === String(id));
 
       if (!foundMovie) {
-          // Absolute fallback checks direct Doc collection (legacy compatibility)
-          console.log("⚠️ Movie not found in master list, querying direct fallback doc...");
           const singleSnap = await db.collection("movies").doc(String(id)).get();
           if (singleSnap.exists) {
               foundMovie = singleSnap.data();
@@ -429,7 +394,6 @@ async function loadFile() {
               processLinksAndRender(currentFile);
           }
 
-          // Hydrate with TMDB details if missing
           hydrateWithTMDB(foundMovie);
       } else {
           document.getElementById("fileCard").innerHTML = "<h2>Sorry, this movie hasn't been uploaded yet.</h2><p>Our team is probably working on it!</p>";
@@ -457,8 +421,8 @@ function paintUI(file) {
     <h2>${title}</h2>
     <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 12px 0; font-size: 13px; font-weight: bold; color: #ccc;">
       ${file.upload_quality ? `<span style="background: #ffcc00; color: black; padding: 3px 8px; border-radius: 4px;">${file.upload_quality}</span>` : ''}
-      ${rating ? `<span style="color: #ffcc00;">⭐ ${rating}/10</span>` : ''}
-      ${year ? `<span>📅 ${year}</span>` : ''}
+      ${rating && rating !== "N/A" ? `<span style="color: #ffcc00;">⭐ ${rating}/10</span>` : ''}
+      ${year && year !== "N/A" ? `<span>📅 ${year}</span>` : ''}
       ${file.runtime ? `<span>⏳ ${file.runtime}</span>` : ''}
     </div>
     <p style="margin-top: 5px;"><strong>${file.type || 'Movie'}</strong> ${file.category ? '• ' + file.category : ''}</p>
