@@ -33,7 +33,6 @@
     
     .readonly-field { background: rgba(255,255,255,0.05); color: #888; border: 1px dashed rgba(255,255,255,0.1); cursor: not-allowed; }
 
-    /* Custom Message Box */
     #msgBox { display: none; position: fixed; top: 20px; right: 20px; background: #333; color: white; padding: 15px 20px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); z-index: 1000; border-left: 5px solid #00ff88; transition: opacity 0.3s; }
   </style>
 </head>
@@ -53,12 +52,10 @@
 
   <hr style="border-color: rgba(255,255,255,0.1); margin-bottom: 20px;">
 
-  <!-- HIDDEN FIELDS FOR LIGHTWEIGHT SAVING -->
   <input type="hidden" id="tmdb_id_hidden">
   <input type="hidden" id="media_type_hidden">
   <input type="hidden" id="custom_id_hidden">
 
-  <!-- TMDB Correction Search -->
   <label class="field-label">Correct TMDB ID (Optional: Search Name or Name + Year)</label>
   <div class="search-wrapper">
     <div style="display: flex; gap: 10px;">
@@ -150,7 +147,6 @@
   const db = firebase.firestore();
   const auth = firebase.auth();
 
-  // 🔒 SECURITY CHECK
   auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
   if (!localStorage.getItem("ntm_admin_session")) { window.location.href = "admin.html"; }
   auth.onAuthStateChanged(user => { if (!user) window.location.href = "admin.html"; });
@@ -158,7 +154,6 @@
   const API_KEY = "e262bd07ebfb205acaed257bb4227ea6"; 
   let masterMovieData = [];
 
-  // Custom Message Box
   function showMessage(msg, isError = false) {
       const box = document.getElementById("msgBox");
       box.innerText = msg;
@@ -226,7 +221,9 @@
       
       document.getElementById("tmdb_id_hidden").value = movie.tmdb_id || "";
       document.getElementById("media_type_hidden").value = movie.media_type || (movie.type === "Series" ? "tv" : "movie");
-      document.getElementById("custom_id_hidden").value = movie.customId || "";
+      
+      // 🟢 FIXED: Properly handle Legacy Movies that used .id instead of .customId
+      document.getElementById("custom_id_hidden").value = movie.customId || movie.id || "";
 
       toggleMediaFields();
 
@@ -477,18 +474,24 @@
     }
 
     try {
-      const targetMovieIndex = masterMovieData.findIndex(m => m.customId == customId);
+      // 🟢 FIXED: Search safely checks for both Legacy .id and new .customId
+      const targetMovieIndex = masterMovieData.findIndex(m => String(m.customId || m.id) === String(customId));
       
       if(targetMovieIndex !== -1) {
+          let existingMovie = masterMovieData[targetMovieIndex];
+          
           let updatedData = {
-            customId: parseInt(customId),
             name: name,
             type: document.getElementById("type").value,
             upload_quality: document.getElementById("upload_quality").value.trim() || "HD", 
-            tmdb_id: tmdbId,           
+            tmdb_id: Number(tmdbId), // 🟢 FIXED: Saved strictly as Number
             media_type: mediaType,     
             links: finalLinks
           };
+
+          // 🟢 FIXED: Preserve the correct ID attribute format
+          if (existingMovie.id) updatedData.id = existingMovie.id;
+          if (existingMovie.customId) updatedData.customId = existingMovie.customId;
 
           if (isCustomEdit) {
               updatedData.category = document.getElementById("category").value;
