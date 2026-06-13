@@ -4,53 +4,16 @@
   <title>Delete Movie • Admin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    /* 💎 UNIVERSAL ADMIN CSS */
-    body {
-      font-family: Arial, sans-serif;
-      background: #0a1128;
-      color: white;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-      padding: 20px;
-      box-sizing: border-box;
-    }
+    body { font-family: Arial, sans-serif; background: #0a1128; color: white; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
     h2 { color: #00bfff; margin-bottom: 20px; text-align: center; }
-    
-    .container {
-      background: rgba(255, 255, 255, 0.05);
-      padding: 30px;
-      border-radius: 15px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      width: 100%;
-      max-width: 600px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    }
-    
+    .container { background: rgba(255, 255, 255, 0.05); padding: 30px; border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1); width: 100%; max-width: 600px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
     .back-btn { background: rgba(255, 255, 255, 0.1); color: white; width: auto; padding: 8px 16px; margin-bottom: 20px; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s;}
     .back-btn:hover { background: rgba(255, 255, 255, 0.2); }
-    
-    /* 🗑️ DELETE LIST STYLING */
-    .movie-item {
-      background: rgba(0,0,0,0.2);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 8px;
-      padding: 15px;
-      margin-bottom: 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    
+    .movie-item { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
     .movie-info { flex: 1; }
     .movie-info strong { font-size: 16px; color: white; display: block; margin-bottom: 5px; }
     .movie-info span { font-size: 12px; color: #00bfff; }
-
-    .btn-danger {
-      background: #ff4d4d; color: white; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s;
-    }
+    .btn-danger { background: #ff4d4d; color: white; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s; }
     .btn-danger:hover { background: #cc0000; transform: scale(1.05); }
   </style>
 </head>
@@ -74,16 +37,12 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
   const auth = firebase.auth();
-  
-  auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
-  if (!localStorage.getItem("ntm_admin_session")) {
-    window.location.href = "admin.html";
-  }
+  if (!localStorage.getItem("ntm_admin_session")) window.location.href = "admin.html";
 
   auth.onAuthStateChanged(user => {
-    if (user) { loadFiles(); } 
-    else { window.location.href = "admin.html"; }
+    if (user) loadFiles(); 
+    else window.location.href = "admin.html";
   });
 
   async function loadFiles() {
@@ -92,21 +51,23 @@
       const docSnap = await db.collection("movie_database").doc("master_list").get();
       container.innerHTML = "";
 
-      if (docSnap.exists && docSnap.data().movies && docSnap.data().movies.length > 0) {
+      if (docSnap.exists && docSnap.data().movies) {
           const movies = docSnap.data().movies;
-          const sortedMovies = [...movies].sort((a, b) => b.customId - a.customId);
+          // Sort by ID
+          movies.sort((a, b) => (b.customId || b.id) - (a.customId || a.id));
 
-          sortedMovies.forEach(data => {
-              // 🚨 SAFEGUARD: Escapes single quotes in names (e.g. Zack Snyder's Justice League) so it doesn't break the button
+          movies.forEach(data => {
               const safeName = data.name.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+              // Use customId if it exists, otherwise fallback to id
+              const useId = data.customId || data.id;
               
               container.innerHTML += `
               <div class="movie-item">
                   <div class="movie-info">
                     <strong>${data.name}</strong>
-                    <span>${data.type} • ${data.category}</span>
+                    <span>${data.type || 'Movie'} • ${data.category || 'N/A'}</span>
                   </div>
-                  <button class="btn-danger" onclick="deleteFile(${data.customId}, '${safeName}')">Delete</button>
+                  <button class="btn-danger" onclick="deleteFile(${useId}, '${safeName}')">Delete</button>
               </div>
               `;
           });
@@ -118,43 +79,33 @@
     }
   }
 
-  async function deleteFile(customId, name) {
-    const confirmDelete = confirm(`⚠️ Are you sure you want to permanently delete "${name}"?`);
-    if (!confirmDelete) return;
+  async function deleteFile(idToDelete, name) {
+    if (!confirm(`⚠️ Are you sure you want to permanently delete "${name}"?`)) return;
 
     try {
       const docRef = db.collection("movie_database").doc("master_list");
-      const docSnap = await docRef.get();
       
-      if (docSnap.exists) {
-          const movies = docSnap.data().movies || [];
+      await db.runTransaction(async (transaction) => {
+          const doc = await transaction.get(docRef);
+          if (!doc.exists) throw "Database not found";
           
-          // 1. Locate the exact object in the database
-          const movieToDelete = movies.find(m => m.customId === customId);
+          let movies = doc.data().movies || [];
           
-          if (movieToDelete) {
-              // 2. FIREBASE SAFE-DELETE: Instructs Google servers to surgically remove ONLY this specific object
-              await docRef.update({
-                  movies: firebase.firestore.FieldValue.arrayRemove(movieToDelete)
-              });
-              
-              alert("✅ File deleted successfully!");
-              
-              // 3. Clear local storage so the main website fetches the fresh database immediately!
-              sessionStorage.removeItem("ntm_movie_catalog");
-              
-              loadFiles(); 
-          } else {
-              alert("❌ Error: Could not locate that specific movie in the database.");
-          }
-      }
+          // 🟢 FILTER: Create a new list excluding ONLY the specific ID
+          const updatedMovies = movies.filter(m => (m.customId || m.id) != idToDelete);
+          
+          // Overwrite with the filtered list
+          transaction.update(docRef, { movies: updatedMovies });
+      });
+
+      alert("✅ File deleted successfully!");
+      sessionStorage.removeItem("ntm_movie_catalog");
+      loadFiles(); 
     } catch (err) {
       alert("❌ Error: " + err.message);
     }
   }
 </script>
 
-</body>
-</html>
 </body>
 </html>
