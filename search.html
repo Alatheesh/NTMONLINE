@@ -626,16 +626,35 @@
               d.rating = typeof data.vote_average === 'number' ? data.vote_average.toFixed(1) : (d.rating || "N/A");
               d.release_date = data.release_date || d.release_date;
 
-              // 🟢 NEW: Format TMDB Genres and update the UI card instantly
               if (data.genres && data.genres.length > 0) {
                   d.category = data.genres.map(g => g.name).join(", ");
-                  
-                  // Visually update the text on the card so it doesn't say "undefined"
                   const metaDiv = card.querySelector('.movie-meta');
-                  if (metaDiv) {
-                      metaDiv.innerText = `${d.type} • ${d.category}`;
-                  }
+                  if (metaDiv) metaDiv.innerText = `${d.type || 'Movie'} • ${d.category}`;
               }
+
+              if (data.runtime) {
+                  d.runtime = data.runtime + " min";
+              } else if (data.episode_run_time && data.episode_run_time.length > 0) {
+                  d.runtime = data.episode_run_time[0] + " min";
+              }
+
+            } else {
+              // 🟢 GRACEFUL FALLBACK FOR 404 ERRORS (Like the fake 123456 IDs)
+              const fallbackImg = 'https://placehold.co/200x300/1a1a1a/ffffff?text=No+Poster';
+              if (img && (!img.src || img.src.includes('placeholder'))) img.src = fallbackImg;
+              if (descEl && (!d.description || d.description === "Loading...")) descEl.innerText = "Description not available";
+              if (ratingEl && !d.rating) ratingEl.innerText = "⭐ N/A";
+              if (yearEl && !d.release_date) yearEl.innerText = "N/A";
+              
+              d.image = d.image || fallbackImg;
+              d.description = d.description || "Description not available";
+              d.rating = d.rating || "N/A";
+              d.release_date = d.release_date || "N/A";
+              d.category = d.category || "Uncategorized";
+              
+              const metaDiv = card.querySelector('.movie-meta');
+              if (metaDiv) metaDiv.innerText = `${d.type || 'Movie'} • ${d.category}`;
+            }
 
               // 🟢 NEW: Store the runtime so it's ready when passed to file.html
               if (data.runtime) {
