@@ -255,9 +255,12 @@ async function loadFile() {
                   }
                   
               } else {
-                  // Fallback for failed TMDB fetch
+                  // 🟢 FALLBACK FOR 404 ERRORS
                   dataObj.description = dataObj.description || "Description not available";
-                  dataObj.image = dataObj.image || 'https://via.placeholder.com/400x220?text=No+Image';
+                  dataObj.image = dataObj.image || 'https://placehold.co/400x220/1a1a1a/ffffff?text=No+Image';
+                  dataObj.rating = dataObj.rating || "N/A";
+                  dataObj.release_date = dataObj.release_date || "N/A";
+                  dataObj.category = dataObj.category || "Uncategorized";
               }
               
               // Update individual session cookie
