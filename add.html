@@ -34,7 +34,6 @@
     .search-title { font-weight: bold; font-size: 14px; color: white; }
     .search-meta { font-size: 12px; color: #aaa; }
     
-    /* Read-only styling for auto-filled fields */
     .readonly-field { background: rgba(255,255,255,0.05); color: #888; border: 1px dashed rgba(255,255,255,0.1); cursor: not-allowed; }
   </style>
 </head>
@@ -45,11 +44,9 @@
 <div class="container">
   <h2>➕ Add Content (Lightweight Mode)</h2>
 
-  <!-- HIDDEN FIELDS FOR LIGHTWEIGHT SAVING -->
   <input type="hidden" id="tmdb_id_hidden">
   <input type="hidden" id="media_type_hidden">
 
-  <!-- TMDB Search Engine Input -->
   <label class="field-label">Search TMDB (Name or Name + Year)</label>
   <div class="search-wrapper">
     <div style="display: flex; gap: 10px;">
@@ -143,7 +140,6 @@
   const db = firebase.firestore();
   const auth = firebase.auth();
 
-  // 🔒 SECURITY CHECK
   auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
   if (!localStorage.getItem("ntm_admin_session")) { window.location.href = "admin.html"; }
   auth.onAuthStateChanged(user => { if (!user) window.location.href = "admin.html"; });
@@ -152,7 +148,6 @@
 
   window.onload = () => addLinkRow();
 
-  // Hide Search Dropdown when clicking outside
   document.addEventListener("click", function(event) {
     const wrapper = document.querySelector(".search-wrapper");
     if (wrapper && !wrapper.contains(event.target)) {
@@ -160,7 +155,6 @@
     }
   });
 
-  // Hide Search Dropdown if input is cleared manually
   document.getElementById("searchInput").addEventListener("input", function(e) {
     if(e.target.value.trim() === "") {
       document.getElementById("searchResults").style.display = "none";
@@ -168,7 +162,6 @@
     }
   });
 
-  // Toggle Episode AND Quality Inputs based on Movie/Series
   function toggleMediaFields() {
     const isSeries = document.getElementById("type").value === "Series";
     const displayStyle = isSeries ? "inline-block" : "none";
@@ -177,7 +170,6 @@
     document.querySelectorAll(".link-quality").forEach(el => el.style.display = displayStyle);
   }
 
-  // STEP 1: Search TMDB
   async function searchTMDB() {
     const rawQuery = document.getElementById("searchInput").value.trim();
     const status = document.getElementById("status");
@@ -274,7 +266,6 @@
       document.getElementById("backdrop").value = details.backdrop_path ? "https://image.tmdb.org/t/p/w1280" + details.backdrop_path : "";
       document.getElementById("description").value = details.overview || "No description available on TMDB.";
       
-      // Set hidden tracking fields for lightweight save
       document.getElementById("tmdb_id_hidden").value = id;
       document.getElementById("media_type_hidden").value = type;
       
@@ -357,18 +348,17 @@
       const doc = await docRef.get();
       let movies = doc.exists && doc.data().movies ? doc.data().movies : [];
       
-      // 1. Build the lightweight core object
+      // 1. Build the lightweight core object (Fixed TMDB ID Format)
       let movieData = {
         customId: Date.now(),
         name: name,
         type: document.getElementById("type").value,
         upload_quality: document.getElementById("upload_quality").value.trim() || "HD", 
-        tmdb_id: tmdbId,           
+        tmdb_id: Number(tmdbId), // 🟢 FIXED: Saved as a Number           
         media_type: mediaType,     
         links: finalLinks
       };
 
-      // 2. If the user clicked the BLUE button, append all the heavy text fields
       if (isCustomEdit) {
           movieData.category = document.getElementById("category").value;
           movieData.release_date = document.getElementById("release_date").value;
