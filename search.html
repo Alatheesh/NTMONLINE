@@ -7,7 +7,6 @@
   <link rel="stylesheet" href="style.css">
   
   <style>
-    /* 🛠️ THE ONLY NEW STRUCTURAL CODE: FORCES FOOTER DOWN */
     body {
       margin: 0; 
       padding: 0;
@@ -20,12 +19,8 @@
       flex: 1 0 auto; 
     }
 
-    /* 🎬 NETFLIX-STYLE GRID */
     .movie-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 10px; max-width: 800px; margin: 0 auto; }
     
-    /* =========================================
-       🃏 PREMIUM CARD STYLES & HOVER EFFECTS
-       ========================================= */
     .movie-card { 
       background: rgba(255, 255, 255, 0.03); 
       border-radius: 12px; overflow: hidden; position: relative; 
@@ -39,7 +34,6 @@
 
     .movie-card img { width: 100%; height: 100%; object-fit: cover; transition: filter 0.4s ease; }
     
-    /* Hover Triggers */
     .movie-card:hover { 
       transform: translateY(-8px) scale(1.03); 
       box-shadow: 0 15px 30px rgba(0, 191, 255, 0.3); 
@@ -49,7 +43,6 @@
     .movie-card:hover img { filter: brightness(0.25) blur(2px); }
     .movie-card:hover .movie-info { opacity: 0; }
 
-    /* Normal Title Info (Bottom) */
     .movie-info { 
       position: absolute; bottom: 0; width: 100%; box-sizing: border-box; 
       padding: 15px 10px; text-align: center;
@@ -60,7 +53,6 @@
     .movie-meta { font-size: 10px; opacity: 0.7; color: white;}
     .new-badge { position: absolute; top: 5px; left: 5px; background: #e50914; color: white; padding: 2px 5px; border-radius: 4px; font-size: 9px; font-weight: bold; z-index: 10; }
 
-    /* Hidden Preview Data Layer */
     .preview-info {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 14px; box-sizing: border-box;
       display: flex; flex-direction: column; justify-content: flex-end; text-align: left;
@@ -77,7 +69,6 @@
     .preview-plot { font-size: 11px; color: #cdcdcd; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 12px; }
     .preview-btn { background: linear-gradient(135deg, #00bfff, #007bff); color: white; text-align: center; padding: 7px; border-radius: 20px; font-weight: bold; font-size: 11px; box-shadow: 0 4px 15px rgba(0, 191, 255, 0.3); }
 
-    /* ☀️ LIGHT MODE OVERRIDES */
     body.light-mode .movie-card { background: rgba(0, 0, 0, 0.02); border-color: rgba(0, 0, 0, 0.05); }
     body.light-mode .movie-info { background: linear-gradient(transparent, rgba(255,255,255,0.95) 60%); }
     body.light-mode .movie-name { color: #111; }
@@ -88,7 +79,6 @@
     body.light-mode .preview-plot { color: #2d3748; }
     body.light-mode .preview-meta span { background: rgba(0,0,0,0.06); border: 1px solid rgba(0,0,0,0.08); color: #2d3748; }
 
-    /* 🌟 HIGH VISIBILITY NAV BUTTONS */
     .nav-action-btn {
       background: rgba(255, 255, 255, 0.08);
       backdrop-filter: blur(10px);
@@ -116,7 +106,6 @@
     body.light-mode .nav-action-btn { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.2); color: #111; }
     body.light-mode .nav-action-btn:hover { background: rgba(0, 140, 186, 0.2); border-color: #008cba; }
 
-    /* 🔍 UNIFIED SEARCH BAR (ANIMATED) */
     .search-container { 
       position: relative;
       margin: 20px auto;
@@ -182,7 +171,6 @@
     body.light-mode #searchBtn { background: rgba(0, 140, 186, 0.2); color: #111; }
     body.light-mode #searchBtn:hover { background: #008cba; color: white; }
 
-    /* 📄 PAGINATION STYLES */
     .pagination-container { grid-column: span 3; text-align: center; margin-top: 20px; padding: 15px; }
     .pagination-container button { background: rgba(0, 191, 255, 0.2); border: 1px solid #00bfff; color: white; padding: 8px 12px; margin: 0 4px; border-radius: 5px; cursor: pointer; transition: all 0.3s ease; }
     .pagination-container button:hover:not(:disabled) { background: #00bfff; color: black; }
@@ -194,9 +182,6 @@
     body.light-mode .pagination-container .active-page { background: #008cba; color: white; }
     body.light-mode .pagination-container button:disabled { border-color: rgba(0,0,0,0.1); color: rgba(0,0,0,0.3); }
 
-    /* =========================================
-       🦶 FIXED NTM ONLINE BRAND FOOTER
-       ========================================= */
     .site-footer {
       flex-shrink: 0;
       margin-top: auto; 
@@ -221,7 +206,6 @@
       font-family: Arial, sans-serif;
     }
 
-    /* 🔥 THE BIG TELEGRAM BUTTON */
     .telegram-join-btn {
       display: flex;
       align-items: center;
@@ -262,7 +246,6 @@
       text-shadow: 0 0 8px rgba(0, 191, 255, 0.4);
     }
 
-    /* 🔥 THE ALL RIGHTS RESERVED TEXT */
     .footer-copy {
       font-size: 14px;
       font-weight: bold;
@@ -327,7 +310,8 @@
       <p id="loadingText" style="text-align: center; grid-column: span 3;">Loading Database...</p>
     </div>
 
-  </div> <footer class="site-footer">
+  </div> 
+  <footer class="site-footer">
     <div class="footer-brand">NTM ONLINE</div>
     
     <a href="https://t.me/NTMONLINE" class="telegram-join-btn">
@@ -375,7 +359,7 @@
       const url = `https://api.themoviedb.org/3/${endpoint}/${tmdbId}?api_key=${apiKey}&language=en-US`;
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
         
         const response = await fetch(url, { signal: controller.signal });
         clearTimeout(timeoutId);
@@ -459,7 +443,7 @@
     }
 
     // ==========================================
-    // 2. THEME TOGGLE (LIGHT / DARK MODE)
+    // 2. THEME TOGGLE
     // ==========================================
     const toggleBtn = document.getElementById("themeToggle");
     if (toggleBtn) {
@@ -491,13 +475,11 @@
     let searchTimer; 
     
     async function loadDatabase() {
-      // Step 1: Check if 'ntm_movie_catalog' exists in sessionStorage
       const cachedCatalog = sessionStorage.getItem("ntm_movie_catalog");
       if (cachedCatalog) {
         try {
           allMovies = JSON.parse(cachedCatalog);
           if (Array.isArray(allMovies) && allMovies.length > 0) {
-            // Step 2: Cache Hit! Immediately use the cached catalog, bypassing Firebase completely
             console.log("⚡ [Cache Hit search.html] Catalog parsed from sessionStorage! Bypassing Firebase reads entirely.");
             filteredMovies = [...allMovies];
             renderPage(1);
@@ -508,7 +490,6 @@
         }
       }
 
-      // Step 3: Cache Miss! Perform exactly ONE read to Firebase
       console.log("🌐 [Cache Miss search.html] Catalog not found. Querying Firebase & files.json...");
       let localFiles = [];
       let firebaseFiles = [];
@@ -529,7 +510,6 @@
       
       allMovies.sort((a, b) => (b.customId || b.id) - (a.customId || a.id));
 
-      // Step 4: Save the complete array into sessionStorage
       sessionStorage.setItem("ntm_movie_catalog", JSON.stringify(allMovies));
       console.log("⚡ [Cache Populated search.html] Movie catalog cached for other pages!");
 
@@ -588,11 +568,11 @@
         
         card.innerHTML = `
           ${isNew ? '<div class="new-badge">NEW</div>' : ''}
-          <img id="img-${movieId}" loading="lazy" src="${d.image || (d.poster_path ? 'https://image.tmdb.org/t/p/w500' + d.poster_path : 'https://via.placeholder.com/200x300?text=No+Poster')}" alt="${d.name}">
+          <img id="img-${movieId}" loading="lazy" src="${d.image || (d.poster_path ? 'https://image.tmdb.org/t/p/w500' + d.poster_path : 'https://placehold.co/200x300/1a1a1a/ffffff?text=No+Poster')}" alt="${d.name}">
           
           <div class="movie-info">
             <div class="movie-name">${d.name}</div>
-            <div class="movie-meta">${d.type || 'Movie'}${d.category ? ' • ' + d.category : ''}</div>
+            <div class="movie-meta" id="meta-${movieId}">${d.type || 'Movie'}${d.category ? ' • ' + d.category : ''}</div>
           </div>
 
           <div class="preview-info">
@@ -608,6 +588,7 @@
         `;
         grid.appendChild(card);
 
+        // HYDRATION & GRACEFUL FALLBACK LOGIC
         if (d.tmdb_id && (!d.description || d.rating === undefined || !d.release_date)) {
           fetchFromTMDB(d.tmdb_id, d.media_type || d.type).then(data => {
             const img = document.getElementById(`img-${movieId}`);
@@ -616,7 +597,7 @@
             const yearEl = document.getElementById(`year-${movieId}`);
 
             if (data) {
-              if (img && data.poster_path && !d.image) img.src = `https://image.tmdb.org/t/p/w500${data.poster_path}`;
+              if (img && data.poster_path && (!d.image || d.image.includes('placehold'))) img.src = `https://image.tmdb.org/t/p/w500${data.poster_path}`;
               if (descEl && (!d.description || d.description === "Loading...")) descEl.innerText = data.overview || "No summary available.";
               if (ratingEl && typeof data.vote_average === 'number') ratingEl.innerText = `⭐ ${data.vote_average.toFixed(1)}`;
               if (yearEl && data.release_date) yearEl.innerText = data.release_date.split("-")[0];
@@ -628,7 +609,7 @@
 
               if (data.genres && data.genres.length > 0) {
                   d.category = data.genres.map(g => g.name).join(", ");
-                  const metaDiv = card.querySelector('.movie-meta');
+                  const metaDiv = document.getElementById(`meta-${movieId}`);
                   if (metaDiv) metaDiv.innerText = `${d.type || 'Movie'} • ${d.category}`;
               }
 
@@ -641,10 +622,10 @@
             } else {
               // 🟢 GRACEFUL FALLBACK FOR 404 ERRORS (Like the fake 123456 IDs)
               const fallbackImg = 'https://placehold.co/200x300/1a1a1a/ffffff?text=No+Poster';
-              if (img && (!img.src || img.src.includes('placeholder'))) img.src = fallbackImg;
+              if (img && (!img.src || img.src.includes('placehold'))) img.src = fallbackImg;
               if (descEl && (!d.description || d.description === "Loading...")) descEl.innerText = "Description not available";
-              if (ratingEl && !d.rating) ratingEl.innerText = "⭐ N/A";
-              if (yearEl && !d.release_date) yearEl.innerText = "N/A";
+              if (ratingEl && (!d.rating || d.rating === "undefined")) ratingEl.innerText = "⭐ N/A";
+              if (yearEl && (!d.release_date || d.release_date === "undefined")) yearEl.innerText = "N/A";
               
               d.image = d.image || fallbackImg;
               d.description = d.description || "Description not available";
@@ -652,23 +633,8 @@
               d.release_date = d.release_date || "N/A";
               d.category = d.category || "Uncategorized";
               
-              const metaDiv = card.querySelector('.movie-meta');
+              const metaDiv = document.getElementById(`meta-${movieId}`);
               if (metaDiv) metaDiv.innerText = `${d.type || 'Movie'} • ${d.category}`;
-            }
-
-              // 🟢 NEW: Store the runtime so it's ready when passed to file.html
-              if (data.runtime) {
-                  d.runtime = data.runtime + " min";
-              } else if (data.episode_run_time && data.episode_run_time.length > 0) {
-                  d.runtime = data.episode_run_time[0] + " min";
-              }
-            } else {
-              // Graceful Fallback if TMDB is offline or fails
-              if (img && !img.src) img.src = 'https://via.placeholder.com/200x300?text=No+Poster';
-              if (descEl && (!d.description || d.description === "Loading...")) descEl.innerText = "Description not available";
-              
-              d.image = d.image || 'https://via.placeholder.com/200x300?text=No+Poster';
-              d.description = d.description || "Description not available";
             }
             
             // SAVE FETCHED DATA BACK TO MEMORY (allMovies) AND SESSION STORAGE
@@ -797,7 +763,7 @@
         savedItems.forEach(movie => {
           grid.innerHTML += `
             <a class="movie-card" href="file.html?id=${movie.id}" onclick="window.goToMovie(event, '${movie.id}')">
-              <img src="${movie.image || 'https://via.placeholder.com/200x300'}">
+              <img src="${movie.image || 'https://placehold.co/200x300/1a1a1a/ffffff?text=No+Poster'}">
               <div class="movie-info">
                 <div class="movie-name">${movie.name}</div>
               </div>
