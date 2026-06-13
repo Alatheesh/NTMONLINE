@@ -592,7 +592,7 @@
           
           <div class="movie-info">
             <div class="movie-name">${d.name}</div>
-            <div class="movie-meta">${d.type} • ${d.category}</div>
+            <div class="movie-meta">${d.type || 'Movie'}${d.category ? ' • ' + d.category : ''}</div>
           </div>
 
           <div class="preview-info">
