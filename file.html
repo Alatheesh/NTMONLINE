@@ -228,7 +228,7 @@ async function loadFile() {
       }
   };
 
-  // 🛠 HELPER 2: The TMDB Hydrator (Fills in missing data automatically)
+// 🛠 HELPER 2: The TMDB Hydrator (Fills in missing data automatically)
   const hydrateWithTMDB = (dataObj) => {
       const hasDescription = dataObj.description && dataObj.description !== 'No description provided.' && dataObj.description !== 'Loading...' && dataObj.description !== 'No plot summary available.';
       const hasPoster = dataObj.image && !dataObj.image.includes('placeholder') && !dataObj.image.includes('No Image');
@@ -241,11 +241,53 @@ async function loadFile() {
                   dataObj.image = tmdbData.poster_path ? `https://image.tmdb.org/t/p/w500${tmdbData.poster_path}` : (dataObj.image || 'https://via.placeholder.com/400x220?text=No+Image');
                   dataObj.rating = tmdbData.vote_average ? tmdbData.vote_average.toFixed(1) : (dataObj.rating || "N/A");
                   dataObj.release_date = tmdbData.release_date || dataObj.release_date || "N/A";
+                  
+                  // 🟢 NEW: Format TMDB Genres into your 'category' field
+                  if (tmdbData.genres && tmdbData.genres.length > 0) {
+                      dataObj.category = tmdbData.genres.map(g => g.name).join(", ");
+                  }
+
+                  // 🟢 NEW: Format TMDB Runtime (Timeline) into your 'runtime' field
+                  if (tmdbData.runtime) {
+                      dataObj.runtime = tmdbData.runtime + " min"; // For Movies
+                  } else if (tmdbData.episode_run_time && tmdbData.episode_run_time.length > 0) {
+                      dataObj.runtime = tmdbData.episode_run_time[0] + " min"; // For Series
+                  }
+                  
               } else {
                   // Fallback for failed TMDB fetch
                   dataObj.description = dataObj.description || "Description not available";
                   dataObj.image = dataObj.image || 'https://via.placeholder.com/400x220?text=No+Image';
               }
+              
+              // Update individual session cookie
+              sessionStorage.setItem("ntm_current_movie", JSON.stringify(dataObj));
+
+              // Also update in master catalog if exists
+              const storedCatalog = sessionStorage.getItem("ntm_movie_catalog");
+              if (storedCatalog) {
+                  try {
+                      const catalog = JSON.parse(storedCatalog);
+                      const idx = catalog.findIndex(m => String(m.id || m.customId) === String(id));
+                      if (idx !== -1) {
+                          catalog[idx] = dataObj;
+                          sessionStorage.setItem("ntm_movie_catalog", JSON.stringify(catalog));
+                      }
+                  } catch (err) {
+                      console.error(err);
+                  }
+              }
+              
+              // Repaint the UI with the fresh data
+              paintUI(dataObj); 
+              if (allFileLinks && allFileLinks.length > 0) {
+                  processLinksAndRender(dataObj);
+              }
+          });
+      } else {
+          console.log("⚡ [TMDB Ignored file.html] Description and poster already in cache! Skipping TMDB API fetch.");
+      }
+  };
               
               // Update individual session cookie
               sessionStorage.setItem("ntm_current_movie", JSON.stringify(dataObj));
