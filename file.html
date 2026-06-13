@@ -239,7 +239,7 @@ async function loadFile() {
               if (tmdbData) {
                   dataObj.description = tmdbData.overview || dataObj.description || "Description not available";
                   dataObj.image = tmdbData.poster_path ? `https://image.tmdb.org/t/p/w500${tmdbData.poster_path}` : (dataObj.image || 'https://via.placeholder.com/400x220?text=No+Image');
-                  dataObj.rating = tmdbData.vote_average ? tmdbData.vote_average.toFixed(1) : (dataObj.rating || "N/A");
+                  dataObj.rating = typeof tmdbData.vote_average === 'number' ? tmdbData.vote_average.toFixed(1) : (dataObj.rating || "N/A");
                   dataObj.release_date = tmdbData.release_date || dataObj.release_date || "N/A";
                   
                   // Format TMDB Genres
@@ -421,7 +421,7 @@ function paintUI(file) {
     <h2>${title}</h2>
     <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 12px 0; font-size: 13px; font-weight: bold; color: #ccc;">
       ${file.upload_quality ? `<span style="background: #ffcc00; color: black; padding: 3px 8px; border-radius: 4px;">${file.upload_quality}</span>` : ''}
-      ${rating && rating !== "N/A" ? `<span style="color: #ffcc00;">⭐ ${rating}/10</span>` : ''}
+      ${rating ? `<span style="color: #ffcc00;">⭐ ${rating !== "N/A" ? rating + "/10" : "N/A"}</span>` : ''}
       ${year && year !== "N/A" ? `<span>📅 ${year}</span>` : ''}
       ${file.runtime ? `<span>⏳ ${file.runtime}</span>` : ''}
     </div>
