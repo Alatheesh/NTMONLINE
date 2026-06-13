@@ -66,7 +66,7 @@
       display: flex; flex-direction: column; justify-content: flex-end; text-align: left;
       background: linear-gradient(to top, rgba(5, 10, 25, 0.98) 35%, rgba(5, 10, 25, 0.5) 70%, transparent);
       opacity: 0; transform: translateY(15px);
-      transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+      transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       pointer-events: none;
     }
     .movie-card:hover .preview-info { opacity: 1; transform: translateY(0); }
@@ -354,7 +354,7 @@
     const db = firebase.firestore();
 
     // ==========================================
-    // TMDB API LOAD BALANCER
+    // TMDB API LOAD BALANCER WITH STRICT FALLBACKS
     // ==========================================
     const tmdbApiKeys = [
       "e262bd07ebfb205acaed257bb4227ea6",
@@ -374,9 +374,20 @@
       const endpoint = type === 'series' ? 'tv' : 'movie';
       const url = `https://api.themoviedb.org/3/${endpoint}/${tmdbId}?api_key=${apiKey}&language=en-US`;
       try {
-        const response = await fetch(url);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+        
+        const response = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
         return await response.json();
-      } catch (e) { return null; }
+      } catch (e) { 
+        console.error("TMDB call gracefully handled failure in search.html:", e);
+        return null; 
+      }
     }
 
     // ==========================================
@@ -480,12 +491,14 @@
     let searchTimer; 
     
     async function loadDatabase() {
+      // Step 1: Check if 'ntm_movie_catalog' exists in sessionStorage
       const cachedCatalog = sessionStorage.getItem("ntm_movie_catalog");
       if (cachedCatalog) {
         try {
           allMovies = JSON.parse(cachedCatalog);
           if (Array.isArray(allMovies) && allMovies.length > 0) {
-            console.log("⚡ Seamlessly retrieved catalog from sessionStorage!");
+            // Step 2: Cache Hit! Immediately use the cached catalog, bypassing Firebase completely
+            console.log("⚡ [Cache Hit search.html] Catalog parsed from sessionStorage! Bypassing Firebase reads entirely.");
             filteredMovies = [...allMovies];
             renderPage(1);
             return;
@@ -495,7 +508,8 @@
         }
       }
 
-      console.log("🌐 Cache miss. Querying Firebase & local datasets...");
+      // Step 3: Cache Miss! Perform exactly ONE read to Firebase
+      console.log("🌐 [Cache Miss search.html] Catalog not found. Querying Firebase & files.json...");
       let localFiles = [];
       let firebaseFiles = [];
       
@@ -515,7 +529,9 @@
       
       allMovies.sort((a, b) => (b.customId || b.id) - (a.customId || a.id));
 
+      // Step 4: Save the complete array into sessionStorage
       sessionStorage.setItem("ntm_movie_catalog", JSON.stringify(allMovies));
+      console.log("⚡ [Cache Populated search.html] Movie catalog cached for other pages!");
 
       filteredMovies = [...allMovies];
       renderPage(1);
@@ -572,7 +588,7 @@
         
         card.innerHTML = `
           ${isNew ? '<div class="new-badge">NEW</div>' : ''}
-          <img id="img-${movieId}" loading="lazy" src="${d.image || (d.poster_path ? 'https://image.tmdb.org/t/p/w500' + d.poster_path : 'https://via.placeholder.com/200x300')}" alt="${d.name}">
+          <img id="img-${movieId}" loading="lazy" src="${d.image || (d.poster_path ? 'https://image.tmdb.org/t/p/w500' + d.poster_path : 'https://via.placeholder.com/200x300?text=No+Poster')}" alt="${d.name}">
           
           <div class="movie-info">
             <div class="movie-name">${d.name}</div>
@@ -594,12 +610,12 @@
 
         if (d.tmdb_id && (!d.description || d.rating === undefined || !d.release_date)) {
           fetchFromTMDB(d.tmdb_id, d.media_type || d.type).then(data => {
+            const img = document.getElementById(`img-${movieId}`);
+            const descEl = document.getElementById(`desc-${movieId}`);
+            const ratingEl = document.getElementById(`rating-${movieId}`);
+            const yearEl = document.getElementById(`year-${movieId}`);
+
             if (data) {
-              const img = document.getElementById(`img-${movieId}`);
-              const descEl = document.getElementById(`desc-${movieId}`);
-              const ratingEl = document.getElementById(`rating-${movieId}`);
-              const yearEl = document.getElementById(`year-${movieId}`);
-              
               if (img && data.poster_path && !d.image) img.src = `https://image.tmdb.org/t/p/w500${data.poster_path}`;
               if (descEl && (!d.description || d.description === "Loading...")) descEl.innerText = data.overview || "No summary available.";
               if (ratingEl && data.vote_average) ratingEl.innerText = `⭐ ${data.vote_average.toFixed(1)}`;
@@ -609,7 +625,17 @@
               d.description = data.overview || d.description;
               d.rating = data.vote_average ? data.vote_average.toFixed(1) : d.rating;
               d.release_date = data.release_date || d.release_date;
+            } else {
+              // Graceful Fallback if TMDB is offline or fails
+              if (img && !img.src) img.src = 'https://via.placeholder.com/200x300?text=No+Poster';
+              if (descEl && (!d.description || d.description === "Loading...")) descEl.innerText = "Description not available";
+              
+              d.image = d.image || 'https://via.placeholder.com/200x300?text=No+Poster';
+              d.description = d.description || "Description not available";
             }
+            
+            // SAVE FETCHED DATA BACK TO MEMORY (allMovies) AND SESSION STORAGE
+            sessionStorage.setItem("ntm_movie_catalog", JSON.stringify(allMovies));
           });
         }
       });
