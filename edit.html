@@ -131,9 +131,16 @@
   <div id="links-container"></div>
   <button onclick="addLinkRow()" style="background: rgba(255,255,255,0.1); color: white; border: 1px dashed rgba(255,255,255,0.3);">➕ Add Media Link</button>
 
-  <div style="display: flex; gap: 15px; margin-top: 25px;">
-      <button id="btnUpdate" onclick="updateMovie(false)" style="background: #00bfff; color: black; flex: 1;">💾 Update Details Only</button>
-      <button id="btnNew" onclick="updateMovie(true)" style="background: #ffcc00; color: black; flex: 1;">🚀 Update & Mark as NEW</button>
+  <div style="margin-top: 25px; background: rgba(255, 204, 0, 0.1); padding: 15px; border-radius: 8px; border: 1px dashed #ffcc00;">
+      <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: #ffcc00; font-weight: bold; font-size: 15px;">
+          <input type="checkbox" id="markAsNewCheck" style="width: 20px; height: 20px; margin: 0; cursor: pointer;">
+          🚀 Mark as NEW (Bumps movie to the top of the hub)
+      </label>
+  </div>
+
+  <div style="display: flex; gap: 15px; margin-top: 15px;">
+      <button id="btnLight" onclick="updateMovie(false)" style="background: #00ff88; color: black; flex: 1;">💾 Update Lightweight (ID Only)</button>
+      <button id="btnCustom" onclick="updateMovie(true)" style="background: #00bfff; color: black; flex: 1;">💾 Save Custom Edits (Heavy)</button>
   </div>
 </div>
 
@@ -194,6 +201,7 @@
       const linksContainer = document.getElementById("links-container");
       linksContainer.innerHTML = ""; 
       document.getElementById("status").innerText = "";
+      document.getElementById("markAsNewCheck").checked = false; // Reset checkbox
 
       if (selectedIndex === "") {
           document.getElementById("name").value = "";
@@ -421,30 +429,33 @@
   }
 
   function resetButtons() {
-    document.getElementById("btnUpdate").innerText = "💾 Update Details Only";
-    document.getElementById("btnNew").innerText = "🚀 Update & Mark as NEW";
-    document.getElementById("btnUpdate").disabled = false;
-    document.getElementById("btnNew").disabled = false;
+    document.getElementById("btnLight").innerText = "💾 Update Lightweight (ID Only)";
+    document.getElementById("btnCustom").innerText = "💾 Save Custom Edits (Heavy)";
+    document.getElementById("btnLight").disabled = false;
+    document.getElementById("btnCustom").disabled = false;
   }
 
-  async function updateMovie(markAsNew) {
+  async function updateMovie(isCustomEdit) {
     const selectedIndex = document.getElementById("movieSelector").value;
     if (selectedIndex === "") { showMessage("Please select a file to edit first.", true); return; }
 
-    const btnUpdate = document.getElementById("btnUpdate");
-    const btnNew = document.getElementById("btnNew");
+    const btnLight = document.getElementById("btnLight");
+    const btnCustom = document.getElementById("btnCustom");
     const name = document.getElementById("name").value.trim();
     const tmdbId = document.getElementById("tmdb_id_hidden").value.trim();
     const mediaType = document.getElementById("media_type_hidden").value.trim();
     const customId = document.getElementById("custom_id_hidden").value;
+    
+    // 🚀 GRAB THE CHECKBOX VALUE
+    const markAsNew = document.getElementById("markAsNewCheck").checked;
 
     if (!name) { showMessage("File Name is required!", true); return; }
     if (!tmdbId) { showMessage("TMDB ID is missing! Please use the search bar to link a TMDB profile.", true); return; }
 
-    btnUpdate.innerText = "Updating...";
-    btnNew.innerText = "Updating...";
-    btnUpdate.disabled = true;
-    btnNew.disabled = true;
+    btnLight.innerText = "Updating...";
+    btnCustom.innerText = "Updating...";
+    btnLight.disabled = true;
+    btnCustom.disabled = true;
 
     const isSeries = document.getElementById("type").value === "Series";
     let finalLinks = [];
@@ -469,14 +480,13 @@
     }
 
     try {
-      // ULTRA-SAFE UPDATE METHOD: Fetch fresh data from Firebase right before saving
+      // ULTRA-SAFE UPDATE METHOD: Fetch fresh data from Firebase right before saving to prevent overwrites
       const docRef = db.collection("movie_database").doc("master_list");
       const freshSnap = await docRef.get();
       
       if (freshSnap.exists) {
           let freshMovies = freshSnap.data().movies || [];
           
-          // Find the exact movie by its old ID
           const targetMovieIndex = freshMovies.findIndex(m => String(m.customId || m.id) === String(customId));
           
           if(targetMovieIndex !== -1) {
@@ -488,32 +498,35 @@
                 upload_quality: document.getElementById("upload_quality").value.trim() || "HD", 
                 tmdb_id: Number(tmdbId),
                 media_type: mediaType,     
-                links: finalLinks,
-                category: document.getElementById("category").value,
-                release_date: document.getElementById("release_date").value,
-                rating: document.getElementById("rating").value,
-                runtime: document.getElementById("runtime").value,
-                image: document.getElementById("image").value,
-                backdrop: document.getElementById("backdrop").value,
-                description: document.getElementById("description").value
+                links: finalLinks
               };
 
-              // 🚀 THE MAGIC LOGIC: Bumping to Top vs Staying in Place
+              // 🚀 PRESERVE ORIGINAL ID OR GENERATE NEW ONE 🚀
               if (markAsNew) {
-                  updatedData.customId = Date.now(); 
+                  updatedData.customId = Date.now();
               } else {
                   if (existingMovie.id) updatedData.id = existingMovie.id;
                   if (existingMovie.customId) updatedData.customId = existingMovie.customId;
+              }
+
+              if (isCustomEdit) {
+                  updatedData.category = document.getElementById("category").value;
+                  updatedData.release_date = document.getElementById("release_date").value;
+                  updatedData.rating = document.getElementById("rating").value;
+                  updatedData.runtime = document.getElementById("runtime").value;
+                  updatedData.image = document.getElementById("image").value;
+                  updatedData.backdrop = document.getElementById("backdrop").value;
+                  updatedData.description = document.getElementById("description").value;
               }
 
               freshMovies[targetMovieIndex] = updatedData;
 
               await docRef.update({ movies: freshMovies });
               
-              // 🚨 CLEAR CACHE: Forces search.html to instantly download updates!
+              // 🚨 CLEAR CACHE: This forces search.html to instantly download the new updates!
               sessionStorage.removeItem("ntm_movie_catalog");
               
-              showMessage(markAsNew ? "🚀 Bumped to Top as NEW!" : "✅ Details Updated!");
+              showMessage(isCustomEdit ? "✅ Custom Entry Saved!" : "✅ Lightweight Entry Saved!");
               setTimeout(() => window.location.reload(), 1500);
           } else {
               showMessage("Error: Original database ID not found.", true);
