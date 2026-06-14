@@ -568,7 +568,7 @@
         
         card.innerHTML = `
           ${isNew ? '<div class="new-badge">NEW</div>' : ''}
-          <img id="img-${movieId}" loading="lazy" src="${d.image || (d.poster_path ? 'https://image.tmdb.org/t/p/w500' + d.poster_path : 'https://placehold.co/200x300/1a1a1a/ffffff?text=No+Poster')}" alt="${d.name}">
+          <img id="img-${movieId}" loading="lazy" src="${d.image || (d.poster_path ? 'https://image.tmdb.org/t/p/w342' + d.poster_path : 'https://via.placeholder.com/200x300')}" alt="${d.name}">
           
           <div class="movie-info">
             <div class="movie-name">${d.name}</div>
@@ -597,12 +597,12 @@
             const yearEl = document.getElementById(`year-${movieId}`);
 
             if (data) {
-              if (img && data.poster_path && (!d.image || d.image.includes('placehold'))) img.src = `https://image.tmdb.org/t/p/w500${data.poster_path}`;
+              if (img && data.poster_path && !d.image) img.src = `https://image.tmdb.org/t/p/w342${data.poster_path}`;
               if (descEl && (!d.description || d.description === "Loading...")) descEl.innerText = data.overview || "No summary available.";
               if (ratingEl && typeof data.vote_average === 'number') ratingEl.innerText = `⭐ ${data.vote_average.toFixed(1)}`;
               if (yearEl && data.release_date) yearEl.innerText = data.release_date.split("-")[0];
 
-              d.image = data.poster_path ? `https://image.tmdb.org/t/p/w500${data.poster_path}` : d.image;
+              d.image = data.poster_path ? `https://image.tmdb.org/t/p/w342${data.poster_path}` : d.image;
               d.description = data.overview || d.description;
               d.rating = typeof data.vote_average === 'number' ? data.vote_average.toFixed(1) : (d.rating || "N/A");
               d.release_date = data.release_date || d.release_date;
