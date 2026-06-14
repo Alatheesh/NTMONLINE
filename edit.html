@@ -222,7 +222,6 @@
       document.getElementById("tmdb_id_hidden").value = movie.tmdb_id || "";
       document.getElementById("media_type_hidden").value = movie.media_type || (movie.type === "Series" ? "tv" : "movie");
       
-      // 🟢 FIXED: Properly handle Legacy Movies that used .id instead of .customId
       document.getElementById("custom_id_hidden").value = movie.customId || movie.id || "";
 
       toggleMediaFields();
@@ -241,14 +240,6 @@
           document.getElementById("status").innerText = "⏳ Fetching visual details from TMDB...";
           document.getElementById("status").style.color = "#ffcc00";
           await fetchDeepDetails(movie.tmdb_id, movie.media_type || (movie.type === "Series" ? "tv" : "movie"), true);
-      } else {
-          document.getElementById("category").value = "";
-          document.getElementById("release_date").value = "";
-          document.getElementById("rating").value = "";
-          document.getElementById("runtime").value = "";
-          document.getElementById("image").value = "";
-          document.getElementById("backdrop").value = "";
-          document.getElementById("description").value = "";
       }
 
       if (movie.links && movie.links.length > 0) {
@@ -429,6 +420,13 @@
     document.getElementById("links-container").appendChild(div);
   }
 
+  function resetButtons() {
+    document.getElementById("btnLight").innerText = "💾 Update Lightweight (ID Only)";
+    document.getElementById("btnCustom").innerText = "💾 Save Custom Edits (Heavy)";
+    document.getElementById("btnLight").disabled = false;
+    document.getElementById("btnCustom").disabled = false;
+  }
+
   async function updateMovie(isCustomEdit) {
     const selectedIndex = document.getElementById("movieSelector").value;
     if (selectedIndex === "") { showMessage("Please select a file to edit first.", true); return; }
@@ -466,64 +464,67 @@
 
     if (finalLinks.length === 0) {
         showMessage("Please add at least one valid media link.", true);
-        btnLight.innerText = "💾 Update Lightweight (ID Only)";
-        btnCustom.innerText = "💾 Save Custom Edits (Heavy)";
-        btnLight.disabled = false;
-        btnCustom.disabled = false;
+        resetButtons();
         return;
     }
 
     try {
-      // 🟢 FIXED: Search safely checks for both Legacy .id and new .customId
-      const targetMovieIndex = masterMovieData.findIndex(m => String(m.customId || m.id) === String(customId));
+      // ULTRA-SAFE UPDATE METHOD: Fetch fresh data from Firebase right before saving to prevent overwrites
+      const docRef = db.collection("movie_database").doc("master_list");
+      const freshSnap = await docRef.get();
       
-      if(targetMovieIndex !== -1) {
-          let existingMovie = masterMovieData[targetMovieIndex];
+      if (freshSnap.exists) {
+          let freshMovies = freshSnap.data().movies || [];
           
-          let updatedData = {
-            name: name,
-            type: document.getElementById("type").value,
-            upload_quality: document.getElementById("upload_quality").value.trim() || "HD", 
-            tmdb_id: Number(tmdbId), // 🟢 FIXED: Saved strictly as Number
-            media_type: mediaType,     
-            links: finalLinks
-          };
+          // Find the exact movie by its old ID
+          const targetMovieIndex = freshMovies.findIndex(m => String(m.customId || m.id) === String(customId));
+          
+          if(targetMovieIndex !== -1) {
+              let existingMovie = freshMovies[targetMovieIndex];
+              
+              let updatedData = {
+                name: name,
+                type: document.getElementById("type").value,
+                upload_quality: document.getElementById("upload_quality").value.trim() || "HD", 
+                tmdb_id: Number(tmdbId),
+                media_type: mediaType,     
+                links: finalLinks
+              };
 
-          // 🟢 FIXED: Preserve the correct ID attribute format
-          if (existingMovie.id) updatedData.id = existingMovie.id;
-          if (existingMovie.customId) updatedData.customId = existingMovie.customId;
+              // PRESERVE ORIGINAL ID SO IT DOES NOT JUMP TO THE TOP OF THE SEARCH PAGE
+              if (existingMovie.id) updatedData.id = existingMovie.id;
+              if (existingMovie.customId) updatedData.customId = existingMovie.customId;
 
-          if (isCustomEdit) {
-              updatedData.category = document.getElementById("category").value;
-              updatedData.release_date = document.getElementById("release_date").value;
-              updatedData.rating = document.getElementById("rating").value;
-              updatedData.runtime = document.getElementById("runtime").value;
-              updatedData.image = document.getElementById("image").value;
-              updatedData.backdrop = document.getElementById("backdrop").value;
-              updatedData.description = document.getElementById("description").value;
+              if (isCustomEdit) {
+                  updatedData.category = document.getElementById("category").value;
+                  updatedData.release_date = document.getElementById("release_date").value;
+                  updatedData.rating = document.getElementById("rating").value;
+                  updatedData.runtime = document.getElementById("runtime").value;
+                  updatedData.image = document.getElementById("image").value;
+                  updatedData.backdrop = document.getElementById("backdrop").value;
+                  updatedData.description = document.getElementById("description").value;
+              }
+
+              freshMovies[targetMovieIndex] = updatedData;
+
+              await docRef.update({ movies: freshMovies });
+              
+              // 🚨 CLEAR CACHE: This forces search.html to instantly download the new Quality tags!
+              sessionStorage.removeItem("ntm_movie_catalog");
+              
+              showMessage(isCustomEdit ? "✅ Custom Entry Saved!" : "✅ Lightweight Entry Saved!");
+              setTimeout(() => window.location.reload(), 1500);
+          } else {
+              showMessage("Error: Original database ID not found.", true);
+              resetButtons();
           }
-
-          masterMovieData[targetMovieIndex] = updatedData;
-
-          const docRef = db.collection("movie_database").doc("master_list");
-          await docRef.update({ movies: masterMovieData });
-          
-          showMessage(isCustomEdit ? "✅ Custom Entry Saved!" : "✅ Lightweight Entry Saved!");
-          setTimeout(() => window.location.reload(), 1500);
       } else {
-          showMessage("Error: Original database ID not found.", true);
-          btnLight.innerText = "💾 Update Lightweight (ID Only)";
-          btnCustom.innerText = "💾 Save Custom Edits (Heavy)";
-          btnLight.disabled = false;
-          btnCustom.disabled = false;
+          showMessage("Error: Could not connect to database list.", true);
+          resetButtons();
       }
-      
     } catch (e) { 
       showMessage("Error updating: " + e.message, true); 
-      btnLight.innerText = "💾 Update Lightweight (ID Only)";
-      btnCustom.innerText = "💾 Save Custom Edits (Heavy)";
-      btnLight.disabled = false;
-      btnCustom.disabled = false;
+      resetButtons();
     }
   }
 </script>
