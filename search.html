@@ -567,12 +567,21 @@
         const uploadDate = new Date(d.customId || d.id);
         const isNew = (new Date() - uploadDate) < (3 * 24 * 60 * 60 * 1000);
         
-        // 💎 NEW LOGIC: QUALITY BADGE COLOR PICKER 💎
+        // 💎 QUALITY BADGE COLOR PICKER
         const qualityText = d.upload_quality ? d.upload_quality.toUpperCase() : "";
         let qualClass = "qual-default";
         if (qualityText.includes("HD") || qualityText.includes("4K")) qualClass = "qual-hd";
         else if (qualityText.includes("CAM") || qualityText.includes("TS")) qualClass = "qual-cam";
         else if (qualityText.includes("WEB")) qualClass = "qual-web";
+
+        // 🚀 INSTANT LOAD SPEED HACK: CRUSH HUGE DATABASE IMAGES ON THE FLY
+        let fastPoster = d.image || (d.poster_path ? 'https://image.tmdb.org/t/p/w185' + d.poster_path : 'https://via.placeholder.com/200x300');
+        if (typeof fastPoster === 'string' && fastPoster.includes('tmdb.org')) {
+            fastPoster = fastPoster.replace('/w780', '/w185')
+                                   .replace('/w500', '/w185')
+                                   .replace('/w342', '/w185')
+                                   .replace('/original', '/w185');
+        }
 
         const rating = d.rating || "N/A";
         const year = (d.release_date || d.year || "").split("-")[0] || "N/A";
@@ -585,12 +594,12 @@
         card.onclick = function(e) { window.goToMovie(e, movieId); }; 
         card.setAttribute("ontouchstart", ""); 
         
-        // 💎 NEW LOGIC: INJECTING THE QUALITY BADGE HTML 💎
+        // 💎 INJECTING HTML
         card.innerHTML = `
           ${isNew ? '<div class="new-badge">NEW</div>' : ''}
           ${qualityText ? `<div class="quality-badge ${qualClass}">${qualityText}</div>` : ''}
 
-          <img id="img-${movieId}" loading="lazy" src="${d.image || (d.poster_path ? 'https://image.tmdb.org/t/p/w342' + d.poster_path : 'https://via.placeholder.com/200x300')}" alt="${d.name}">
+          <img id="img-${movieId}" loading="lazy" src="${fastPoster}" alt="${d.name}">
           
           <div class="movie-info">
             <div class="movie-name">${d.name}</div>
@@ -619,12 +628,12 @@
             const yearEl = document.getElementById(`year-${movieId}`);
 
             if (data) {
-              if (img && data.poster_path && !d.image) img.src = `https://image.tmdb.org/t/p/w342${data.poster_path}`;
+              if (img && data.poster_path && !d.image) img.src = `https://image.tmdb.org/t/p/w185${data.poster_path}`;
               if (descEl && (!d.description || d.description === "Loading...")) descEl.innerText = data.overview || "No summary available.";
               if (ratingEl && typeof data.vote_average === 'number') ratingEl.innerText = `⭐ ${data.vote_average.toFixed(1)}`;
               if (yearEl && data.release_date) yearEl.innerText = data.release_date.split("-")[0];
 
-              d.image = data.poster_path ? `https://image.tmdb.org/t/p/w342${data.poster_path}` : d.image;
+              d.image = data.poster_path ? `https://image.tmdb.org/t/p/w185${data.poster_path}` : fastPoster;
               d.description = data.overview || d.description;
               d.rating = typeof data.vote_average === 'number' ? data.vote_average.toFixed(1) : (d.rating || "N/A");
               d.release_date = data.release_date || d.release_date;
@@ -642,7 +651,6 @@
               }
 
             } else {
-              // 🟢 GRACEFUL FALLBACK FOR 404 ERRORS (Like the fake 123456 IDs)
               const fallbackImg = 'https://placehold.co/200x300/1a1a1a/ffffff?text=No+Poster';
               if (img && (!img.src || img.src.includes('placehold'))) img.src = fallbackImg;
               if (descEl && (!d.description || d.description === "Loading...")) descEl.innerText = "Description not available";
@@ -659,7 +667,6 @@
               if (metaDiv) metaDiv.innerText = `${d.type || 'Movie'} • ${d.category}`;
             }
             
-            // SAVE FETCHED DATA BACK TO MEMORY (allMovies) AND SESSION STORAGE
             sessionStorage.setItem("ntm_movie_catalog", JSON.stringify(allMovies));
           });
         }
@@ -783,9 +790,15 @@
         grid.innerHTML = "<p style='color:white; grid-column: span 3; text-align: center;'>No bookmarks yet.</p>";
       } else {
         savedItems.forEach(movie => {
+          // 🚀 INSTANT LOAD SPEED HACK FOR BOOKMARKS TOO
+          let bookmarkImg = movie.image || 'https://placehold.co/200x300/1a1a1a/ffffff?text=No+Poster';
+          if(typeof bookmarkImg === 'string' && bookmarkImg.includes('tmdb.org')) {
+              bookmarkImg = bookmarkImg.replace('/w780', '/w185').replace('/w500', '/w185').replace('/w342', '/w185').replace('/original', '/w185');
+          }
+
           grid.innerHTML += `
             <a class="movie-card" href="file.html?id=${movie.id}" onclick="window.goToMovie(event, '${movie.id}')">
-              <img src="${movie.image || 'https://placehold.co/200x300/1a1a1a/ffffff?text=No+Poster'}">
+              <img src="${bookmarkImg}">
               <div class="movie-info">
                 <div class="movie-name">${movie.name}</div>
               </div>
