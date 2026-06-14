@@ -51,7 +51,19 @@
     }
     .movie-name { font-weight: bold; font-size: 12px; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: white;}
     .movie-meta { font-size: 10px; opacity: 0.7; color: white;}
+    
     .new-badge { position: absolute; top: 5px; left: 5px; background: #e50914; color: white; padding: 2px 5px; border-radius: 4px; font-size: 9px; font-weight: bold; z-index: 10; }
+
+    /* 💎 NEW QUALITY BADGE CSS 💎 */
+    .quality-badge { 
+      position: absolute; top: 5px; right: 5px; padding: 2px 5px; border-radius: 4px; 
+      font-size: 9px; font-weight: bold; z-index: 10; text-transform: uppercase; 
+      box-shadow: 0 2px 10px rgba(0,0,0,0.5); backdrop-filter: blur(4px); 
+    }
+    .qual-hd { background: rgba(0, 255, 136, 0.9); color: #000; }
+    .qual-cam { background: rgba(255, 77, 77, 0.9); color: #fff; }
+    .qual-web { background: rgba(0, 191, 255, 0.9); color: #000; }
+    .qual-default { background: rgba(0, 0, 0, 0.7); color: #fff; border: 1px solid rgba(255,255,255,0.2); }
 
     .preview-info {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 14px; box-sizing: border-box;
@@ -555,6 +567,13 @@
         const uploadDate = new Date(d.customId || d.id);
         const isNew = (new Date() - uploadDate) < (3 * 24 * 60 * 60 * 1000);
         
+        // 💎 NEW LOGIC: QUALITY BADGE COLOR PICKER 💎
+        const qualityText = d.upload_quality ? d.upload_quality.toUpperCase() : "";
+        let qualClass = "qual-default";
+        if (qualityText.includes("HD") || qualityText.includes("4K")) qualClass = "qual-hd";
+        else if (qualityText.includes("CAM") || qualityText.includes("TS")) qualClass = "qual-cam";
+        else if (qualityText.includes("WEB")) qualClass = "qual-web";
+
         const rating = d.rating || "N/A";
         const year = (d.release_date || d.year || "").split("-")[0] || "N/A";
         const descText = d.description ? d.description.replace(/(<([^>]+)>)/gi, "") : "No plot summary available.";
@@ -566,8 +585,11 @@
         card.onclick = function(e) { window.goToMovie(e, movieId); }; 
         card.setAttribute("ontouchstart", ""); 
         
+        // 💎 NEW LOGIC: INJECTING THE QUALITY BADGE HTML 💎
         card.innerHTML = `
           ${isNew ? '<div class="new-badge">NEW</div>' : ''}
+          ${qualityText ? `<div class="quality-badge ${qualClass}">${qualityText}</div>` : ''}
+
           <img id="img-${movieId}" loading="lazy" src="${d.image || (d.poster_path ? 'https://image.tmdb.org/t/p/w342' + d.poster_path : 'https://via.placeholder.com/200x300')}" alt="${d.name}">
           
           <div class="movie-info">
