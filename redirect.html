@@ -47,6 +47,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      visibility: hidden; /* Hidden until timer officially starts */
     }
     body.light-mode .massive-timer { color: #0284c7; text-shadow: none; }
 
@@ -110,18 +111,22 @@
         <div id="container-29298f7fb07bda835a6b524bbf123616"></div>
       </div>
 
-      <div class="spinner"></div>
+      <div class="spinner" id="loadingSpinner"></div>
       
-      <h2>Establishing Connection...</h2>
+      <h2 id="statusText">Loading Ads & Connection...</h2>
       <p style="color: #00bfff; font-weight: bold; font-size: 16px; margin-bottom: 20px;">
         Sit back and relax! Your stream will load automatically.
       </p>
       
-      <div class="massive-timer">
+      <div class="massive-timer" id="timerContainer">
         REDIRECT IN&nbsp;&nbsp;<span class="odometer-box" id="timerNumber"></span>...
       </div>
 
-      <!-- AD 2: Bottom Adsterra Square -->
+      <!-- AD 2: Middle Ad Slot (Empty for now) -->
+      <div class="ad-slot" style="min-height: 250px;">
+      </div>
+
+      <!-- AD 3: Bottom Adsterra Square (The broken one, safely kept) -->
       <div class="ad-slot" style="min-height: 250px;">
         <script>
           atOptions = {
@@ -143,8 +148,17 @@
       document.body.classList.add('light-mode');
     }
 
-    // --- AUTOMATIC RANDOMIZED ODOMETER REDIRECT ---
-    window.addEventListener("DOMContentLoaded", () => {
+    let timerStarted = false; // Safety lock to prevent double execution
+
+    function startTimer() {
+      if (timerStarted) return; // If already running, do nothing
+      timerStarted = true;
+
+      // Update UI: Hide spinner, show timer, change text
+      document.getElementById('loadingSpinner').style.display = 'none';
+      document.getElementById('statusText').innerText = 'Connection Established';
+      document.getElementById('timerContainer').style.visibility = 'visible';
+
       const possibleTimes = [5, 6, 7, 8, 9, 10];
       let secondsLeft = possibleTimes[Math.floor(Math.random() * possibleTimes.length)];
       
@@ -167,10 +181,19 @@
           }
         }
       }, 1000);
-    });
+    }
+
+    // SCENARIO 1: The ads load perfectly and quickly
+    window.addEventListener("load", startTimer);
+
+    // SCENARIO 2: The ads crash, get stuck, or have SSL errors (Fallback)
+    // If 4 seconds pass and the 'load' event hasn't fired, force the timer to start!
+    setTimeout(startTimer, 4000); 
+
   </script>
 
-  <!-- 🚀 NEW FULL-SCREEN INTERSTITIAL (SOCIAL BAR) ADSTERRA SCRIPT -->
+  <!-- 🚀 FULL-SCREEN INTERSTITIAL (SOCIAL BAR LOCKED) SCRIPT -->
   <script src="https://pl29522493.effectivecpmnetwork.com/50/d8/4a/50d84a0304bceb23881f457cb480bf07.js"></script>
+
 </body>
 </html>
