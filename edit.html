@@ -132,8 +132,8 @@
   <button onclick="addLinkRow()" style="background: rgba(255,255,255,0.1); color: white; border: 1px dashed rgba(255,255,255,0.3);">➕ Add Media Link</button>
 
   <div style="display: flex; gap: 15px; margin-top: 25px;">
-      <button id="btnLight" onclick="updateMovie(false)" style="background: #00ff88; color: black; flex: 1;">💾 Update Lightweight (ID Only)</button>
-      <button id="btnCustom" onclick="updateMovie(true)" style="background: #00bfff; color: black; flex: 1;">💾 Save Custom Edits (Heavy)</button>
+      <button id="btnUpdate" onclick="updateMovie(false)" style="background: #00bfff; color: black; flex: 1;">💾 Update Details Only</button>
+      <button id="btnNew" onclick="updateMovie(true)" style="background: #ffcc00; color: black; flex: 1;">🚀 Update & Mark as NEW</button>
   </div>
 </div>
 
@@ -421,18 +421,18 @@
   }
 
   function resetButtons() {
-    document.getElementById("btnLight").innerText = "💾 Update Lightweight (ID Only)";
-    document.getElementById("btnCustom").innerText = "💾 Save Custom Edits (Heavy)";
-    document.getElementById("btnLight").disabled = false;
-    document.getElementById("btnCustom").disabled = false;
+    document.getElementById("btnUpdate").innerText = "💾 Update Details Only";
+    document.getElementById("btnNew").innerText = "🚀 Update & Mark as NEW";
+    document.getElementById("btnUpdate").disabled = false;
+    document.getElementById("btnNew").disabled = false;
   }
 
-  async function updateMovie(isCustomEdit) {
+  async function updateMovie(markAsNew) {
     const selectedIndex = document.getElementById("movieSelector").value;
     if (selectedIndex === "") { showMessage("Please select a file to edit first.", true); return; }
 
-    const btnLight = document.getElementById("btnLight");
-    const btnCustom = document.getElementById("btnCustom");
+    const btnUpdate = document.getElementById("btnUpdate");
+    const btnNew = document.getElementById("btnNew");
     const name = document.getElementById("name").value.trim();
     const tmdbId = document.getElementById("tmdb_id_hidden").value.trim();
     const mediaType = document.getElementById("media_type_hidden").value.trim();
@@ -441,10 +441,10 @@
     if (!name) { showMessage("File Name is required!", true); return; }
     if (!tmdbId) { showMessage("TMDB ID is missing! Please use the search bar to link a TMDB profile.", true); return; }
 
-    btnLight.innerText = "Updating...";
-    btnCustom.innerText = "Updating...";
-    btnLight.disabled = true;
-    btnCustom.disabled = true;
+    btnUpdate.innerText = "Updating...";
+    btnNew.innerText = "Updating...";
+    btnUpdate.disabled = true;
+    btnNew.disabled = true;
 
     const isSeries = document.getElementById("type").value === "Series";
     let finalLinks = [];
@@ -469,7 +469,7 @@
     }
 
     try {
-      // ULTRA-SAFE UPDATE METHOD: Fetch fresh data from Firebase right before saving to prevent overwrites
+      // ULTRA-SAFE UPDATE METHOD: Fetch fresh data from Firebase right before saving
       const docRef = db.collection("movie_database").doc("master_list");
       const freshSnap = await docRef.get();
       
@@ -488,31 +488,32 @@
                 upload_quality: document.getElementById("upload_quality").value.trim() || "HD", 
                 tmdb_id: Number(tmdbId),
                 media_type: mediaType,     
-                links: finalLinks
+                links: finalLinks,
+                category: document.getElementById("category").value,
+                release_date: document.getElementById("release_date").value,
+                rating: document.getElementById("rating").value,
+                runtime: document.getElementById("runtime").value,
+                image: document.getElementById("image").value,
+                backdrop: document.getElementById("backdrop").value,
+                description: document.getElementById("description").value
               };
 
-              // PRESERVE ORIGINAL ID SO IT DOES NOT JUMP TO THE TOP OF THE SEARCH PAGE
-              if (existingMovie.id) updatedData.id = existingMovie.id;
-              if (existingMovie.customId) updatedData.customId = existingMovie.customId;
-
-              if (isCustomEdit) {
-                  updatedData.category = document.getElementById("category").value;
-                  updatedData.release_date = document.getElementById("release_date").value;
-                  updatedData.rating = document.getElementById("rating").value;
-                  updatedData.runtime = document.getElementById("runtime").value;
-                  updatedData.image = document.getElementById("image").value;
-                  updatedData.backdrop = document.getElementById("backdrop").value;
-                  updatedData.description = document.getElementById("description").value;
+              // 🚀 THE MAGIC LOGIC: Bumping to Top vs Staying in Place
+              if (markAsNew) {
+                  updatedData.customId = Date.now(); 
+              } else {
+                  if (existingMovie.id) updatedData.id = existingMovie.id;
+                  if (existingMovie.customId) updatedData.customId = existingMovie.customId;
               }
 
               freshMovies[targetMovieIndex] = updatedData;
 
               await docRef.update({ movies: freshMovies });
               
-              // 🚨 CLEAR CACHE: This forces search.html to instantly download the new Quality tags!
+              // 🚨 CLEAR CACHE: Forces search.html to instantly download updates!
               sessionStorage.removeItem("ntm_movie_catalog");
               
-              showMessage(isCustomEdit ? "✅ Custom Entry Saved!" : "✅ Lightweight Entry Saved!");
+              showMessage(markAsNew ? "🚀 Bumped to Top as NEW!" : "✅ Details Updated!");
               setTimeout(() => window.location.reload(), 1500);
           } else {
               showMessage("Error: Original database ID not found.", true);
