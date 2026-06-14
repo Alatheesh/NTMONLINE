@@ -47,7 +47,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      visibility: hidden; /* Hidden until timer officially starts */
     }
     body.light-mode .massive-timer { color: #0284c7; text-shadow: none; }
 
@@ -98,6 +97,7 @@
       margin: 25px auto;
       overflow: hidden;
     }
+    
   </style>
 </head>
 <body>
@@ -105,28 +105,54 @@
   <div class="container">
     <div class="file redirect-box">
       
-      <!-- AD 1: Top Adsterra -->
+      <!-- AD 1: Top Adsterra (Native Banner) -->
       <div class="ad-slot" style="min-height: 60px;">
         <script async="async" data-cfasync="false" src="https://pl29306825.effectivecpmnetwork.com/29298f7fb07bda835a6b524bbf123616/invoke.js"></script>
         <div id="container-29298f7fb07bda835a6b524bbf123616"></div>
       </div>
 
-      <div class="spinner" id="loadingSpinner"></div>
+      <div class="spinner"></div>
       
-      <h2 id="statusText">Loading Ads & Connection...</h2>
+      <h2>Establishing Connection...</h2>
       <p style="color: #00bfff; font-weight: bold; font-size: 16px; margin-bottom: 20px;">
         Sit back and relax! Your stream will load automatically.
       </p>
       
-      <div class="massive-timer" id="timerContainer">
+      <div class="massive-timer">
         REDIRECT IN&nbsp;&nbsp;<span class="odometer-box" id="timerNumber"></span>...
       </div>
 
-      <!-- AD 2: Middle Ad Slot (Empty for now) -->
-      <div class="ad-slot" style="min-height: 250px;">
-      </div>
+      <!-- 🟢 INSTANT TIMER SCRIPT: Starts immediately before bottom ads attempt to load -->
+      <script>
+        if (localStorage.getItem('theme') === 'light') {
+          document.body.classList.add('light-mode');
+        }
 
-      <!-- AD 3: Bottom Adsterra Square (The broken one, safely kept) -->
+        const possibleTimes = [5, 6, 7, 8, 9, 10];
+        let secondsLeft = possibleTimes[Math.floor(Math.random() * possibleTimes.length)];
+        
+        const timerNumber = document.getElementById('timerNumber');
+        const urlParams = new URLSearchParams(window.location.search);
+        const destination = urlParams.get('dest');
+
+        timerNumber.innerHTML = `<span class="odo-digit">${secondsLeft}</span>`;
+
+        const countdownInterval = setInterval(() => {
+          secondsLeft--;
+          timerNumber.innerHTML = `<span class="odo-digit">${secondsLeft}</span>`;
+
+          if (secondsLeft <= 0) {
+            clearInterval(countdownInterval);
+            if (destination) {
+              window.location.replace(decodeURIComponent(destination));
+            } else {
+              window.location.replace("index.html");
+            }
+          }
+        }, 1000);
+      </script>
+
+      <!-- AD 2: Middle Adsterra Square (300x250) -->
       <div class="ad-slot" style="min-height: 250px;">
         <script>
           atOptions = {
@@ -140,57 +166,22 @@
         <script src="https://www.highperformanceformat.com/c371556f2f761e68ac3fdb0215382818/invoke.js"></script>
       </div>
 
+      <!-- AD 3: Universal Wide Banner (728x90) -->
+      <div class="ad-slot" style="min-height: 90px; max-width: 100%; overflow-x: auto;">
+        <script>
+          atOptions = {
+            'key' : '9d4e234e334f6012b5b60f60507d7877',
+            'format' : 'iframe',
+            'height' : 90,
+            'width' : 728,
+            'params' : {}
+          };
+        </script>
+        <script src="https://www.highperformanceformat.com/9d4e234e334f6012b5b60f60507d7877/invoke.js"></script>
+      </div>
+
     </div>
   </div>
-
-  <script>
-    if (localStorage.getItem('theme') === 'light') {
-      document.body.classList.add('light-mode');
-    }
-
-    let timerStarted = false; // Safety lock to prevent double execution
-
-    function startTimer() {
-      if (timerStarted) return; // If already running, do nothing
-      timerStarted = true;
-
-      // Update UI: Hide spinner, show timer, change text
-      document.getElementById('loadingSpinner').style.display = 'none';
-      document.getElementById('statusText').innerText = 'Connection Established';
-      document.getElementById('timerContainer').style.visibility = 'visible';
-
-      const possibleTimes = [5, 6, 7, 8, 9, 10];
-      let secondsLeft = possibleTimes[Math.floor(Math.random() * possibleTimes.length)];
-      
-      const timerNumber = document.getElementById('timerNumber');
-      const urlParams = new URLSearchParams(window.location.search);
-      const destination = urlParams.get('dest');
-
-      timerNumber.innerHTML = `<span class="odo-digit">${secondsLeft}</span>`;
-
-      const countdownInterval = setInterval(() => {
-        secondsLeft--;
-        timerNumber.innerHTML = `<span class="odo-digit">${secondsLeft}</span>`;
-
-        if (secondsLeft <= 0) {
-          clearInterval(countdownInterval);
-          if (destination) {
-            window.location.replace(decodeURIComponent(destination));
-          } else {
-            window.location.replace("index.html");
-          }
-        }
-      }, 1000);
-    }
-
-    // SCENARIO 1: The ads load perfectly and quickly
-    window.addEventListener("load", startTimer);
-
-    // SCENARIO 2: The ads crash, get stuck, or have SSL errors (Fallback)
-    // If 4 seconds pass and the 'load' event hasn't fired, force the timer to start!
-    setTimeout(startTimer, 4000); 
-
-  </script>
 
   <!-- 🚀 FULL-SCREEN INTERSTITIAL (SOCIAL BAR LOCKED) SCRIPT -->
   <script src="https://pl29522493.effectivecpmnetwork.com/50/d8/4a/50d84a0304bceb23881f457cb480bf07.js"></script>
