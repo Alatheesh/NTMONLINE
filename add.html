@@ -47,10 +47,10 @@
   <input type="hidden" id="tmdb_id_hidden">
   <input type="hidden" id="media_type_hidden">
 
-  <label class="field-label">Search TMDB (Name or Name + Year)</label>
+  <label class="field-label">Search TMDB (Name, Name + Year, or ID)</label>
   <div class="search-wrapper">
     <div style="display: flex; gap: 10px;">
-      <input type="text" id="searchInput" placeholder="e.g. Spider-Man 2002..." style="margin-bottom:0; flex: 1;" onkeypress="if(event.key === 'Enter') searchTMDB()">
+      <input type="text" id="searchInput" placeholder="e.g. Spider-Man 2002 or 557..." style="margin-bottom:0; flex: 1;" onkeypress="if(event.key === 'Enter') searchTMDB()">
       <button onclick="searchTMDB()" style="width: auto; padding: 0 20px; background: #333; color: white; margin-bottom:0;">🔍 Search</button>
     </div>
     <div id="searchResults"></div>
@@ -80,7 +80,8 @@
       </div>
       <div>
           <label class="field-label">TMDB Verification ID</label>
-          <input type="text" id="display_tmdb_id" class="readonly-field" readonly placeholder="Auto-filled via Search">
+          <!-- ✅ CHANGE 2: Removed readonly attributes so this is fully editable -->
+          <input type="text" id="display_tmdb_id" placeholder="Auto-filled or edit manually">
       </div>
   </div>
 
@@ -181,25 +182,54 @@
     status.style.color = "#ffcc00";
     dropdown.style.display = "none";
 
-    let query = rawQuery;
-    let yearFilter = null;
-    const yearMatch = rawQuery.match(/(.*)\s+(\d{4})$/);
-    
-    if (yearMatch) {
-      query = yearMatch[1].trim(); 
-      yearFilter = yearMatch[2];   
-    }
+    let media = [];
+    let isNumber = /^\d+$/.test(rawQuery); // Check if input is strictly numbers
 
     try {
-      const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
-      const data = await res.json();
-      let media = data.results.filter(m => m.media_type === 'movie' || m.media_type === 'tv');
+      // ✅ CHANGE 1: If user types a number, fetch direct ID match first
+      if (isNumber) {
+          const resMovie = await fetch(`https://api.themoviedb.org/3/movie/${rawQuery}?api_key=${API_KEY}`).catch(() => null);
+          if (resMovie && resMovie.ok) {
+              const dataMovie = await resMovie.json();
+              if (dataMovie.id) { dataMovie.media_type = 'movie'; media.push(dataMovie); }
+          }
+          const resTv = await fetch(`https://api.themoviedb.org/3/tv/${rawQuery}?api_key=${API_KEY}`).catch(() => null);
+          if (resTv && resTv.ok) {
+              const dataTv = await resTv.json();
+              if (dataTv.id) { dataTv.media_type = 'tv'; media.push(dataTv); }
+          }
+      }
 
-      if (yearFilter) {
-        media = media.filter(item => {
-          const itemYear = item.release_date || item.first_air_date || "";
-          return itemYear.startsWith(yearFilter);
-        });
+      // Proceed with normal multi-search (in case a movie title is just numbers like "1917")
+      let query = rawQuery;
+      let yearFilter = null;
+      const yearMatch = rawQuery.match(/(.*)\s+(\d{4})$/);
+      
+      if (yearMatch) {
+        query = yearMatch[1].trim(); 
+        yearFilter = yearMatch[2];   
+      }
+
+      const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
+      if (res.ok) {
+          const data = await res.json();
+          let searchResults = data.results.filter(m => m.media_type === 'movie' || m.media_type === 'tv');
+
+          if (yearFilter) {
+            searchResults = searchResults.filter(item => {
+              const itemYear = item.release_date || item.first_air_date || "";
+              return itemYear.startsWith(yearFilter);
+            });
+          }
+
+          // Merge ID results with Search results, removing duplicates
+          let existingIds = new Set(media.map(m => m.id));
+          searchResults.forEach(item => {
+              if (!existingIds.has(item.id)) {
+                  media.push(item);
+                  existingIds.add(item.id);
+              }
+          });
       }
 
       if (media.length > 0) {
@@ -307,11 +337,21 @@
     const btnLight = document.getElementById("btnLight");
     const btnCustom = document.getElementById("btnCustom");
     const name = document.getElementById("name").value.trim();
-    const tmdbId = document.getElementById("tmdb_id_hidden").value.trim();
-    const mediaType = document.getElementById("media_type_hidden").value.trim();
+    
+    // ✅ CHANGE 2: Extract TMDB ID from the display field so manual entries are saved
+    const tmdbId = document.getElementById("display_tmdb_id").value.trim();
+    let mediaType = document.getElementById("media_type_hidden").value.trim();
+    if (!mediaType) {
+      mediaType = document.getElementById("type").value === "Series" ? "tv" : "movie";
+    }
 
     if (!name) { alert("File Name is required!"); return; }
-    if (!tmdbId) { alert("You must select a movie from the TMDB search to lock its ID!"); return; }
+    
+    // ✅ CHANGE 3: Custom Save will pass this block even if TMDB ID is empty
+    if (!isCustomEdit && !tmdbId) { 
+        alert("You must provide a TMDB Verification ID for a lightweight save!"); 
+        return; 
+    }
 
     btnLight.innerText = "Saving...";
     btnCustom.innerText = "Saving...";
@@ -348,13 +388,12 @@
       const doc = await docRef.get();
       let movies = doc.exists && doc.data().movies ? doc.data().movies : [];
       
-      // 1. Build the lightweight core object (Fixed TMDB ID Format)
       let movieData = {
         customId: Date.now(),
         name: name,
         type: document.getElementById("type").value,
         upload_quality: document.getElementById("upload_quality").value.trim() || "HD", 
-        tmdb_id: Number(tmdbId), // 🟢 FIXED: Saved as a Number           
+        tmdb_id: tmdbId ? Number(tmdbId) : null, // Uses null if left blank
         media_type: mediaType,     
         links: finalLinks
       };
