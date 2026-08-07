@@ -4,7 +4,6 @@
   <title>Add Content • Admin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    /* 💎 UNIVERSAL ADMIN CSS */
     body { font-family: Arial, sans-serif; background: #0a1128; color: white; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
     h2 { color: #00bfff; margin-bottom: 20px; text-align: center; }
     .container { background: rgba(255, 255, 255, 0.05); padding: 30px; border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1); width: 100%; max-width: 700px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
@@ -23,8 +22,9 @@
     .link-row { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); flex-wrap: wrap;}
     .link-row input, .link-row select, .link-row button { margin-bottom: 0; padding: 10px; }
     .btn-danger { background: #ff4d4d; color: white; width: auto; font-size: 14px; }
+    .btn-move { background: rgba(255,255,255,0.1); color: white; width: auto; font-size: 14px; cursor: pointer; padding: 10px; border-radius: 4px; border: none; }
+    .btn-move:hover { background: rgba(255,255,255,0.2); }
 
-    /* 🔎 SEARCH DROPDOWN UI */
     .search-wrapper { position: relative; margin-bottom: 15px; }
     #searchResults { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #0f1938; border: 1px solid #00bfff; border-radius: 8px; max-height: 250px; overflow-y: auto; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
     .search-item { padding: 10px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; }
@@ -80,7 +80,6 @@
       </div>
       <div>
           <label class="field-label">TMDB Verification ID</label>
-          <!-- ✅ CHANGE 2: Removed readonly attributes so this is fully editable -->
           <input type="text" id="display_tmdb_id" placeholder="Auto-filled or edit manually">
       </div>
   </div>
@@ -183,10 +182,9 @@
     dropdown.style.display = "none";
 
     let media = [];
-    let isNumber = /^\d+$/.test(rawQuery); // Check if input is strictly numbers
+    let isNumber = /^\d+$/.test(rawQuery); 
 
     try {
-      // ✅ CHANGE 1: If user types a number, fetch direct ID match first
       if (isNumber) {
           const resMovie = await fetch(`https://api.themoviedb.org/3/movie/${rawQuery}?api_key=${API_KEY}`).catch(() => null);
           if (resMovie && resMovie.ok) {
@@ -200,7 +198,6 @@
           }
       }
 
-      // Proceed with normal multi-search (in case a movie title is just numbers like "1917")
       let query = rawQuery;
       let yearFilter = null;
       const yearMatch = rawQuery.match(/(.*)\s+(\d{4})$/);
@@ -222,7 +219,6 @@
             });
           }
 
-          // Merge ID results with Search results, removing duplicates
           let existingIds = new Set(media.map(m => m.id));
           searchResults.forEach(item => {
               if (!existingIds.has(item.id)) {
@@ -307,30 +303,46 @@
     }
   }
 
-  function addLinkRow() {
+  function addLinkRow(url = "", ep = "1", quality = "720p", size = "", unit = "MB") {
     const isSeries = document.getElementById("type").value === "Series";
     const displayStyle = isSeries ? "inline-block" : "none";
     
     const div = document.createElement("div");
     div.className = "link-row";
     div.innerHTML = `
-      <input type="text" placeholder="Video URL..." class="link-url" style="flex: 1; min-width: 150px;">
-      <input type="number" placeholder="Ep" class="link-ep" style="width: 60px; display: ${displayStyle};" min="1" value="1">
+      <input type="text" placeholder="Video URL..." class="link-url" value="${url}" style="flex: 1; min-width: 150px;">
+      <input type="text" placeholder="Ep (e.g. 1 or 01-10)" class="link-ep" style="width: 100px; display: ${displayStyle};" value="${ep}">
       <select class="link-quality" style="width: 90px; display: ${displayStyle};">
-        <option value="Auto">Auto</option>
-        <option value="480p">480p</option>
-        <option value="720p" selected>720p</option>
-        <option value="1080p">1080p</option>
-        <option value="4K">4K</option>
+        <option value="Auto" ${quality==='Auto'?'selected':''}>Auto</option>
+        <option value="480p" ${quality==='480p'?'selected':''}>480p</option>
+        <option value="720p" ${quality==='720p'?'selected':''}>720p</option>
+        <option value="1080p" ${quality==='1080p'?'selected':''}>1080p</option>
+        <option value="4K" ${quality==='4K'?'selected':''}>4K</option>
       </select>
-      <input type="number" placeholder="Size" class="link-size" style="width: 75px;" min="0" step="0.1">
+      <input type="number" placeholder="Size" class="link-size" style="width: 75px;" min="0" step="0.1" value="${size}">
       <select class="link-unit" style="width: 65px;">
-        <option value="MB">MB</option>
-        <option value="GB">GB</option>
+        <option value="MB" ${unit==='MB'?'selected':''}>MB</option>
+        <option value="GB" ${unit==='GB'?'selected':''}>GB</option>
       </select>
-      <button class="btn-danger" onclick="this.parentElement.remove()">❌</button>
+      <button type="button" class="btn-move" onclick="moveRowUp(this)">⬆️</button>
+      <button type="button" class="btn-move" onclick="moveRowDown(this)">⬇️</button>
+      <button type="button" class="btn-danger" onclick="this.parentElement.remove()">❌</button>
     `;
     document.getElementById("links-container").appendChild(div);
+  }
+
+  function moveRowUp(btn) {
+      const row = btn.parentElement;
+      if (row.previousElementSibling) {
+          row.parentNode.insertBefore(row, row.previousElementSibling);
+      }
+  }
+
+  function moveRowDown(btn) {
+      const row = btn.parentElement;
+      if (row.nextElementSibling) {
+          row.parentNode.insertBefore(row.nextElementSibling, row);
+      }
   }
 
   async function saveMovie(isCustomEdit) {
@@ -338,7 +350,6 @@
     const btnCustom = document.getElementById("btnCustom");
     const name = document.getElementById("name").value.trim();
     
-    // ✅ CHANGE 2: Extract TMDB ID from the display field so manual entries are saved
     const tmdbId = document.getElementById("display_tmdb_id").value.trim();
     let mediaType = document.getElementById("media_type_hidden").value.trim();
     if (!mediaType) {
@@ -347,7 +358,6 @@
 
     if (!name) { alert("File Name is required!"); return; }
     
-    // ✅ CHANGE 3: Custom Save will pass this block even if TMDB ID is empty
     if (!isCustomEdit && !tmdbId) { 
         alert("You must provide a TMDB Verification ID for a lightweight save!"); 
         return; 
@@ -366,7 +376,7 @@
       if (url) {
         finalLinks.push({
           url: btoa(url), 
-          episode: isSeries ? "Ep " + row.querySelector(".link-ep").value : "", 
+          episode: isSeries ? "Ep " + row.querySelector(".link-ep").value.trim() : "", 
           quality: isSeries ? row.querySelector(".link-quality").value : "",
           size: row.querySelector(".link-size").value.trim(),
           unit: row.querySelector(".link-unit").value
@@ -393,7 +403,7 @@
         name: name,
         type: document.getElementById("type").value,
         upload_quality: document.getElementById("upload_quality").value.trim() || "HD", 
-        tmdb_id: tmdbId ? Number(tmdbId) : null, // Uses null if left blank
+        tmdb_id: tmdbId ? Number(tmdbId) : null, 
         media_type: mediaType,     
         links: finalLinks
       };
