@@ -150,9 +150,9 @@ const db = firebase.firestore();
 // ==========================================
 function smartBack() {
   if (!document.referrer || !document.referrer.includes(window.location.hostname)) {
-    window.location.href = "search.html"; // Route home for direct link clicks
+    window.location.href = "search.html"; 
   } else {
-    history.back(); // Standard back to preserve scroll position on search.html
+    history.back(); 
   }
 }
 
@@ -178,7 +178,7 @@ async function fetchFromTMDB(tmdbId, mediaType) {
   const url = `https://api.themoviedb.org/3/${endpoint}/${tmdbId}?api_key=${apiKey}&language=en-US`;
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 8000); 
     
     const response = await fetch(url, { signal: controller.signal });
     clearTimeout(timeoutId);
@@ -224,7 +224,6 @@ async function loadFile() {
   }
   currentFileId = id;
 
-  // 🛠  HELPER 1: Extract links safely
   const extractLinks = (data) => {
       if (data.links || data.downloads || data.stream_url || data.link) {
           if (Array.isArray(data.links) && data.links.length > 0) allFileLinks = data.links;
@@ -234,7 +233,6 @@ async function loadFile() {
       }
   };
 
-  // 🛠 HELPER 2: The TMDB Hydrator
   const hydrateWithTMDB = (dataObj) => {
       const hasDescription = dataObj.description && dataObj.description !== 'No description provided.' && dataObj.description !== 'Loading...' && dataObj.description !== 'No plot summary available.';
       const hasPoster = dataObj.image && !dataObj.image.includes('placeholder') && !dataObj.image.includes('No Image');
@@ -248,12 +246,10 @@ async function loadFile() {
                   dataObj.rating = typeof tmdbData.vote_average === 'number' ? tmdbData.vote_average.toFixed(1) : (dataObj.rating || "N/A");
                   dataObj.release_date = tmdbData.release_date || dataObj.release_date || "N/A";
                   
-                  // Format TMDB Genres
                   if (tmdbData.genres && tmdbData.genres.length > 0) {
                       dataObj.category = tmdbData.genres.map(g => g.name).join(", ");
                   }
 
-                  // Format TMDB Runtime
                   if (tmdbData.runtime) {
                       dataObj.runtime = tmdbData.runtime + " min"; 
                   } else if (tmdbData.episode_run_time && tmdbData.episode_run_time.length > 0) {
@@ -261,7 +257,6 @@ async function loadFile() {
                   }
                   
               } else {
-                  // 🟢 FALLBACK FOR 404 ERRORS
                   dataObj.description = dataObj.description || "Description not available";
                   dataObj.image = dataObj.image || 'https://placehold.co/400x220/1a1a1a/ffffff?text=No+Image';
                   dataObj.rating = dataObj.rating || "N/A";
@@ -269,10 +264,8 @@ async function loadFile() {
                   dataObj.category = dataObj.category || "Uncategorized";
               }
               
-              // Update individual session cookie
               sessionStorage.setItem("ntm_current_movie", JSON.stringify(dataObj));
 
-              // Also update in master catalog if exists
               const storedCatalog = sessionStorage.getItem("ntm_movie_catalog");
               if (storedCatalog) {
                   try {
@@ -287,7 +280,6 @@ async function loadFile() {
                   }
               }
               
-              // Repaint the UI with the fresh data
               paintUI(dataObj); 
               if (allFileLinks && allFileLinks.length > 0) {
                   processLinksAndRender(dataObj);
@@ -316,7 +308,6 @@ async function loadFile() {
                   processLinksAndRender(currentFile);
               }
 
-              // Hydrate only if missing
               hydrateWithTMDB(fileData);
               return; 
           }
@@ -347,7 +338,6 @@ async function loadFile() {
                       processLinksAndRender(currentFile);
                   }
 
-                  // Hydrate only if missing
                   hydrateWithTMDB(fileData);
                   return;
               }
@@ -457,8 +447,36 @@ function processLinksAndRender(file) {
       return;
   }
 
+  // 🚀 FIXED: Robust Sorting Logic for Ranges and Single Episodes
   if (file.type === "Series") { 
-      allFileLinks.sort((a, b) => { let epA = 0, epB = 0; if (typeof a === "object" && a.episode) { const matchA = a.episode.match(/\d+/); if (matchA) epA = parseInt(matchA[0]); } if (typeof b === "object" && b.episode) { const matchB = b.episode.match(/\d+/); if (matchB) epB = parseInt(matchB[0]); } return epA - epB; }); 
+      allFileLinks.sort((a, b) => {
+          const strA = (typeof a === "object" && a.episode) ? String(a.episode) : "";
+          const strB = (typeof b === "object" && b.episode) ? String(b.episode) : "";
+          
+          const parseEp = (str) => {
+              const matches = str.match(/\d+/g);
+              if (!matches) return [9999, 9999, false]; 
+              const start = parseInt(matches[0], 10);
+              const isRange = /-|~|to/i.test(str);
+              const end = (matches.length > 1 && isRange) ? parseInt(matches[1], 10) : start;
+              return [start, end, isRange];
+          };
+
+          const [startA, endA, rangeA] = parseEp(strA);
+          const [startB, endB, rangeB] = parseEp(strB);
+
+          // 1. Sort primarily by the starting episode number
+          if (startA !== startB) return startA - startB;
+          
+          // 2. If they start at the same number, put the range (batch) BEFORE the single episode
+          if (rangeA && !rangeB) return -1;
+          if (!rangeA && rangeB) return 1;
+          
+          // 3. Fallback to end episode
+          if (endA !== endB) return endA - endB;
+          
+          return strA.localeCompare(strB);
+      });
   }
   
   let isSeries = false; let availableQualities = new Set();
