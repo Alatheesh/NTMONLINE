@@ -21,6 +21,8 @@
     .link-row { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); flex-wrap: wrap;}
     .link-row input, .link-row select, .link-row button { margin-bottom: 0; padding: 10px; }
     .btn-danger { background: #ff4d4d; color: white; width: auto; font-size: 14px; }
+    .btn-move { background: rgba(255,255,255,0.1); color: white; width: auto; font-size: 14px; cursor: pointer; padding: 10px; border-radius: 4px; border: none; }
+    .btn-move:hover { background: rgba(255,255,255,0.2); }
 
     .search-wrapper { position: relative; margin-bottom: 15px; }
     #searchResults { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #0f1938; border: 1px solid #ffcc00; border-radius: 8px; max-height: 250px; overflow-y: auto; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
@@ -56,7 +58,7 @@
   <input type="hidden" id="media_type_hidden">
   <input type="hidden" id="custom_id_hidden">
 
-  <label class="field-label">Correct TMDB ID (Optional: Search Name or Name + Year)</label>
+  <label class="field-label">Correct TMDB ID (Optional: Search Name, Name + Year, or ID)</label>
   <div class="search-wrapper">
     <div style="display: flex; gap: 10px;">
       <input type="text" id="searchInput" placeholder="Search to fix a wrong TMDB ID..." style="margin-bottom:0; flex: 1;" onkeypress="if(event.key === 'Enter') searchTMDB()">
@@ -87,7 +89,7 @@
       </div>
       <div>
           <label class="field-label">TMDB Verification ID</label>
-          <input type="text" id="display_tmdb_id" class="readonly-field" readonly placeholder="Auto-filled">
+          <input type="text" id="display_tmdb_id" placeholder="Auto-filled or edit manually">
       </div>
   </div>
 
@@ -201,7 +203,7 @@
       const linksContainer = document.getElementById("links-container");
       linksContainer.innerHTML = ""; 
       document.getElementById("status").innerText = "";
-      document.getElementById("markAsNewCheck").checked = false; // Reset checkbox
+      document.getElementById("markAsNewCheck").checked = false;
 
       if (selectedIndex === "") {
           document.getElementById("name").value = "";
@@ -255,12 +257,12 @@
               let decodedUrl = "";
               try { decodedUrl = atob(link.url); } catch(e) { decodedUrl = link.url; } 
 
-              let epNumber = 1;
+              let epString = "1";
               if (link.episode) {
-                  epNumber = link.episode.replace(/\D/g, ''); 
+                  epString = link.episode.replace(/^Ep\s+/i, ''); 
               }
 
-              addLinkRow(decodedUrl, epNumber, link.quality, link.size, link.unit);
+              addLinkRow(decodedUrl, epString, link.quality, link.size, link.unit);
           });
       } else {
           addLinkRow(); 
@@ -302,30 +304,56 @@
     status.style.color = "#ffcc00";
     dropdown.style.display = "none";
 
-    let query = rawQuery;
-    let yearFilter = null;
-    const yearMatch = rawQuery.match(/(.*)\s+(\d{4})$/);
-    
-    if (yearMatch) {
-      query = yearMatch[1].trim(); 
-      yearFilter = yearMatch[2];   
-    }
+    let media = [];
+    let isNumber = /^\d+$/.test(rawQuery); 
 
     try {
-      const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
-      const data = await res.json();
-      let media = data.results.filter(m => m.media_type === 'movie' || m.media_type === 'tv');
+      if (isNumber) {
+          const resMovie = await fetch(`https://api.themoviedb.org/3/movie/${rawQuery}?api_key=${API_KEY}`).catch(() => null);
+          if (resMovie && resMovie.ok) {
+              const dataMovie = await resMovie.json();
+              if (dataMovie.id) { dataMovie.media_type = 'movie'; media.push(dataMovie); }
+          }
+          const resTv = await fetch(`https://api.themoviedb.org/3/tv/${rawQuery}?api_key=${API_KEY}`).catch(() => null);
+          if (resTv && resTv.ok) {
+              const dataTv = await resTv.json();
+              if (dataTv.id) { dataTv.media_type = 'tv'; media.push(dataTv); }
+          }
+      }
 
-      if (yearFilter) {
-        media = media.filter(item => {
-          const itemYear = item.release_date || item.first_air_date || "";
-          return itemYear.startsWith(yearFilter);
-        });
+      let query = rawQuery;
+      let yearFilter = null;
+      const yearMatch = rawQuery.match(/(.*)\s+(\d{4})$/);
+      
+      if (yearMatch) {
+        query = yearMatch[1].trim(); 
+        yearFilter = yearMatch[2];   
+      }
+
+      const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
+      if (res.ok) {
+          const data = await res.json();
+          let searchResults = data.results.filter(m => m.media_type === 'movie' || m.media_type === 'tv');
+
+          if (yearFilter) {
+            searchResults = searchResults.filter(item => {
+              const itemYear = item.release_date || item.first_air_date || "";
+              return itemYear.startsWith(yearFilter);
+            });
+          }
+
+          let existingIds = new Set(media.map(m => m.id));
+          searchResults.forEach(item => {
+              if (!existingIds.has(item.id)) {
+                  media.push(item);
+                  existingIds.add(item.id);
+              }
+          });
       }
 
       if (media.length > 0) {
-        status.innerText = `✅ Found ${media.length} results. Select one to update ID.`;
-        status.style.color = "#00ff88";
+        status.innerText = `✅ Found ${media.length} results. Select one to lock ID.`;
+        status.style.color = "#00ff88"; 
         
         dropdown.innerHTML = "";
         media.forEach(item => {
@@ -337,7 +365,7 @@
 
           const div = document.createElement("div");
           div.className = "search-item";
-          div.onclick = () => lockTMDBData(item.id, item.media_type);
+          div.onclick = () => lockTMDBData(item.id, item.media_type); 
           div.innerHTML = `
             <img src="${thumb}" class="search-thumb" onerror="this.src='https://placehold.co/40x60/333/fff?text=N/A'">
             <div class="search-info">
@@ -402,7 +430,7 @@
     }
   }
 
-  function addLinkRow(url = "", ep = 1, quality = "720p", size = "", unit = "MB") {
+  function addLinkRow(url = "", ep = "1", quality = "720p", size = "", unit = "MB") {
     const isSeries = document.getElementById("type").value === "Series";
     const displayStyle = isSeries ? "inline-block" : "none";
     
@@ -410,7 +438,7 @@
     div.className = "link-row";
     div.innerHTML = `
       <input type="text" placeholder="Video URL..." class="link-url" value="${url}" style="flex: 1; min-width: 150px;">
-      <input type="number" placeholder="Ep" class="link-ep" style="width: 60px; display: ${displayStyle};" min="1" value="${ep}">
+      <input type="text" placeholder="Ep (e.g. 1 or 01-10)" class="link-ep" style="width: 100px; display: ${displayStyle};" value="${ep}">
       <select class="link-quality" style="width: 90px; display: ${displayStyle};">
         <option value="Auto" ${quality==='Auto'?'selected':''}>Auto</option>
         <option value="480p" ${quality==='480p'?'selected':''}>480p</option>
@@ -423,9 +451,25 @@
         <option value="MB" ${unit==='MB'?'selected':''}>MB</option>
         <option value="GB" ${unit==='GB'?'selected':''}>GB</option>
       </select>
-      <button class="btn-danger" onclick="this.parentElement.remove()">❌</button>
+      <button type="button" class="btn-move" onclick="moveRowUp(this)">⬆️</button>
+      <button type="button" class="btn-move" onclick="moveRowDown(this)">⬇️</button>
+      <button type="button" class="btn-danger" onclick="this.parentElement.remove()">❌</button>
     `;
     document.getElementById("links-container").appendChild(div);
+  }
+
+  function moveRowUp(btn) {
+      const row = btn.parentElement;
+      if (row.previousElementSibling) {
+          row.parentNode.insertBefore(row, row.previousElementSibling);
+      }
+  }
+
+  function moveRowDown(btn) {
+      const row = btn.parentElement;
+      if (row.nextElementSibling) {
+          row.parentNode.insertBefore(row.nextElementSibling, row);
+      }
   }
 
   function resetButtons() {
@@ -442,11 +486,10 @@
     const btnLight = document.getElementById("btnLight");
     const btnCustom = document.getElementById("btnCustom");
     const name = document.getElementById("name").value.trim();
-    const tmdbId = document.getElementById("tmdb_id_hidden").value.trim();
+    const tmdbId = document.getElementById("display_tmdb_id").value.trim();
     const mediaType = document.getElementById("media_type_hidden").value.trim();
     const customId = document.getElementById("custom_id_hidden").value;
     
-    // 🚀 GRAB THE CHECKBOX VALUE
     const markAsNew = document.getElementById("markAsNewCheck").checked;
 
     if (!name) { showMessage("File Name is required!", true); return; }
@@ -465,7 +508,7 @@
       if (url) {
         finalLinks.push({
           url: btoa(url), 
-          episode: isSeries ? "Ep " + row.querySelector(".link-ep").value : "", 
+          episode: isSeries ? "Ep " + row.querySelector(".link-ep").value.trim() : "", 
           quality: isSeries ? row.querySelector(".link-quality").value : "",
           size: row.querySelector(".link-size").value.trim(),
           unit: row.querySelector(".link-unit").value
@@ -480,7 +523,6 @@
     }
 
     try {
-      // ULTRA-SAFE UPDATE METHOD: Fetch fresh data from Firebase right before saving to prevent overwrites
       const docRef = db.collection("movie_database").doc("master_list");
       const freshSnap = await docRef.get();
       
@@ -501,7 +543,6 @@
                 links: finalLinks
               };
 
-              // 🚀 PRESERVE ORIGINAL ID OR GENERATE NEW ONE 🚀
               if (markAsNew) {
                   updatedData.customId = Date.now();
               } else {
@@ -523,7 +564,6 @@
 
               await docRef.update({ movies: freshMovies });
               
-              // 🚨 CLEAR CACHE: This forces search.html to instantly download the new updates!
               sessionStorage.removeItem("ntm_movie_catalog");
               
               showMessage(isCustomEdit ? "✅ Custom Entry Saved!" : "✅ Lightweight Entry Saved!");
