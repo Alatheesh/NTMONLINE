@@ -1,5 +1,5 @@
 const firebaseConfig = {
-  apiKey: "AIzaSyC7_6GCYy3rBPSDGOiyaEYFp-QkHik2EI0",
+  apiKey: "AIzaSyApicq9kp_1T2nU_Z-GJWE1v4_i9K5QRKs",
   authDomain: "filehub-counter.firebaseapp.com",
   projectId: "filehub-counter",
   storageBucket: "filehub-counter.firebasestorage.app",
