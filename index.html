@@ -333,24 +333,25 @@ function closeBingeCard(event, forceClose = false) {
 
 
 <script>
-/* =========================================================
-   CONNECTED PATTERN BACKGROUND
-   Extracted/adapted from the earlier NTM animation:
-   glowing particles + dynamic connection lines.
-   ========================================================= */
+/* PERFORMANCE-OPTIMIZED CONNECTED PATTERN BACKGROUND */
 (() => {
   const canvas = document.getElementById("network");
   if (!canvas) return;
 
-  const ctx = canvas.getContext("2d");
-  let width = 0, height = 0, particles = [];
-  const MAX_DISTANCE = 165;
+  const ctx = canvas.getContext("2d", { alpha: true, desynchronized: true });
+  let width = 0, height = 0, dpr = 1, particles = [];
+  let running = true, lastFrame = 0, resizeTimer = 0;
 
-  function countParticles() {
+  const MAX_DISTANCE = 165;
+  const CELL_SIZE = MAX_DISTANCE;
+  const isMobile = () => window.matchMedia("(max-width: 768px)").matches;
+  const targetFPS = () => isMobile() ? 24 : 30;
+
+  function particleCount() {
     const area = window.innerWidth * window.innerHeight;
-    return window.innerWidth < 700
-      ? Math.min(58, Math.max(28, Math.floor(area / 10500)))
-      : Math.min(115, Math.max(48, Math.floor(area / 11000)));
+    return isMobile()
+      ? Math.min(32, Math.max(20, Math.round(area / 18000)))
+      : Math.min(58, Math.max(38, Math.round(area / 26000)));
   }
 
   class Particle {
@@ -363,26 +364,23 @@ function closeBingeCard(event, forceClose = false) {
       this.phase = Math.random() * Math.PI * 2;
       this.brightness = 0.45 + Math.random() * 0.55;
     }
-
-    update() {
-      this.x += this.vx;
-      this.y += this.vy;
-      this.phase += 0.012;
+    update(delta) {
+      const step = Math.min(delta / 16.67, 2.2);
+      this.x += this.vx * step;
+      this.y += this.vy * step;
+      this.phase += 0.012 * step;
       if (this.x < -12) this.x = width + 12;
       if (this.x > width + 12) this.x = -12;
       if (this.y < -12) this.y = height + 12;
       if (this.y > height + 12) this.y = -12;
     }
-
     draw(time) {
       const pulse = 0.62 + Math.sin(time * 0.0015 + this.phase) * 0.38;
       const alpha = this.brightness * pulse;
-
       ctx.beginPath();
       ctx.arc(this.x, this.y, this.radius * 3.2, 0, Math.PI * 2);
       ctx.fillStyle = `rgba(24, 165, 255, ${alpha * 0.16})`;
       ctx.fill();
-
       ctx.beginPath();
       ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
       ctx.fillStyle = `rgba(105, 210, 255, ${Math.min(1, alpha * 1.12)})`;
@@ -391,52 +389,90 @@ function closeBingeCard(event, forceClose = false) {
   }
 
   function createParticles() {
-    particles = Array.from({ length: countParticles() }, () => new Particle());
+    particles = Array.from({ length: particleCount() }, () => new Particle());
   }
 
-  function resize() {
-    const ratio = Math.min(window.devicePixelRatio || 1, 2);
-    width = window.innerWidth;
-    height = window.innerHeight;
-    canvas.width = Math.floor(width * ratio);
-    canvas.height = Math.floor(height * ratio);
+  function resize(force = false) {
+    const nextWidth = Math.max(1, window.innerWidth);
+    const nextHeight = Math.max(1, window.innerHeight);
+    const nextDpr = Math.min(window.devicePixelRatio || 1, isMobile() ? 1.25 : 1.5);
+    if (!force && nextWidth === width && nextHeight === height && nextDpr === dpr) return;
+    width = nextWidth; height = nextHeight; dpr = nextDpr;
+    canvas.width = Math.floor(width * dpr);
+    canvas.height = Math.floor(height * dpr);
     canvas.style.width = width + "px";
     canvas.style.height = height + "px";
-    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     createParticles();
   }
 
   function connect() {
+    const grid = new Map();
     for (let i = 0; i < particles.length; i++) {
-      for (let j = i + 1; j < particles.length; j++) {
-        const dx = particles[i].x - particles[j].x;
-        const dy = particles[i].y - particles[j].y;
-        const d = Math.hypot(dx, dy);
-        if (d < MAX_DISTANCE) {
-          const opacity = 1 - d / MAX_DISTANCE;
-          ctx.beginPath();
-          ctx.moveTo(particles[i].x, particles[i].y);
-          ctx.lineTo(particles[j].x, particles[j].y);
-          ctx.strokeStyle = `rgba(48, 166, 245, ${opacity * 0.42})`;
-          ctx.lineWidth = Math.max(0.35, opacity * 1.0);
-          ctx.stroke();
+      const p = particles[i];
+      const key = `${Math.floor(p.x / CELL_SIZE)},${Math.floor(p.y / CELL_SIZE)}`;
+      if (!grid.has(key)) grid.set(key, []);
+      grid.get(key).push(i);
+    }
+    for (let i = 0; i < particles.length; i++) {
+      const p = particles[i];
+      const cx = Math.floor(p.x / CELL_SIZE);
+      const cy = Math.floor(p.y / CELL_SIZE);
+      for (let gx = cx - 1; gx <= cx + 1; gx++) {
+        for (let gy = cy - 1; gy <= cy + 1; gy++) {
+          const bucket = grid.get(`${gx},${gy}`);
+          if (!bucket) continue;
+          for (const j of bucket) {
+            if (j <= i) continue;
+            const q = particles[j];
+            const dx = p.x - q.x, dy = p.y - q.y;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < MAX_DISTANCE * MAX_DISTANCE) {
+              const d = Math.sqrt(d2);
+              const opacity = 1 - d / MAX_DISTANCE;
+              ctx.beginPath();
+              ctx.moveTo(p.x, p.y);
+              ctx.lineTo(q.x, q.y);
+              ctx.strokeStyle = `rgba(48, 166, 245, ${opacity * 0.42})`;
+              ctx.lineWidth = Math.max(0.35, opacity);
+              ctx.stroke();
+            }
+          }
         }
       }
     }
   }
 
   function frame(time) {
-    ctx.clearRect(0, 0, width, height);
-    connect();
-    for (const p of particles) {
-      p.update();
-      p.draw(time);
+    if (!running) return;
+    const interval = 1000 / targetFPS();
+    if (!lastFrame) lastFrame = time;
+    const elapsed = time - lastFrame;
+    if (elapsed >= interval) {
+      lastFrame = time - (elapsed % interval);
+      const delta = Math.min(elapsed, 50);
+      ctx.clearRect(0, 0, width, height);
+      for (const p of particles) p.update(delta);
+      connect();
+      for (const p of particles) p.draw(time);
     }
     requestAnimationFrame(frame);
   }
 
-  window.addEventListener("resize", resize, { passive: true });
-  resize();
+  function handleResize() {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => { resize(); lastFrame = 0; }, 180);
+  }
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) running = false;
+    else if (!running) { running = true; lastFrame = 0; requestAnimationFrame(frame); }
+  }, { passive: true });
+
+  window.addEventListener("resize", handleResize, { passive: true });
+  window.addEventListener("orientationchange", handleResize, { passive: true });
+
+  resize(true);
   requestAnimationFrame(frame);
 })();
 </script>
