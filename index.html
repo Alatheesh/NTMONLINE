@@ -118,6 +118,8 @@
   </style>
 </head>
 <body>
+  <!-- Animated connected pattern background -->
+  <canvas id="network" aria-hidden="true"></canvas>
 
 <div id="visitorBox">
   <span id="visitorCount">Visitors: 0</span>
@@ -327,6 +329,116 @@ function closeBingeCard(event, forceClose = false) {
     setTimeout(() => { modal.style.display = "none"; }, 300);
   }
 }
+</script>
+
+
+<script>
+/* =========================================================
+   CONNECTED PATTERN BACKGROUND
+   Extracted/adapted from the earlier NTM animation:
+   glowing particles + dynamic connection lines.
+   ========================================================= */
+(() => {
+  const canvas = document.getElementById("network");
+  if (!canvas) return;
+
+  const ctx = canvas.getContext("2d");
+  let width = 0, height = 0, particles = [];
+  const MAX_DISTANCE = 150;
+
+  function countParticles() {
+    const area = window.innerWidth * window.innerHeight;
+    return window.innerWidth < 700
+      ? Math.min(58, Math.max(28, Math.floor(area / 10500)))
+      : Math.min(115, Math.max(48, Math.floor(area / 11000)));
+  }
+
+  class Particle {
+    constructor() {
+      this.x = Math.random() * width;
+      this.y = Math.random() * height;
+      this.radius = Math.random() * 1.35 + 0.35;
+      this.vx = (Math.random() - 0.5) * 0.16;
+      this.vy = (Math.random() - 0.5) * 0.16;
+      this.phase = Math.random() * Math.PI * 2;
+      this.brightness = 0.45 + Math.random() * 0.55;
+    }
+
+    update() {
+      this.x += this.vx;
+      this.y += this.vy;
+      this.phase += 0.012;
+      if (this.x < -12) this.x = width + 12;
+      if (this.x > width + 12) this.x = -12;
+      if (this.y < -12) this.y = height + 12;
+      if (this.y > height + 12) this.y = -12;
+    }
+
+    draw(time) {
+      const pulse = 0.62 + Math.sin(time * 0.0015 + this.phase) * 0.38;
+      const alpha = this.brightness * pulse;
+
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius * 3.2, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(24, 145, 255, ${alpha * 0.10})`;
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(96, 196, 255, ${alpha * 0.92})`;
+      ctx.fill();
+    }
+  }
+
+  function createParticles() {
+    particles = Array.from({ length: countParticles() }, () => new Particle());
+  }
+
+  function resize() {
+    const ratio = Math.min(window.devicePixelRatio || 1, 2);
+    width = window.innerWidth;
+    height = window.innerHeight;
+    canvas.width = Math.floor(width * ratio);
+    canvas.height = Math.floor(height * ratio);
+    canvas.style.width = width + "px";
+    canvas.style.height = height + "px";
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    createParticles();
+  }
+
+  function connect() {
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const d = Math.hypot(dx, dy);
+        if (d < MAX_DISTANCE) {
+          const opacity = 1 - d / MAX_DISTANCE;
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = `rgba(39, 147, 230, ${opacity * 0.25})`;
+          ctx.lineWidth = Math.max(0.25, opacity * 0.8);
+          ctx.stroke();
+        }
+      }
+    }
+  }
+
+  function frame(time) {
+    ctx.clearRect(0, 0, width, height);
+    connect();
+    for (const p of particles) {
+      p.update();
+      p.draw(time);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  window.addEventListener("resize", resize, { passive: true });
+  resize();
+  requestAnimationFrame(frame);
+})();
 </script>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
