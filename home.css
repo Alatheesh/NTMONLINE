@@ -1793,3 +1793,52 @@ html, body {
   #network { opacity: .68 !important; }
   .orbit-b, .orbit-c { opacity: .18 !important; }
 }
+
+
+/* =========================================================
+   SPACING + BRIGHTER CONNECTED BACKGROUND TUNING
+   ========================================================= */
+
+/* Make the full-page connected pattern easier to notice */
+#network {
+  opacity: 1 !important;
+  filter: brightness(1.22) contrast(1.08);
+}
+
+/* Give the central composition more breathing room on desktop */
+@media (min-width: 769px) and (min-height: 650px) {
+  .logo-stage {
+    top: 34.5vh !important;
+    transform: translate(-50%, -50%) scale(.82) !important;
+  }
+
+  .hero.glass-card {
+    top: 73.5vh !important;
+  }
+
+  .subtitle {
+    margin-top: 10px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .premium-btn {
+    margin-top: 2px !important;
+  }
+}
+
+/* Slightly more visible atmosphere without washing out the page */
+.atmosphere {
+  background:
+    radial-gradient(circle at 50% 38%, rgba(16, 70, 115, .19), transparent 34%),
+    radial-gradient(circle at 18% 25%, rgba(0, 115, 210, .035), transparent 24%),
+    radial-gradient(circle at 82% 58%, rgba(0, 115, 210, .035), transparent 28%),
+    linear-gradient(180deg, rgba(2, 8, 17, .03), rgba(1, 5, 12, .16)) !important;
+}
+
+/* The circle stays the focus, but surrounding background lines are clearer */
+@media (max-width: 768px) {
+  #network {
+    opacity: .90 !important;
+    filter: brightness(1.14) contrast(1.05);
+  }
+}
