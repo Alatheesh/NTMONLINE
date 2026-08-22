@@ -1842,3 +1842,33 @@ html, body {
     filter: brightness(1.14) contrast(1.05);
   }
 }
+
+
+/* PERFORMANCE PASS — SAME LOOK, LESS STUTTER */
+#network {
+  filter: none !important;
+  contain: layout paint size;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+.ring, .ring::after, .metal-ring-mid, .orbit, .bottom-glow {
+  will-change: transform;
+  transform: translateZ(0);
+}
+.logo-stage, .hero.glass-card, .premium-footer, .logo-link, .stats-btn, #visitorBox {
+  backface-visibility: hidden;
+}
+@media (max-width: 768px) {
+  .bottom-glow { filter: blur(12px); }
+  .orbit-c { display: none; }
+  .metal-ring-mid { animation-duration: 26s !important; }
+  .ring::after { animation-duration: 18s !important; }
+}
+@media (max-width: 420px) {
+  .orbit-b { opacity: .22 !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .orbit, .metal-ring-mid, .ring::after, .bottom-glow, .ring {
+    animation: none !important;
+  }
+}
