@@ -1678,3 +1678,118 @@ html, body {
   }
   .hero.glass-card { top: 72vh !important; }
 }
+
+
+/* =========================================================
+   CONNECTED PATTERNS + LIGHTER CIRCLE MOTION
+   ========================================================= */
+
+/* The full-page connected pattern layer */
+#network {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 1 !important;
+  pointer-events: none !important;
+  opacity: .82 !important;
+  background: transparent !important;
+}
+
+/* Keep all real page controls above the animated network */
+.logo-link,
+.stats-btn,
+#visitorBox,
+.logo-stage,
+.hero.glass-card,
+.premium-footer {
+  position: fixed;
+}
+
+.logo-stage { z-index: 5 !important; }
+.hero.glass-card,
+.premium-footer,
+.logo-link,
+.stats-btn,
+#visitorBox { z-index: 20 !important; }
+
+/* Softer atmosphere so the connected patterns remain visible */
+.atmosphere {
+  z-index: 2 !important;
+  pointer-events: none !important;
+  background:
+    radial-gradient(circle at 50% 40%, rgba(11, 54, 94, .16), transparent 32%),
+    linear-gradient(180deg, rgba(2, 8, 17, .05), rgba(1, 5, 12, .20)) !important;
+}
+
+/* ---------------------------------------------------------
+   IMPORTANT: calm the heavy rotating rings.
+   Keep only subtle living energy, not multiple fast spinners.
+   --------------------------------------------------------- */
+.metal-ring-outer {
+  animation: none !important;
+}
+
+.metal-ring-mid {
+  animation: subtleArcDrift 22s linear infinite !important;
+  opacity: .72 !important;
+}
+
+.orbit {
+  border-width: 2px !important;
+  opacity: .55 !important;
+}
+
+.orbit-a {
+  animation: subtleArcDrift 18s linear infinite !important;
+  border-top-color: rgba(205, 245, 255, .88) !important;
+  border-left-color: rgba(61, 177, 255, .48) !important;
+}
+
+.orbit-b {
+  animation: subtleArcDriftReverse 28s linear infinite !important;
+  opacity: .36 !important;
+}
+
+.orbit-c {
+  animation: subtleArcDrift 38s linear infinite !important;
+  opacity: .22 !important;
+}
+
+.ring::after {
+  border-width: 3px !important;
+  border-top-color: rgba(224, 249, 255, .82) !important;
+  border-right-color: rgba(65, 187, 255, .58) !important;
+  filter: drop-shadow(0 0 6px rgba(98, 211, 255, .72)) !important;
+  animation: subtleArcDrift 14s linear infinite !important;
+}
+
+.ring {
+  animation: ringPulse 4.8s ease-in-out infinite !important;
+  box-shadow:
+    inset 0 0 12px rgba(90, 206, 255, .22),
+    0 0 8px rgba(84, 199, 255, .46),
+    0 0 26px rgba(0, 126, 255, .30) !important;
+}
+
+/* A very slow glow variation instead of aggressive spinning */
+@keyframes subtleArcDrift {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes subtleArcDriftReverse {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+/* Make the center network stay visible but not compete with the new
+   full-page connected pattern */
+.inner-network {
+  opacity: .68 !important;
+}
+
+@media (max-width: 768px) {
+  #network { opacity: .68 !important; }
+  .orbit-b, .orbit-c { opacity: .18 !important; }
+}
