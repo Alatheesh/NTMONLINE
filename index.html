@@ -344,7 +344,7 @@ function closeBingeCard(event, forceClose = false) {
 
   const ctx = canvas.getContext("2d");
   let width = 0, height = 0, particles = [];
-  const MAX_DISTANCE = 150;
+  const MAX_DISTANCE = 165;
 
   function countParticles() {
     const area = window.innerWidth * window.innerHeight;
@@ -380,12 +380,12 @@ function closeBingeCard(event, forceClose = false) {
 
       ctx.beginPath();
       ctx.arc(this.x, this.y, this.radius * 3.2, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(24, 145, 255, ${alpha * 0.10})`;
+      ctx.fillStyle = `rgba(24, 165, 255, ${alpha * 0.16})`;
       ctx.fill();
 
       ctx.beginPath();
       ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(96, 196, 255, ${alpha * 0.92})`;
+      ctx.fillStyle = `rgba(105, 210, 255, ${Math.min(1, alpha * 1.12)})`;
       ctx.fill();
     }
   }
@@ -417,8 +417,8 @@ function closeBingeCard(event, forceClose = false) {
           ctx.beginPath();
           ctx.moveTo(particles[i].x, particles[i].y);
           ctx.lineTo(particles[j].x, particles[j].y);
-          ctx.strokeStyle = `rgba(39, 147, 230, ${opacity * 0.25})`;
-          ctx.lineWidth = Math.max(0.25, opacity * 0.8);
+          ctx.strokeStyle = `rgba(48, 166, 245, ${opacity * 0.42})`;
+          ctx.lineWidth = Math.max(0.35, opacity * 1.0);
           ctx.stroke();
         }
       }
