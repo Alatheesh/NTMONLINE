@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 
-<title>Telegram Movie Broadcaster • Admin</title>
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Telegram Broadcaster • Admin</title>
 
 <style>
 * {
@@ -13,17 +13,17 @@
 }
 
 body {
+    margin: 0;
+    min-height: 100vh;
+    padding: 20px;
     font-family: Arial, sans-serif;
     background: #0a1128;
     color: #ffffff;
-    min-height: 100vh;
-    margin: 0;
-    padding: 20px;
 }
 
 .page {
     width: 100%;
-    max-width: 900px;
+    max-width: 950px;
     margin: auto;
 }
 
@@ -36,167 +36,135 @@ body {
 }
 
 h2 {
-    color: #00bfff;
-    text-align: center;
     margin-top: 0;
-}
-
-.section-title {
+    text-align: center;
     color: #00bfff;
-    font-size: 14px;
-    margin: 25px 0 10px;
 }
 
 button,
 input,
-select {
+textarea {
     font-family: inherit;
 }
 
-input[type="text"],
-input[type="password"],
-select {
+.back-btn {
+    background: rgba(255,255,255,0.10);
+    color: white;
+    border: 0;
+    border-radius: 8px;
+    padding: 10px 16px;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+.section-title {
+    margin: 25px 0 10px;
+    color: #00bfff;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+input,
+textarea {
     width: 100%;
     padding: 13px;
     border-radius: 9px;
-    border: 1px solid rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.18);
     background: rgba(0,0,0,0.25);
     color: white;
     outline: none;
 }
 
 input:focus,
-select:focus {
+textarea:focus {
     border-color: #00bfff;
 }
 
-button {
-    border: none;
-    border-radius: 9px;
-    padding: 13px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: 0.2s;
-}
-
-button:hover {
-    transform: translateY(-1px);
-}
-
-.back-btn {
-    width: auto;
-    background: rgba(255,255,255,0.1);
-    color: white;
-    padding: 9px 16px;
-    margin-bottom: 20px;
+textarea {
+    min-height: 330px;
+    resize: vertical;
+    line-height: 1.6;
 }
 
 .primary-btn {
     width: 100%;
     margin-top: 20px;
     padding: 16px;
-    font-size: 16px;
-    background: linear-gradient(135deg, #007bff, #00bfff);
+    border: 0;
+    border-radius: 9px;
+    cursor: pointer;
     color: white;
+    font-size: 16px;
+    font-weight: bold;
+    background: linear-gradient(135deg, #007bff, #00bfff);
 }
 
-.danger-btn {
-    width: 100%;
-    margin-top: 15px;
-    background: transparent;
-    border: 1px solid #ff4d4d;
-    color: #ff4d4d;
-}
-
-.security-panel {
-    background: rgba(255,77,77,0.08);
-    border: 1px solid #ff4d4d;
-    border-radius: 12px;
-    padding: 18px;
-}
-
-.type-buttons,
-.style-buttons {
+.choice-grid {
     display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 10px;
 }
 
-.type-buttons {
-    grid-template-columns: 1fr 1fr;
-}
-
-.style-buttons {
-    grid-template-columns: 1fr 1fr;
-}
-
 .choice {
-    background: rgba(255,255,255,0.06);
+    padding: 14px;
+    border-radius: 10px;
+    cursor: pointer;
     color: white;
+    background: rgba(255,255,255,0.05);
     border: 1px solid rgba(255,255,255,0.12);
 }
 
 .choice.active {
-    background: rgba(0,191,255,0.18);
-    border-color: #00bfff;
     color: #00bfff;
-}
-
-.movie-list-container {
-    max-height: 330px;
-    overflow-y: auto;
-    background: rgba(0,0,0,0.25);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 10px;
-}
-
-.movie-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 11px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-    cursor: pointer;
-}
-
-.movie-item:last-child {
-    border-bottom: none;
-}
-
-.movie-item:hover,
-.movie-item.selected {
-    background: rgba(0,191,255,0.10);
-}
-
-.movie-thumb {
-    width: 45px;
-    height: 68px;
-    object-fit: cover;
-    border-radius: 6px;
-    background: #111;
-}
-
-.movie-info {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.movie-title {
-    font-weight: bold;
-}
-
-.movie-meta {
-    color: #aaa;
-    font-size: 12px;
+    border-color: #00bfff;
+    background: rgba(0,191,255,0.12);
 }
 
 .search-box {
     margin-bottom: 10px;
 }
 
-.series-fields {
-    display: none;
+.item-list {
+    max-height: 330px;
+    overflow-y: auto;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(0,0,0,0.22);
+}
+
+.item {
+    display: flex;
     gap: 12px;
+    align-items: center;
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.item:last-child {
+    border-bottom: none;
+}
+
+.item:hover,
+.item.selected {
+    background: rgba(0,191,255,0.10);
+}
+
+.item img {
+    width: 45px;
+    height: 68px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.item-name {
+    font-weight: bold;
+}
+
+.item-meta {
+    margin-top: 4px;
+    color: #aaa;
+    font-size: 12px;
 }
 
 .field-row {
@@ -205,18 +173,22 @@ button:hover {
     gap: 12px;
 }
 
+.series-fields {
+    display: none;
+}
+
 .preview-box {
-    background: #101827;
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 14px;
     overflow: hidden;
+    border-radius: 15px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: #101827;
 }
 
 .preview-image {
-    width: 100%;
-    max-height: 350px;
-    object-fit: contain;
     display: none;
+    width: 100%;
+    max-height: 430px;
+    object-fit: contain;
     background: #05080f;
 }
 
@@ -226,39 +198,120 @@ button:hover {
 
 .preview-caption {
     white-space: pre-line;
-    line-height: 1.6;
-    color: #e7e7e7;
+    line-height: 1.65;
+    color: #eeeeee;
 }
 
 .preview-button {
-    margin-top: 15px;
+    display: none;
     width: 100%;
+    margin-top: 15px;
+    padding: 13px;
+    border: 0;
+    border-radius: 8px;
     background: #0088cc;
     color: white;
+    font-weight: bold;
+}
+
+.edit-panel {
+    display: none;
+}
+
+.toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 12px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.05);
+}
+
+.toggle-label {
+    color: #ddd;
+    font-size: 14px;
+}
+
+.switch {
+    position: relative;
+    width: 52px;
+    height: 28px;
+}
+
+.switch input {
+    display: none;
+}
+
+.slider {
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
+    cursor: pointer;
+    background: #444;
+    transition: 0.25s;
+}
+
+.slider::before {
+    content: "";
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    left: 4px;
+    top: 4px;
+    border-radius: 50%;
+    background: white;
+    transition: 0.25s;
+}
+
+.switch input:checked + .slider {
+    background: #00bfff;
+}
+
+.switch input:checked + .slider::before {
+    transform: translateX(24px);
 }
 
 .status {
-    text-align: center;
-    min-height: 20px;
-    font-size: 13px;
+    min-height: 22px;
     margin-top: 12px;
+    text-align: center;
+    font-size: 13px;
 }
 
 .note {
+    margin-top: 7px;
     color: #aaa;
     font-size: 12px;
-    line-height: 1.5;
 }
 
-@media (max-width: 600px) {
-    .container {
-        padding: 16px;
-    }
+.danger-btn {
+    width: 100%;
+    margin-top: 15px;
+    padding: 12px;
+    border-radius: 9px;
+    cursor: pointer;
+    background: transparent;
+    color: #ff6666;
+    border: 1px solid #ff6666;
+}
 
-    .type-buttons,
-    .style-buttons,
+.setup {
+    display: none;
+    padding: 18px;
+    border-radius: 12px;
+    border: 1px solid #ff5555;
+    background: rgba(255,50,50,0.07);
+}
+
+@media(max-width:600px) {
+    .choice-grid,
     .field-row {
         grid-template-columns: 1fr;
+    }
+
+    .container {
+        padding: 16px;
     }
 }
 </style>
@@ -268,26 +321,23 @@ button:hover {
 
 <div class="page">
 
-<button class="back-btn"
-onclick="window.location.href='admin.html'">
+<button class="back-btn" onclick="location.href='admin.html'">
 ← Back to Dashboard
 </button>
 
 <div class="container">
 
-<h2>📢 Telegram Movie Broadcaster</h2>
+<h2>📢 Telegram Broadcaster</h2>
 
-<div id="securitySetup"
-class="security-panel"
-style="display:none;">
 
-<h3 style="margin-top:0;color:#ff7777;">
-🔒 Telegram Setup
-</h3>
+<!-- TELEGRAM SETUP -->
+
+<div id="setupPanel" class="setup">
+
+<h3>🔒 Telegram Setup</h3>
 
 <p class="note">
 Enter your Telegram bot token and channel ID.
-These values are saved only in this browser.
 </p>
 
 <input
@@ -300,13 +350,10 @@ placeholder="Telegram Bot Token">
 <input
 type="text"
 id="channelIdInput"
-placeholder="@your_channel or channel ID">
-
-<br><br>
+placeholder="@your_channel">
 
 <button
 class="primary-btn"
-style="margin-top:0;"
 onclick="saveCredentials()">
 Save Telegram Settings
 </button>
@@ -314,116 +361,182 @@ Save Telegram Settings
 </div>
 
 
-<div id="broadcastForm"
-style="display:none;">
+<!-- MAIN FORM -->
 
-<!-- POST TYPE -->
+<div id="mainForm" style="display:none;">
 
 <div class="section-title">
-1. Select Post Type
+1. What are you posting?
 </div>
 
-<div class="type-buttons">
+<div class="choice-grid">
 
 <button
-id="movieTypeBtn"
+id="movieBtn"
 class="choice active"
-onclick="setPostType('Movie')">
+onclick="setType('Movie')">
 🎬 Movie
 </button>
 
 <button
-id="seriesTypeBtn"
+id="seriesBtn"
 class="choice"
-onclick="setPostType('Series')">
+onclick="setType('Series')">
 📺 Series
 </button>
 
 </div>
 
 
-<!-- SELECT STYLE -->
-
 <div class="section-title">
-2. Select Style
+2. Select Announcement Style
 </div>
 
-<div class="style-buttons">
+<div class="choice-grid">
 
 <button
-id="styleA"
+id="styleABtn"
 class="choice active"
 onclick="setStyle('A')">
-🎬 Style A — Cinematic
+🎬 Style A
 </button>
 
 <button
-id="styleB"
+id="styleBBtn"
 class="choice"
 onclick="setStyle('B')">
-✨ Style B — Premium
+✨ Style B
 </button>
 
 </div>
 
-
-<!-- SEARCH -->
 
 <div class="section-title">
 3. Select From Firebase
 </div>
 
 <input
-id="movieSearch"
+id="searchInput"
 class="search-box"
-type="text"
-placeholder="Search movies..."
-oninput="renderMovieList()">
+placeholder="Search..."
+oninput="renderItems()">
 
-<div
-class="movie-list-container"
-id="movieList">
-Loading database...
+<div id="itemList" class="item-list">
+Loading...
 </div>
 
 
-<!-- SERIES INPUTS -->
-
-<div
-id="seriesFields"
-class="series-fields">
+<!-- AVAILABLE LANGUAGE -->
 
 <div class="section-title">
-4. Episode Information
+4. Available Language
+</div>
+
+<input
+id="languageInput"
+value="Telugu"
+placeholder="Example: Telugu Dubbed"
+oninput="updatePreview()">
+
+<p class="note">
+This controls the displayed movie/series language.
+Default: Telugu.
+</p>
+
+
+<!-- SERIES DETAILS -->
+
+<div id="seriesFields" class="series-fields">
+
+<div class="section-title">
+5. Episode Details
 </div>
 
 <div class="field-row">
 
 <div>
+
 <label class="note">
 Season
 </label>
 
 <input
-type="text"
 id="seasonInput"
 placeholder="Example: Season 1"
 oninput="updatePreview()">
+
 </div>
 
 <div>
+
 <label class="note">
 Episode Range
 </label>
 
 <input
-type="text"
 id="episodeInput"
-placeholder="Example: 1 – 10"
+placeholder="Example: 1 – 8"
 oninput="updatePreview()">
+
 </div>
 
 </div>
+
+</div>
+
+
+<!-- EDIT TOGGLE -->
+
+<div class="section-title">
+Preview Options
+</div>
+
+<div class="toggle-row">
+
+<div>
+
+<div class="toggle-label">
+✏️ Edit Caption Manually
+</div>
+
+<div class="note">
+Turn this on to change the generated Telegram message.
+</div>
+
+</div>
+
+<label class="switch">
+
+<input
+type="checkbox"
+id="manualEditToggle"
+onchange="toggleManualEdit()">
+
+<span class="slider"></span>
+
+</label>
+
+</div>
+
+
+<div id="editPanel" class="edit-panel">
+
+<div class="section-title">
+Edit Caption
+</div>
+
+<textarea
+id="manualCaption"
+oninput="updateManualPreview()"></textarea>
+
+<div class="section-title">
+Button Text
+</div>
+
+<input
+id="buttonTextInput"
+value="🎬 VIEW MOVIE DETAILS"
+oninput="updateManualPreview()">
 
 </div>
 
@@ -431,7 +544,7 @@ oninput="updatePreview()">
 <!-- PREVIEW -->
 
 <div class="section-title">
-5. Telegram Preview
+Telegram Preview
 </div>
 
 <div class="preview-box">
@@ -439,7 +552,7 @@ oninput="updatePreview()">
 <img
 id="previewImage"
 class="preview-image"
-alt="Movie Poster">
+alt="Poster">
 
 <div class="preview-content">
 
@@ -447,17 +560,14 @@ alt="Movie Poster">
 id="previewCaption"
 class="preview-caption">
 
-Select a movie or series to preview.
+Select a movie or series.
 
 </div>
 
 <button
 id="previewButton"
-class="preview-button"
-style="display:none;">
-
+class="preview-button">
 🎬 VIEW MOVIE DETAILS
-
 </button>
 
 </div>
@@ -468,22 +578,19 @@ style="display:none;">
 <button
 id="sendBtn"
 class="primary-btn"
-onclick="sendBroadcast()">
+onclick="sendToTelegram()">
 
 📤 Send to Telegram Channel
 
 </button>
 
-<p
-id="status"
-class="status">
-</p>
+<div id="status" class="status"></div>
 
 <button
 class="danger-btn"
 onclick="clearCredentials()">
 
-Clear Saved Telegram Settings
+Clear Telegram Settings
 
 </button>
 
@@ -495,19 +602,12 @@ Clear Saved Telegram Settings
 
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
 <script src="firebase-config.js"></script>
 
-
 <script>
-
-/* =========================================================
-   FIREBASE
-========================================================= */
 
 firebase.initializeApp(firebaseConfig);
 
@@ -515,73 +615,56 @@ const db = firebase.firestore();
 const auth = firebase.auth();
 
 
-/* =========================================================
-   TMDB CONFIG
-
-   This is the same API key currently used in your add.html.
-
-   For better security later, move this request behind a
-   server / Cloud Function.
-========================================================= */
+/* TMDB */
 
 const TMDB_API_KEY =
 "931e6d3b603237c1179a7b8a23d2e8c4";
 
-const TMDB_IMAGE_BASE =
+const TMDB_IMAGE =
 "https://image.tmdb.org/t/p/w780";
 
 
-/* =========================================================
-   WEBSITE LINK
-
-   Change this if your live website domain changes.
-========================================================= */
+/*
+CHANGE THIS ONLY IF YOUR WEBSITE URL CHANGES
+*/
 
 const WEBSITE_BASE =
-"https://alatheesh.github.io/NTMONLINE/file.html?id=";
+"https://latheeshreddy947.github.io/file.html?id=";
 
 
-/* =========================================================
-   APP STATE
-========================================================= */
+/* APP STATE */
 
-let loadedItems = [];
+let allItems = [];
 
 let selectedItem = null;
 
-let selectedTMDBData = null;
+let tmdbData = null;
 
-let currentPostType = "Movie";
+let currentType = "Movie";
 
 let currentStyle = "A";
 
 
-/* =========================================================
-   AUTH CHECK
-========================================================= */
+/* AUTH */
 
 auth.setPersistence(
 firebase.auth.Auth.Persistence.LOCAL
 );
 
-if (!localStorage.getItem("ntm_admin_session")) {
-    window.location.href = "admin.html";
-}
-
 auth.onAuthStateChanged(user => {
 
-    if (user) {
-        checkCredentials();
-    } else {
-        window.location.href = "admin.html";
+    if (!user) {
+
+        location.href = "admin.html";
+        return;
     }
+
+    checkCredentials();
 
 });
 
 
-/* =========================================================
-   TELEGRAM CREDENTIALS
-========================================================= */
+/* TELEGRAM SETTINGS */
 
 function checkCredentials() {
 
@@ -591,14 +674,15 @@ function checkCredentials() {
     const channel =
     localStorage.getItem("ntm_channel_id");
 
+
     if (token && channel) {
 
         document.getElementById(
-            "securitySetup"
+            "setupPanel"
         ).style.display = "none";
 
         document.getElementById(
-            "broadcastForm"
+            "mainForm"
         ).style.display = "block";
 
         loadItems();
@@ -606,11 +690,11 @@ function checkCredentials() {
     } else {
 
         document.getElementById(
-            "securitySetup"
+            "setupPanel"
         ).style.display = "block";
 
         document.getElementById(
-            "broadcastForm"
+            "mainForm"
         ).style.display = "none";
     }
 }
@@ -628,14 +712,16 @@ function saveCredentials() {
         "channelIdInput"
     ).value.trim();
 
+
     if (!token || !channel) {
 
         alert(
-        "Please enter both the Telegram Bot Token and Channel ID."
+            "Enter both Telegram Bot Token and Channel ID."
         );
 
         return;
     }
+
 
     localStorage.setItem(
         "ntm_bot_token",
@@ -665,96 +751,114 @@ function clearCredentials() {
 }
 
 
-/* =========================================================
-   LOAD FIREBASE ITEMS
-========================================================= */
+/* LOAD FIREBASE */
 
 async function loadItems() {
 
-    const container =
-    document.getElementById("movieList");
+    const list =
+    document.getElementById("itemList");
 
-    container.innerHTML =
-    "<p style='text-align:center;color:#aaa;'>Loading database...</p>";
+    list.innerHTML =
+    "<p style='text-align:center;color:#aaa;'>Loading...</p>";
+
 
     try {
 
-        const docSnap =
+        const snap =
         await db
         .collection("movie_database")
         .doc("master_list")
         .get();
 
+
         if (
-            docSnap.exists &&
-            docSnap.data().movies
+            snap.exists &&
+            snap.data().movies
         ) {
 
-            loadedItems =
-            docSnap.data().movies;
+            allItems =
+            snap.data().movies;
 
-            loadedItems.sort((a,b) =>
+            allItems.sort((a,b) =>
                 Number(b.customId || 0) -
                 Number(a.customId || 0)
             );
 
-            renderMovieList();
+            renderItems();
 
         } else {
 
-            container.innerHTML =
-            "<p style='text-align:center;'>No items found.</p>";
+            list.innerHTML =
+            "<p style='text-align:center'>No items found.</p>";
         }
 
-    } catch (error) {
+    } catch(error) {
 
         console.error(error);
 
-        container.innerHTML =
-        "<p style='color:#ff4d4d;text-align:center;'>Error loading Firebase data.</p>";
+        list.innerHTML =
+        "<p style='color:red;text-align:center'>Failed to load Firebase.</p>";
     }
 }
 
 
-/* =========================================================
-   POST TYPE
-========================================================= */
+/* TYPE */
 
-function setPostType(type) {
+function setType(type) {
 
-    currentPostType = type;
+    currentType = type;
 
     selectedItem = null;
-    selectedTMDBData = null;
+
+    tmdbData = null;
+
 
     document.getElementById(
-        "movieTypeBtn"
+        "movieBtn"
     ).classList.toggle(
         "active",
         type === "Movie"
     );
 
+
     document.getElementById(
-        "seriesTypeBtn"
+        "seriesBtn"
     ).classList.toggle(
         "active",
         type === "Series"
     );
 
+
     document.getElementById(
         "seriesFields"
     ).style.display =
     type === "Series"
-    ? "grid"
+    ? "block"
     : "none";
 
 
     document.getElementById(
-        "movieSearch"
+        "searchInput"
     ).placeholder =
     type === "Movie"
     ? "Search movies..."
     : "Search series...";
+
+
+    document.getElementById(
+        "buttonTextInput"
+    ).value =
+    type === "Movie"
+    ? "🎬 VIEW MOVIE DETAILS"
+    : "📺 VIEW SERIES";
+
+
+    document.getElementById(
+        "previewCaption"
+    ).innerText =
+    "Select a " +
+    type.toLowerCase() +
+    ".";
 
 
     document.getElementById(
@@ -763,107 +867,104 @@ function setPostType(type) {
 
 
     document.getElementById(
-        "previewCaption"
-    ).innerText =
-    type === "Movie"
-    ? "Select a movie to preview."
-    : "Select a series to preview.";
-
-
-    document.getElementById(
         "previewButton"
     ).style.display = "none";
 
 
-    renderMovieList();
+    renderItems();
+
+    updateStyleLabels();
 }
 
 
-/* =========================================================
-   STYLE SELECTOR
-========================================================= */
+/* STYLE */
 
 function setStyle(style) {
 
     currentStyle = style;
 
+
     document.getElementById(
-        "styleA"
+        "styleABtn"
     ).classList.toggle(
         "active",
         style === "A"
     );
 
+
     document.getElementById(
-        "styleB"
+        "styleBBtn"
     ).classList.toggle(
         "active",
         style === "B"
     );
 
-    if (currentPostType === "Movie") {
+
+    updatePreview();
+}
+
+
+function updateStyleLabels() {
+
+    if (currentType === "Movie") {
 
         document.getElementById(
-            "styleA"
+            "styleABtn"
         ).innerHTML =
         "🎬 Style A — Cinematic";
 
+
         document.getElementById(
-            "styleB"
+            "styleBBtn"
         ).innerHTML =
         "✨ Style B — Premium";
 
     } else {
 
         document.getElementById(
-            "styleA"
+            "styleABtn"
         ).innerHTML =
         "📺 Style A — Series Update";
 
+
         document.getElementById(
-            "styleB"
+            "styleBBtn"
         ).innerHTML =
         "🔥 Style B — Episode Update";
     }
-
-    updatePreview();
 }
 
 
-/* =========================================================
-   FILTER FIREBASE ITEMS
-========================================================= */
+/* RENDER FIREBASE ITEMS */
 
-function renderMovieList() {
+function renderItems() {
 
-    const container =
-    document.getElementById("movieList");
+    const list =
+    document.getElementById("itemList");
+
 
     const search =
     document.getElementById(
-        "movieSearch"
+        "searchInput"
     ).value
-    .trim()
-    .toLowerCase();
+    .toLowerCase()
+    .trim();
 
 
     const filtered =
-    loadedItems.filter(item => {
-
-        const itemType =
-        String(item.type || "")
-        .toLowerCase();
-
-        const wantedType =
-        currentPostType.toLowerCase();
+    allItems.filter(item => {
 
         const typeMatch =
-        itemType === wantedType;
+        String(item.type || "")
+        .toLowerCase() ===
+        currentType.toLowerCase();
+
 
         const nameMatch =
         String(item.name || "")
         .toLowerCase()
         .includes(search);
+
 
         return typeMatch && nameMatch;
     });
@@ -871,27 +972,28 @@ function renderMovieList() {
 
     if (!filtered.length) {
 
-        container.innerHTML =
-        `<p style="text-align:center;color:#aaa;">
-        No ${currentPostType.toLowerCase()} found.
-        </p>`;
+        list.innerHTML =
+        "<p style='text-align:center;color:#aaa;'>No items found.</p>";
 
         return;
     }
 
 
-    container.innerHTML = "";
+    list.innerHTML = "";
+
 
     filtered.forEach(item => {
 
         const div =
         document.createElement("div");
 
+
         div.className =
-        "movie-item" +
+        "item" +
         (
             selectedItem &&
-            selectedItem.customId === item.customId
+            selectedItem.customId ===
+            item.customId
             ? " selected"
             : ""
         );
@@ -899,63 +1001,55 @@ function renderMovieList() {
 
         const image =
         item.image ||
-        "https://placehold.co/90x135/111827/ffffff?text=No+Poster";
+        "https://placehold.co/90x135?text=No+Image";
 
 
         div.innerHTML = `
 
-            <img
-            class="movie-thumb"
-            src="${escapeHTML(image)}"
-            alt="Poster">
+            <img src="${escapeHTML(image)}">
 
-            <div class="movie-info">
+            <div>
 
-                <span class="movie-title">
-                ${escapeHTML(item.name || "Untitled")}
-                </span>
+                <div class="item-name">
+                    ${escapeHTML(item.name)}
+                </div>
 
-                <span class="movie-meta">
-                ${escapeHTML(item.category || "No category")}
-                • TMDB ID:
-                ${item.tmdb_id || "Missing"}
-                </span>
+                <div class="item-meta">
+                    TMDB ID: ${escapeHTML(item.tmdb_id || "Missing")}
+                </div>
 
             </div>
         `;
 
 
-        div.addEventListener(
-            "click",
-            () => selectItem(item)
-        );
+        div.onclick =
+        () => selectItem(item);
 
 
-        container.appendChild(div);
+        list.appendChild(div);
     });
 }
 
 
-/* =========================================================
-   SELECT ITEM
-========================================================= */
+/* SELECT + FETCH TMDB */
 
 async function selectItem(item) {
 
     selectedItem = item;
 
-    selectedTMDBData = null;
+    tmdbData = null;
 
-    renderMovieList();
+    renderItems();
 
 
     const status =
     document.getElementById("status");
 
+
     if (!item.tmdb_id) {
 
         status.innerText =
-        "⚠️ This item does not have a TMDB ID saved in Firebase.";
+        "⚠️ No TMDB ID saved for this item.";
 
         status.style.color =
         "#ffcc00";
@@ -967,7 +1061,7 @@ async function selectItem(item) {
 
 
     status.innerText =
-    "⏳ Fetching official details from TMDB...";
+    "⏳ Fetching details from TMDB...";
 
     status.style.color =
     "#00bfff";
@@ -976,9 +1070,9 @@ async function selectItem(item) {
     try {
 
         const tmdbType =
-        currentPostType === "Series"
-        ? "tv"
-        : "movie";
+        currentType === "Movie"
+        ? "movie"
+        : "tv";
 
 
         const response =
@@ -997,15 +1091,16 @@ async function selectItem(item) {
 
             throw new Error(
                 data.status_message ||
-                "TMDB request failed"
+                "TMDB error"
             );
         }
 
 
-        selectedTMDBData = data;
+        tmdbData = data;
+
 
         status.innerText =
-        "✅ TMDB details loaded successfully.";
+        "✅ Correct TMDB details loaded.";
 
         status.style.color =
         "#00ff88";
@@ -1013,14 +1108,12 @@ async function selectItem(item) {
 
         updatePreview();
 
-    } catch (error) {
+    } catch(error) {
 
         console.error(error);
 
-        selectedTMDBData = null;
-
         status.innerText =
-        "⚠️ Could not fetch TMDB details. Firebase data will be used as fallback.";
+        "⚠️ TMDB fetch failed. Using Firebase fallback.";
 
         status.style.color =
         "#ffcc00";
@@ -1031,9 +1124,7 @@ async function selectItem(item) {
 }
 
 
-/* =========================================================
-   BUILD POST DATA
-========================================================= */
+/* GET DATA */
 
 function getPostData() {
 
@@ -1043,7 +1134,7 @@ function getPostData() {
 
 
     const data =
-    selectedTMDBData || {};
+    tmdbData || {};
 
 
     const title =
@@ -1054,35 +1145,15 @@ function getPostData() {
 
 
     const genres =
-    data.genres && data.genres.length
+    data.genres &&
+    data.genres.length
+
     ? data.genres
-        .map(genre => genre.name)
+        .map(g => g.name)
         .join(" | ")
-    : (
-        selectedItem.category ||
-        "Not specified"
-    );
 
-
-    let language = "Not specified";
-
-    if (
-        data.spoken_languages &&
-        data.spoken_languages.length
-    ) {
-
-        language =
-        data.spoken_languages
-        .map(language => language.english_name || language.name)
-        .join(", ");
-
-    } else if (
-        data.original_language
-    ) {
-
-        language =
-        data.original_language.toUpperCase();
-    }
+    : selectedItem.category ||
+      "Not specified";
 
 
     const date =
@@ -1094,45 +1165,51 @@ function getPostData() {
 
     const year =
     date
-    ? String(date).split("-")[0]
+    ? date.split("-")[0]
     : "N/A";
 
 
     const poster =
     data.poster_path
-    ? TMDB_IMAGE_BASE +
+
+    ? TMDB_IMAGE +
       data.poster_path
-    : (
-        selectedItem.image || ""
-    );
+
+    : selectedItem.image ||
+      "";
 
 
-    const link =
-    WEBSITE_BASE +
-    encodeURIComponent(
-        selectedItem.customId
-    );
+    const language =
+    document.getElementById(
+        "languageInput"
+    ).value.trim() ||
+    "Telugu";
 
 
     return {
+
         title,
         genres,
-        language,
         year,
         poster,
-        link
+        language,
+
+        link:
+        WEBSITE_BASE +
+        encodeURIComponent(
+            selectedItem.customId
+        )
     };
 }
 
 
-/* =========================================================
-   BUILD TELEGRAM MESSAGE
-========================================================= */
+/* BUILD CAPTION */
 
 function buildPost() {
 
     const post =
     getPostData();
+
 
     if (!post) {
         return null;
@@ -1152,12 +1229,13 @@ function buildPost() {
 
 
     let caption = "";
-    let buttonText = "";
+
+    let defaultButton = "";
 
 
     /* MOVIE */
 
-    if (currentPostType === "Movie") {
+    if (currentType === "Movie") {
 
         if (currentStyle === "A") {
 
@@ -1166,20 +1244,22 @@ function buildPost() {
 
 🍿 ${post.title}
 
-⭐ ${post.genres}
-🌍 ${post.language}
+🎭 ${post.genres.replaceAll(" | ", " • ")}
+🔊 Available in: ${post.language}
 📅 ${post.year}
 
 ━━━━━━━━━━━━
 
-🔥 Movie details are now available!
+✨ Movie details are now available!
 
-👇 Click below to explore`;
+👇 Tap below to explore`;
 
-            buttonText =
+            defaultButton =
             "🎬 VIEW MOVIE DETAILS";
 
-        } else {
+        }
+
+        else {
 
             caption =
 `🎬 MOVIE UPDATE
@@ -1187,7 +1267,7 @@ function buildPost() {
 🍿 ${post.title}
 
 🎭 ${post.genres.replaceAll(" | ", " • ")}
-🌐 ${post.language}
+🔊 Available in: ${post.language}
 📅 Release: ${post.year}
 
 ━━━━━━━━━━━━
@@ -1196,7 +1276,7 @@ function buildPost() {
 
 👇 Tap below for full details`;
 
-            buttonText =
+            defaultButton =
             "🍿 VIEW DETAILS";
         }
     }
@@ -1208,10 +1288,10 @@ function buildPost() {
 
         if (currentStyle === "A") {
 
-            const episodeLine =
+            const episodeText =
             episodes
             ? `🎬 Episodes ${episodes} are now available!`
-            : `🎬 New series details are now available!`;
+            : `🎬 New episodes are now available!`;
 
 
             caption =
@@ -1220,209 +1300,303 @@ function buildPost() {
 🍿 ${post.title}
 
 🎭 ${post.genres}
-🌍 ${post.language}
+🔊 Available in: ${post.language}
 📅 ${post.year}
 
 ━━━━━━━━━━━━
 
-${episodeLine}
+${episodeText}
 
 🔥 Watch the latest episodes now.
 
 👇 Click below to explore`;
 
-            buttonText =
+            defaultButton =
             "📺 VIEW SERIES";
 
-        } else {
+        }
 
-            const seasonLine =
+        else {
+
+            const seasonText =
             season
             ? `🎬 ${season}`
-            : "🎬 Latest Update";
+            : "";
 
 
-            const episodeLine =
+            const episodeText =
             episodes
             ? `📌 Episodes: ${episodes}`
-            : "📌 New episodes are available";
+            : `📌 New episodes are now available`;
 
 
             caption =
 `🔥 NEW EPISODES ADDED
 
 📺 ${post.title}
-${seasonLine}
+${seasonText}
 
 ━━━━━━━━━━━━
 
-${episodeLine}
+${episodeText}
 
 ✨ The latest episodes are now available!
 
 👇 Tap below for all details`;
 
-            buttonText =
+            defaultButton =
             "🎬 WATCH NOW";
         }
     }
 
 
     return {
+
         caption,
-        buttonText,
+
+        buttonText:
+        document.getElementById(
+            "buttonTextInput"
+        ).value.trim()
+        || defaultButton,
+
         poster: post.poster,
+
         link: post.link
     };
 }
 
 
-/* =========================================================
-   LIVE PREVIEW
-========================================================= */
+/* PREVIEW */
 
 function updatePreview() {
 
-    const previewCaption =
+    if (
+        document.getElementById(
+            "manualEditToggle"
+        ).checked
+    ) {
+        return;
+    }
+
+
+    const post =
+    buildPost();
+
+
+    const caption =
     document.getElementById(
         "previewCaption"
     );
 
-    const previewButton =
+    const button =
     document.getElementById(
         "previewButton"
     );
 
-    const previewImage =
+    const image =
     document.getElementById(
         "previewImage"
     );
 
 
-    const post =
-    buildPost();
-
-
     if (!post) {
 
-        previewCaption.innerText =
-        currentPostType === "Movie"
-        ? "Select a movie to preview."
-        : "Select a series to preview.";
+        caption.innerText =
+        "Select a movie or series.";
 
-        previewButton.style.display =
+        button.style.display =
         "none";
 
-        previewImage.style.display =
+        image.style.display =
         "none";
 
         return;
     }
 
 
-    previewCaption.innerText =
+    caption.innerText =
     post.caption;
 
 
-    previewButton.innerText =
+    button.innerText =
     post.buttonText;
 
 
-    previewButton.style.display =
+    button.style.display =
     "block";
 
 
     if (post.poster) {
 
-        previewImage.src =
+        image.src =
         post.poster;
 
-        previewImage.style.display =
+        image.style.display =
         "block";
 
     } else {
 
-        previewImage.style.display =
+        image.style.display =
         "none";
     }
 }
 
 
-/* =========================================================
-   SEND TO TELEGRAM
-========================================================= */
+/* MANUAL EDIT TOGGLE */
 
-async function sendBroadcast() {
+function toggleManualEdit() {
 
-    const status =
-    document.getElementById("status");
-
-    const sendBtn =
-    document.getElementById("sendBtn");
+    const enabled =
+    document.getElementById(
+        "manualEditToggle"
+    ).checked;
 
 
-    const post =
-    buildPost();
+    const panel =
+    document.getElementById(
+        "editPanel"
+    );
 
+
+    if (enabled) {
+
+        panel.style.display =
+        "block";
+
+
+        const post =
+        buildPost();
+
+
+        if (post) {
+
+            document.getElementById(
+                "manualCaption"
+            ).value =
+            post.caption;
+        }
+
+    } else {
+
+        panel.style.display =
+        "none";
+
+        updatePreview();
+    }
+}
+
+
+/* MANUAL PREVIEW */
+
+function updateManualPreview() {
+
+    const caption =
+    document.getElementById(
+        "manualCaption"
+    ).value;
+
+
+    const buttonText =
+    document.getElementById(
+        "buttonTextInput"
+    ).value;
+
+
+    document.getElementById(
+        "previewCaption"
+    ).innerText =
+    caption;
+
+
+    document.getElementById(
+        "previewButton"
+    ).innerText =
+    buttonText;
+
+
+    document.getElementById(
+        "previewButton"
+    ).style.display =
+    "block";
+}
+
+
+/* SEND TELEGRAM */
+
+async function sendToTelegram() {
 
     if (!selectedItem) {
 
-        status.innerText =
-        `⚠️ Please select a ${currentPostType.toLowerCase()}.`;
-
-        status.style.color =
-        "#ffcc00";
+        alert(
+            "Please select a movie or series."
+        );
 
         return;
     }
 
 
-    if (!post) {
+    const generatedPost =
+    buildPost();
 
-        status.innerText =
-        "⚠️ Could not generate the Telegram post.";
 
-        status.style.color =
-        "#ff4d4d";
-
+    if (!generatedPost) {
         return;
     }
 
 
-    const botToken =
+    let caption =
+    generatedPost.caption;
+
+
+    if (
+        document.getElementById(
+            "manualEditToggle"
+        ).checked
+    ) {
+
+        caption =
+        document.getElementById(
+            "manualCaption"
+        ).value;
+    }
+
+
+    const buttonText =
+    document.getElementById(
+        "buttonTextInput"
+    ).value.trim()
+    || generatedPost.buttonText;
+
+
+    const token =
     localStorage.getItem(
         "ntm_bot_token"
     );
 
-    const chatId =
+
+    const channel =
     localStorage.getItem(
         "ntm_channel_id"
     );
 
 
-    if (!botToken || !chatId) {
+    const status =
+    document.getElementById(
+        "status"
+    );
 
-        status.innerText =
-        "⚠️ Telegram credentials are missing.";
 
-        status.style.color =
-        "#ff4d4d";
-
-        return;
-    }
+    const sendBtn =
+    document.getElementById(
+        "sendBtn"
+    );
 
 
     sendBtn.disabled = true;
 
     sendBtn.innerText =
-    "⏳ Sending to Telegram...";
-
-
-    status.innerText =
-    "Preparing movie post...";
-
-    status.style.color =
-    "#00bfff";
+    "⏳ Sending...";
 
 
     const replyMarkup = {
@@ -1430,8 +1604,8 @@ async function sendBroadcast() {
         inline_keyboard: [
             [
                 {
-                    text: post.buttonText,
-                    url: post.link
+                    text: buttonText,
+                    url: generatedPost.link
                 }
             ]
         ]
@@ -1441,46 +1615,46 @@ async function sendBroadcast() {
     try {
 
         let endpoint;
+
         let body;
 
 
-        /*
-        Send poster + caption when poster exists.
-        Otherwise send text only.
-        */
-
-        if (post.poster) {
+        if (generatedPost.poster) {
 
             endpoint =
-            `https://api.telegram.org/bot${botToken}/sendPhoto`;
+            `https://api.telegram.org/bot${token}/sendPhoto`;
 
 
             body = {
 
-                chat_id: chatId,
+                chat_id: channel,
 
-                photo: post.poster,
+                photo:
+                generatedPost.poster,
 
-                caption: post.caption,
+                caption:
+                caption,
 
-                reply_markup: replyMarkup
-
+                reply_markup:
+                replyMarkup
             };
 
         } else {
 
             endpoint =
-            `https://api.telegram.org/bot${botToken}/sendMessage`;
+            `https://api.telegram.org/bot${token}/sendMessage`;
 
 
             body = {
 
-                chat_id: chatId,
+                chat_id:
+                channel,
 
-                text: post.caption,
+                text:
+                caption,
 
-                reply_markup: replyMarkup
-
+                reply_markup:
+                replyMarkup
             };
         }
 
@@ -1497,7 +1671,6 @@ async function sendBroadcast() {
 
             body:
             JSON.stringify(body)
-
         });
 
 
@@ -1505,79 +1678,63 @@ async function sendBroadcast() {
         await response.json();
 
 
-        if (result.ok) {
-
-            status.innerText =
-            "✅ Successfully posted to your Telegram channel!";
-
-            status.style.color =
-            "#00ff88";
-
-
-            sendBtn.innerText =
-            "📤 Send to Telegram Channel";
-
-
-            sendBtn.disabled =
-            false;
-
-        } else {
+        if (!result.ok) {
 
             throw new Error(
                 result.description ||
-                "Telegram rejected the request."
+                "Telegram rejected the post."
             );
         }
 
-    } catch (error) {
+
+        status.innerText =
+        "✅ Successfully posted to Telegram!";
+
+        status.style.color =
+        "#00ff88";
+
+    }
+
+    catch(error) {
 
         console.error(error);
 
-
         status.innerText =
-        "❌ Telegram Error: " +
+        "❌ Error: " +
         error.message;
 
-
         status.style.color =
-        "#ff4d4d";
+        "#ff5555";
+    }
 
-
-        sendBtn.innerText =
-        "📤 Send to Telegram Channel";
-
+    finally {
 
         sendBtn.disabled =
         false;
+
+        sendBtn.innerText =
+        "📤 Send to Telegram Channel";
     }
 }
 
 
-/* =========================================================
-   SECURITY / HTML ESCAPING
-========================================================= */
+/* HTML ESCAPE */
 
 function escapeHTML(value) {
 
     return String(value || "")
 
     .replaceAll("&", "&amp;")
-
     .replaceAll("<", "&lt;")
-
     .replaceAll(">", "&gt;")
-
     .replaceAll('"', "&quot;")
-
     .replaceAll("'", "&#039;");
 }
 
 
-/* =========================================================
-   INITIAL STYLE LABELS
-========================================================= */
+/* INITIALIZE */
 
-setStyle("A");
+updateStyleLabels();
 
 </script>
 
