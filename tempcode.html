@@ -39,10 +39,10 @@ button:disabled{opacity:.55;cursor:not-allowed}
 <div class="card">
 
 <h1>📢 Temporary Bulk Movies & Series Uploader</h1>
-<p class="sub">Uploads Movies first, then Series. Each section is ordered from the smallest custom ID to the largest.</p>
+<p class="sub">Uploads Movies and Series together in one continuous order, from the smallest custom ID to the largest.</p>
 
 <div class="warning">
-⚠️ <b>Temporary tool:</b> this page posts Movies and Series in separate sections. Do not press Start twice unless you intentionally want duplicates.
+⚠️ <b>Temporary tool:</b> this page posts Movies and Series together in custom ID order. Do not press Start twice unless you intentionally want duplicates.
 </div>
 
 <div class="controls">
@@ -253,12 +253,12 @@ async function loadContent() {
             .filter(item => getType(item) === "series")
             .sort(sortByCustomId);
 
-        // Neat segregation: all Movies first, then all Series.
-        // Each group stays in ascending custom ID order.
-        uploadQueue = [
-            ...movies.map(item => ({ ...item, __bulkType: "movie" })),
-            ...series.map(item => ({ ...item, __bulkType: "series" }))
-        ];
+        // One continuous timeline: Movie and Series are mixed together
+        // and sorted only by customId, smallest -> largest.
+        uploadQueue = allItems
+            .filter(item => getType(item) === "movie" || getType(item) === "series")
+            .map(item => ({ ...item, __bulkType: getType(item) }))
+            .sort(sortByCustomId);
 
         updateStats(uploadQueue.length, 0, 0);
 
@@ -270,17 +270,17 @@ async function loadContent() {
 
         $("status").textContent =
             `✅ Loaded ${movies.length} Movies + ${series.length} Series. ` +
-            `Movies: smallest ID → largest ID. Series: smallest ID → largest ID.`;
+            `All items: smallest custom ID → largest custom ID.`;
 
         const first = uploadQueue[0];
         $("current").textContent =
-            `First section: ${movies.length ? "🎬 Movies" : "📺 Series"} — ` +
+            `First item: ${first.__bulkType === "series" ? "📺 Series" : "🎬 Movie"} — ` +
             `#${first.customId || "?"} — ${first.name || "Untitled"}`;
 
         $("startBtn").disabled = false;
 
         log(`Loaded ${movies.length} Movies and ${series.length} Series.`, "ok");
-        log("Upload order: MOVIES section first → SERIES section second.", "info");
+        log("Upload order: one continuous queue, smallest customId → largest customId.", "info");
 
     } catch (error) {
         console.error(error);
@@ -408,6 +408,46 @@ function buildPost(item, tmdbData) {
         : buildMoviePost(item, tmdbData);
 }
 
+
+async function telegramRequest(endpoint, payload) {
+    const token = localStorage.getItem("ntm_bot_token");
+
+    if (!token) {
+        throw new Error(
+            "Telegram bot token is missing. Open telegram.html first and save your Telegram settings."
+        );
+    }
+
+    const response = await fetch(
+        `https://api.telegram.org/bot${token}/${endpoint}`,
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        }
+    );
+
+    const result = await response.json();
+
+    if (!result.ok) {
+        const error = new Error(
+            result.description || "Telegram request failed."
+        );
+
+        error.retryAfter =
+            result.parameters &&
+            result.parameters.retry_after
+                ? Number(result.parameters.retry_after)
+                : 0;
+
+        throw error;
+    }
+
+    return result;
+}
+
 async function sendItem(item) {
     const channel = localStorage.getItem("ntm_channel_id");
 
@@ -481,9 +521,11 @@ async function startUpload() {
 
     const ok = confirm(
         `This will upload ${uploadQueue.length} items to ${channel}.\n\n` +
-        `🎬 Movies: ${movies.length} (smallest custom ID → largest custom ID)\n` +
-        `📺 Series: ${series.length} (smallest custom ID → largest custom ID)\n\n` +
-        `Upload order:\n1. All Movies\n2. All Series\n\n` +
+        `🎬 Movies: ${movies.length}\n` +
+        `📺 Series: ${series.length}\n\n` +
+        `Order: one continuous timeline\n` +
+        `Smallest custom ID → largest custom ID\n\n` +
+        `Movies and Series will appear exactly according to that ID order.\n\n` +
         `Each item will be posted one by one.\n\nStart now?`
     );
 
@@ -498,10 +540,9 @@ async function startUpload() {
 
     let sent = 0;
     let failed = 0;
-    let currentSection = "";
-
     updateStats(uploadQueue.length, sent, failed);
     log("=== BULK MOVIES & SERIES UPLOAD STARTED ===", "info");
+    log("Continuous order: smallest custom ID → largest custom ID.", "info");
 
     for (let i = 0; i < uploadQueue.length; i++) {
         if (stopRequested) {
@@ -512,21 +553,16 @@ async function startUpload() {
         const item = uploadQueue[i];
         const position = i + 1;
         const type = item.__bulkType;
-        const section = type === "series" ? "📺 SERIES" : "🎬 MOVIES";
-
-        if (section !== currentSection) {
-            currentSection = section;
-            log(`========== ${section} SECTION START ==========`, "info");
-        }
+        const typeLabel = type === "series" ? "📺 SERIES" : "🎬 MOVIE";
 
         const id = item.customId || "?";
         const name = item.name || "Untitled";
 
         $("current").textContent =
-            `${section} • ${position}/${uploadQueue.length} — #${id} — ${name}`;
+            `${typeLabel} • ${position}/${uploadQueue.length} — #${id} — ${name}`;
 
         $("status").textContent =
-            `Uploading ${section.toLowerCase()}: ${position} of ${uploadQueue.length} — ${name}`;
+            `Uploading ${typeLabel}: ${position} of ${uploadQueue.length} — ${name}`;
 
         let completed = false;
         let attempts = 0;
@@ -541,7 +577,7 @@ async function startUpload() {
                 completed = true;
 
                 log(
-                    `✅ ${section} ${position}/${uploadQueue.length} sent — #${id} — ${name}`,
+                    `✅ ${typeLabel} ${position}/${uploadQueue.length} sent — #${id} — ${name}`,
                     "ok"
                 );
 
@@ -565,7 +601,7 @@ async function startUpload() {
                 completed = true;
 
                 log(
-                    `❌ ${section} ${position}/${uploadQueue.length} failed — #${id} — ${name} — ${error.message}`,
+                    `❌ ${typeLabel} ${position}/${uploadQueue.length} failed — #${id} — ${name} — ${error.message}`,
                     "err"
                 );
             }
