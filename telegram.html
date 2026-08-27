@@ -504,7 +504,7 @@ Button Text
 
 <input
 id="buttonTextInput"
-value="🎬 VIEW MOVIE DETAILS"
+value="▶️ WATCH ONLINE"
 oninput="updateManualPreview()">
 
 </div>
@@ -531,7 +531,7 @@ Select a movie or series.
 <button
 id="previewButton"
 class="preview-button">
-🎬 VIEW MOVIE DETAILS
+▶️ WATCH ONLINE
 </button>
 
 </div>
@@ -760,8 +760,8 @@ function setType(type) {
     document.getElementById("buttonTextInput")
     .value =
     type === "Movie"
-    ? "🎬 VIEW MOVIE DETAILS"
-    : "📺 VIEW SERIES";
+    ? "▶️ WATCH ONLINE"
+    : "▶️ WATCH ONLINE";
 
     document.getElementById("previewCaption")
     .innerText =
@@ -972,19 +972,18 @@ async function selectItem(item) {
     }
 }
 
-/* NORMALIZE QUALITY */
+/* QUALITY */
 
 function normalizeQuality(quality) {
 
     if (!quality) return "";
 
-    const q =
-    String(quality)
-    .trim()
-    .toLowerCase()
-    .replace(/[\s_-]/g, "");
+    const q = String(quality)
+        .trim()
+        .toLowerCase()
+        .replace(/[\s._-]/g, "");
 
-    if (q.includes("webdl") || q === "web") {
+    if (q.includes("webdl") || q.includes("webdownload")) {
         return "WEB-DL";
     }
 
@@ -992,47 +991,38 @@ function normalizeQuality(quality) {
         return "PreDVD";
     }
 
-    if (q.includes("cam")) {
+    if (q.includes("theater") || q.includes("theatre")) {
+        return "Theater";
+    }
+
+    if (q.includes("cam") || q.includes("hdcam")) {
         return "CAM";
     }
 
-    if (q.includes("theater") || q.includes("theatre")) {
-        return "Theater";
+    if (q.includes("bluray")) {
+        return "BluRay";
     }
 
     if (q.includes("hd")) {
         return "HD";
     }
 
-    return String(quality).trim();
+    return String(quality).trim().toUpperCase();
 }
-
-/* QUALITY LINE */
 
 function getQualityLine() {
 
-    if (currentType !== "Movie") {
+    if (currentType !== "Movie" || !selectedItem) {
         return "";
     }
 
-    if (!selectedItem || !selectedItem.quality) {
-        return "";
-    }
+    // Exact field used when add.html saves a movie to Firebase
+    const firebaseQuality = selectedItem.upload_quality || "";
+    const quality = normalizeQuality(firebaseQuality);
 
-    const quality =
-    normalizeQuality(
-        selectedItem.quality
-    );
+    if (!quality) return "";
 
-    if (!quality) {
-        return "";
-    }
-
-    if (
-        quality === "CAM" ||
-        quality === "PreDVD" ||
-        quality === "Theater"
-    ) {
+    if (quality === "CAM" || quality === "PreDVD" || quality === "Theater") {
         return `🎥 Quality: ${quality}`;
     }
 
@@ -1092,7 +1082,7 @@ function getPostData() {
         poster,
         language,
         quality: normalizeQuality(
-            selectedItem.quality
+            selectedItem.upload_quality || ""
         ),
         link:
         WEBSITE_BASE +
@@ -1136,7 +1126,9 @@ function buildPost() {
             caption =
 `🎬 NEW MOVIE ADDED
 
-🍿 ${post.title}
+━━━━━━━━━━━━
+🎞️ ${post.title.toUpperCase()}
+━━━━━━━━━━━━
 
 🎭 ${post.genres.replaceAll(" | ", " • ")}
 🔊 Available in: ${post.language}${qualityLine ? "\n" + qualityLine : ""}
@@ -1147,14 +1139,16 @@ function buildPost() {
 👇 Tap below button to watch online`;
 
             defaultButton =
-            "🎬 VIEW MOVIE DETAILS";
+            "▶️ WATCH ONLINE";
 
         } else {
 
             caption =
 `🎬 MOVIE UPDATE
 
-🍿 ${post.title}
+━━━━━━━━━━━━
+🎞️ ${post.title.toUpperCase()}
+━━━━━━━━━━━━
 
 🎭 ${post.genres.replaceAll(" | ", " • ")}
 🔊 Available in: ${post.language}${qualityLine ? "\n" + qualityLine : ""}
@@ -1165,7 +1159,7 @@ function buildPost() {
 👇 Tap below button to watch online`;
 
             defaultButton =
-            "🍿 VIEW DETAILS";
+            "▶️ WATCH ONLINE";
         }
     }
 
@@ -1183,7 +1177,9 @@ function buildPost() {
             caption =
 `📺 NEW SERIES UPDATE
 
-🍿 ${post.title}
+━━━━━━━━━━━━
+🎞️ ${post.title.toUpperCase()}
+━━━━━━━━━━━━
 
 🎭 ${post.genres}
 🔊 Available in: ${post.language}
@@ -1198,7 +1194,7 @@ ${episodeText}
 👇 Tap below button to watch online`;
 
             defaultButton =
-            "📺 VIEW SERIES";
+            "▶️ WATCH ONLINE";
 
         } else {
 
@@ -1215,19 +1211,19 @@ ${episodeText}
             caption =
 `🔥 NEW EPISODES ADDED
 
-📺 ${post.title}
+━━━━━━━━━━━━
+🎞️ ${post.title.toUpperCase()}
 ${seasonText}
-
 ━━━━━━━━━━━━
 
 ${episodeText}
 
 ✨ The latest episodes are now available!
 
-👇 Tap below for all details`;
+👇 Tap below button to watch online`;
 
             defaultButton =
-            "🎬 WATCH NOW";
+            "▶️ WATCH ONLINE";
         }
     }
 
