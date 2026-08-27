@@ -109,9 +109,15 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function getItemId(item) {
+    // Exact same convention used by file.html and search.html.
+    return item && (item.customId || item.id)
+        ? String(item.customId || item.id)
+        : "";
+}
+
 function numericId(item) {
-    const raw = item.customId;
-    const n = Number(raw);
+    const n = Number(getItemId(item));
     return Number.isFinite(n) ? n : Number.MAX_SAFE_INTEGER;
 }
 
@@ -170,15 +176,7 @@ function getType(item) {
 }
 
 function sortByCustomId(a, b) {
-    const aNum = numericId(a);
-    const bNum = numericId(b);
-    if (aNum !== bNum) return aNum - bNum;
-
-    return String(a.customId || "").localeCompare(
-        String(b.customId || ""),
-        undefined,
-        { numeric: true, sensitivity: "base" }
-    );
+    return Number(getItemId(a)) - Number(getItemId(b));
 }
 
 function getEpisodeText(item) {
@@ -260,7 +258,30 @@ async function loadContent() {
             .map(item => ({ ...item, __bulkType: getType(item) }))
             .sort(sortByCustomId);
 
+        const missingIdItems = uploadQueue.filter(item => !getItemId(item));
+
+        const missingIds = uploadQueue.filter(item => !getItemId(item));
+        if (missingIds.length) {
+            throw new Error(
+                `${missingIds.length} item(s) have no customId or id. ` +
+                `Upload cancelled before creating broken links.`
+            );
+        }
+
         updateStats(uploadQueue.length, 0, 0);
+        log(
+            `Order check: first ID ${getItemId(uploadQueue[0])} → ` +
+            `last ID ${getItemId(uploadQueue[uploadQueue.length - 1])}`,
+            "info"
+        );
+
+
+        if (missingIdItems.length) {
+            log(
+                `⚠️ ${missingIdItems.length} item(s) have no usable website ID. They will be marked failed instead of posting an undefined link.`,
+                "err"
+            );
+        }
 
         if (!uploadQueue.length) {
             $("status").textContent = "⚠️ No Movies or Series entries found.";
@@ -270,12 +291,12 @@ async function loadContent() {
 
         $("status").textContent =
             `✅ Loaded ${movies.length} Movies + ${series.length} Series. ` +
-            `All items: smallest custom ID → largest custom ID.`;
+            `All items: smallest saved website ID → largest saved website ID.`;
 
         const first = uploadQueue[0];
         $("current").textContent =
             `First item: ${first.__bulkType === "series" ? "📺 Series" : "🎬 Movie"} — ` +
-            `#${first.customId || "?"} — ${first.name || "Untitled"}`;
+            `#${getItemId(first) || "MISSING ID"} — ${first.name || "Untitled"}`;
 
         $("startBtn").disabled = false;
 
@@ -344,7 +365,7 @@ function buildMoviePost(item, tmdbData) {
     return {
         caption,
         poster,
-        link: WEBSITE_BASE + encodeURIComponent(item.customId),
+        link: WEBSITE_BASE + encodeURIComponent(getItemId(item)),
         buttonText: "▶️ WATCH ONLINE"
     };
 }
@@ -396,7 +417,7 @@ ${updateLine}
     return {
         caption,
         poster,
-        link: WEBSITE_BASE + encodeURIComponent(item.customId),
+        link: WEBSITE_BASE + encodeURIComponent(getItemId(item)),
         buttonText: "▶️ WATCH ONLINE"
     };
 }
@@ -449,6 +470,14 @@ async function telegramRequest(endpoint, payload) {
 }
 
 async function sendItem(item) {
+    const itemId = getItemId(item);
+
+    if (!itemId) {
+        throw new Error(
+            `Missing website ID for "${item.name || "Untitled"}". This item was skipped to prevent an ?id=undefined link.`
+        );
+    }
+
     const channel = localStorage.getItem("ntm_channel_id");
 
     if (!channel) {
@@ -462,7 +491,7 @@ async function sendItem(item) {
         tmdbData = await fetchTMDBDetails(item, type);
     } catch (error) {
         log(
-            `TMDB fallback for ${type} #${item.customId || "?"}: ${error.message}`,
+            `TMDB fallback for ${type} #${getItemId(item) || "MISSING ID"}: ${error.message}`,
             "err"
         );
     }
@@ -542,7 +571,7 @@ async function startUpload() {
     let failed = 0;
     updateStats(uploadQueue.length, sent, failed);
     log("=== BULK MOVIES & SERIES UPLOAD STARTED ===", "info");
-    log("Continuous order: smallest custom ID → largest custom ID.", "info");
+    log("Continuous order: smallest saved website ID → largest saved website ID.", "info");
 
     for (let i = 0; i < uploadQueue.length; i++) {
         if (stopRequested) {
@@ -555,7 +584,7 @@ async function startUpload() {
         const type = item.__bulkType;
         const typeLabel = type === "series" ? "📺 SERIES" : "🎬 MOVIE";
 
-        const id = item.customId || "?";
+        const id = getItemId(item) || "MISSING ID";
         const name = item.name || "Untitled";
 
         $("current").textContent =
