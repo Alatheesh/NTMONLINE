@@ -36,6 +36,25 @@
     .readonly-field { background: rgba(255,255,255,0.05); color: #888; border: 1px dashed rgba(255,255,255,0.1); cursor: not-allowed; }
 
     #msgBox { display: none; position: fixed; top: 20px; right: 20px; background: #333; color: white; padding: 15px 20px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); z-index: 1000; border-left: 5px solid #00ff88; transition: opacity 0.3s; }
+  
+    .movie-picker{position:relative;width:100%;margin-bottom:4px}
+    .movie-picker-toggle{width:100%;min-height:48px;margin:0;padding:12px 15px;display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;border:1px solid #ffcc00;border-radius:7px;background:rgba(15,15,15,.96);color:#fff;font-size:16px;cursor:pointer}
+    .movie-picker-toggle:hover{background:rgba(255,204,0,.08)}
+    .movie-picker-arrow{color:#ffcc00;font-size:18px;transition:transform .18s ease}
+    .movie-picker.open .movie-picker-arrow{transform:rotate(180deg)}
+    .movie-picker-menu{position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:500;display:none;overflow:hidden;border:1px solid rgba(255,204,0,.55);border-radius:9px;background:#111;box-shadow:0 14px 35px rgba(0,0,0,.75)}
+    .movie-picker.open .movie-picker-menu{display:block}
+    .movie-picker-search-wrap{display:flex;align-items:center;gap:9px;padding:10px;background:#171717;border-bottom:1px solid rgba(255,255,255,.1)}
+    .movie-picker-search-wrap>span{color:#ffcc00}
+    .movie-picker-search-wrap input{width:100%;margin:0!important;padding:10px 11px!important;border:1px solid rgba(255,255,255,.16)!important;border-radius:6px!important;background:rgba(255,255,255,.06)!important;color:#fff!important;outline:none;box-sizing:border-box}
+    .movie-picker-search-wrap input:focus{border-color:#ffcc00!important;box-shadow:0 0 0 2px rgba(255,204,0,.1)}
+    .movie-picker-results{max-height:330px;overflow-y:auto;overscroll-behavior:contain}
+    .movie-picker-item{width:100%;margin:0!important;padding:11px 13px!important;border:0!important;border-bottom:1px solid rgba(255,255,255,.07)!important;border-radius:0!important;background:transparent!important;color:#eee!important;text-align:left;font-size:14px;cursor:pointer;line-height:1.35}
+    .movie-picker-item:hover,.movie-picker-item:focus{background:rgba(255,204,0,.13)!important;color:#fff!important;outline:none}
+    .movie-picker-item.selected{background:rgba(255,204,0,.18)!important;color:#ffcc00!important}
+    .movie-picker-empty{padding:18px 14px;color:#999;text-align:center;font-size:13px}
+    @media(max-width:600px){.movie-picker-results{max-height:280px}.movie-picker-toggle{font-size:15px}}
+
   </style>
 </head>
 <body>
@@ -48,9 +67,25 @@
   <h2>✏️ Edit Lightweight Content</h2>
 
   <label class="field-label">Select File to Edit</label>
-  <select id="movieSelector" onchange="loadSelectedMovie()" style="border-color: #ffcc00; font-size: 16px;">
+  <div class="movie-picker" id="moviePicker">
+    <button type="button" class="movie-picker-toggle" id="moviePickerToggle" onclick="toggleMoviePicker()" aria-expanded="false">
+      <span id="moviePickerLabel">⏳ Loading database...</span>
+      <span class="movie-picker-arrow">▾</span>
+    </button>
+    <div class="movie-picker-menu" id="moviePickerMenu">
+      <div class="movie-picker-search-wrap">
+        <span>🔍</span>
+        <input type="text" id="moviePickerSearch" placeholder="Search movie or series..." autocomplete="off"
+               oninput="filterMoviePicker()" onclick="event.stopPropagation()">
+      </div>
+      <div class="movie-picker-results" id="moviePickerResults">
+        <div class="movie-picker-empty">Loading movies...</div>
+      </div>
+    </div>
+    <select id="movieSelector" onchange="loadSelectedMovie()" style="display:none;">
       <option value="">⏳ Loading database...</option>
-  </select>
+    </select>
+  </div>
 
   <hr style="border-color: rgba(255,255,255,0.1); margin-bottom: 20px;">
 
@@ -189,6 +224,8 @@
                 option.innerText = `${movie.type === 'Series' ? '📺' : '🎬'} ${movie.name} [ID: ${movie.tmdb_id || 'Legacy'}]`;
                 selector.appendChild(option);
             });
+            renderMoviePicker();
+            document.getElementById("moviePickerLabel").textContent = "-- Select a File to Edit --";
         } else {
             showMessage("No files found in database.", true);
             document.getElementById("movieSelector").innerHTML = `<option value="">Empty Database</option>`;
@@ -197,6 +234,69 @@
         showMessage("Error loading database: " + error.message, true);
     }
   };
+
+
+  function renderMoviePicker(filterText = "") {
+      const results = document.getElementById("moviePickerResults");
+      const selector = document.getElementById("movieSelector");
+      if (!results || !selector) return;
+      const query = filterText.trim().toLowerCase();
+      results.innerHTML = "";
+      const selectedValue = selector.value;
+      const matches = masterMovieData.map((movie,index)=>({movie,index})).filter(({movie})=>{
+          if(!query) return true;
+          return String(movie.name||"").toLowerCase().includes(query) ||
+                 String(movie.tmdb_id||"").toLowerCase().includes(query) ||
+                 String(movie.type||"").toLowerCase().includes(query);
+      });
+      if(!matches.length){results.innerHTML='<div class="movie-picker-empty">No matching movies found.</div>';return;}
+      const fragment=document.createDocumentFragment();
+      matches.forEach(({movie,index})=>{
+          const button=document.createElement("button");
+          button.type="button";
+          button.className="movie-picker-item"+(String(index)===String(selectedValue)?" selected":"");
+          button.textContent=`${movie.type==="Series"?"📺":"🎬"} ${movie.name} [ID: ${movie.tmdb_id||"Legacy"}]`;
+          button.addEventListener("click",()=>selectMovieFromPicker(index));
+          fragment.appendChild(button);
+      });
+      results.appendChild(fragment);
+  }
+
+  function selectMovieFromPicker(index) {
+      const selector=document.getElementById("movieSelector");
+      const movie=masterMovieData[index];
+      if(!selector || !movie) return;
+      selector.value=String(index);
+      document.getElementById("moviePickerLabel").textContent =
+          `${movie.type==="Series"?"📺":"🎬"} ${movie.name} [ID: ${movie.tmdb_id||"Legacy"}]`;
+      closeMoviePicker();
+      loadSelectedMovie();
+  }
+
+  function toggleMoviePicker() {
+      const picker=document.getElementById("moviePicker");
+      const search=document.getElementById("moviePickerSearch");
+      if(!picker) return;
+      const open=picker.classList.toggle("open");
+      document.getElementById("moviePickerToggle").setAttribute("aria-expanded",String(open));
+      if(open){renderMoviePicker(search?.value||"");setTimeout(()=>search?.focus(),0);}
+  }
+
+  function closeMoviePicker() {
+      const picker=document.getElementById("moviePicker");
+      if(!picker)return;
+      picker.classList.remove("open");
+      document.getElementById("moviePickerToggle").setAttribute("aria-expanded","false");
+  }
+
+  function filterMoviePicker() {
+      renderMoviePicker(document.getElementById("moviePickerSearch")?.value||"");
+  }
+
+  document.addEventListener("click",(event)=>{
+      const picker=document.getElementById("moviePicker");
+      if(picker && !picker.contains(event.target)) closeMoviePicker();
+  });
 
   async function loadSelectedMovie() {
       const selectedIndex = document.getElementById("movieSelector").value;
